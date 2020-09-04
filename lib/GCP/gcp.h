@@ -13,8 +13,8 @@
 
 */
 
-#include "PID.h"
 #include <EEPROM.h>
+#include "PID.h"
 
 #define ON true;
 #define OFF false;
@@ -22,6 +22,8 @@
 #define DEFAULT_ACTUAL_TEMP 15.0
 #define MAX_BREW_TEMP 96.0
 #define MIN_BREW_TEMP 90.0
+#define MAX_STEAM_TEMP 155.0
+#define MIN_STEAM_TEMP 145.0
 
 class GCP {
 private:
@@ -42,25 +44,21 @@ private:
     /* Temperature controlled switches */
     bool heating_switch; // #3 thermal cut off?
 
-    bool power_light; // #2 on/off light; turns on with power switch
+    bool power_light = OFF; // #2 on/off light; turns on with power switch
     bool brew_light = OFF; // #11 pilot light; at the brew temperature
     bool steam_light = OFF;  //at the steam temperature
 
     // #6 is the heating element
     // #8 is the solenoid valve
 
-    // Sets temperature to control to (setpoint)
-    void setTargetTemp(float temp);
-    // Sets temperature to control to (setpoint), wrap around with a set minimum / maximum temperature
-    void setTargetTemp(float temp, float minTemp, float maxTemp);
-
     PID temperatureManager;
+
+    void init(float targetTemp);
 
 public:
     GCP();
     GCP(float targetTemp);
     ~GCP();
-    void init();
     void incrementTemp();
     void decrementTemp();
     float getTargetTemp();
@@ -69,7 +67,8 @@ public:
     bool isBrewReady();
     bool isPowerOn();
     float getPX(); //returns current pressure value
+    void setTargetTemp(float temp); // Sets temperature to control to (setpoint)
+    void setTargetTemp(float temp, float minTemp, float maxTemp); // Sets temperature to control to (setpoint), wrap around with a set minimum / maximum temperature
     void refresh();
 };
-
 #endif

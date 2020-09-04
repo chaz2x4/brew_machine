@@ -1,17 +1,16 @@
 #include "gcp.h"
 
 GCP::GCP() {
-	init();
+	GCP(DEFAULT_TARGET_TEMP);
 }
 
 GCP::GCP(float targetTemp) {
-	this->setTargetTemp(targetTemp);
-	init();
+	init(targetTemp);
 }
 
-void GCP::init() {
+void GCP::init(float targetTemp){
 	float actualTemp = this->getActualTemp();
-	float targetTemp = this->getTargetTemp();
+	this->setTargetTemp(targetTemp);
 	this->power_light = ON;
 	this->temperatureManager.compute(targetTemp, actualTemp);
 }

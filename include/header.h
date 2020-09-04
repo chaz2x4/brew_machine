@@ -3,7 +3,6 @@
 #endif
 
 #include <EEPROM.h>
-
 #include "GCP.h"
 #include "PID.h"
 #include "OLED.h"
