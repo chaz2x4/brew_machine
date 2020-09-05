@@ -69,6 +69,6 @@ public:
     float getPX(); //returns current pressure value
     void setTargetTemp(float temp); // Sets temperature to control to (setpoint)
     void setTargetTemp(float temp, float minTemp, float maxTemp); // Sets temperature to control to (setpoint), wrap around with a set minimum / maximum temperature
-    void refresh();
+    void update();
 };
 #endif

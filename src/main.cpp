@@ -5,12 +5,13 @@
 #define STEAM_LIGHT_PIN 12
 #define RELAY_PIN 27
 
-GCP brew_machine;
+OLED brew_machine;
 
 void setup() {
 	while (!Serial) ; // wait for serial port to connect. Needed for native USB port only
 	//Primary Mission: start coffee machine
 	Serial.begin(9600);
+	brew_machine.start();
 	//Secondary Mission: connect to coffee server
 }
 

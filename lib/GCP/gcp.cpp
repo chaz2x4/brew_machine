@@ -64,7 +64,7 @@ bool GCP::isPowerOn() {
 	return this->power_light;
 }
 
-void GCP::refresh() {
+void GCP::update() {
 	float targetTemp = this->getTargetTemp();
 	float actualTemp = this->getActualTemp();
 	this->temperatureManager.compute(targetTemp, actualTemp);
