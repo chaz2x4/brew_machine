@@ -84,7 +84,7 @@ void OLED::refresh(){
             wait(500,(char*)("Set Brew: %.1f C"), this->getTargetTemp(), (char*)("Set Brew: "), 0x0);
         }
         else {
-            wait(2000, (char*)("Pressure: %.1f bars\n"), this->getPX(), (char*)("Temp: \n %.1f C\n"), this->getActualTemp());
+            wait(2000, (char*)("Pressure: %.1f bar\n"), this->getPX(), (char*)("Temp: \n %.1f C\n"), this->getActualTemp());
         }
     }
     if(this->currentMode == steam) {
