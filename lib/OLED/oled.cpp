@@ -29,9 +29,8 @@ void OLED::eventListener(){
     //Increase temperature when editable on button A
     if(buttonState[0] == LOW && lastButtonState[0] == HIGH) {
         downTime = millis();
-        if(this->isEditable) {
-            this->incrementTemp();
-        }
+        if(this->isEditable) this->incrementTemp();
+        else this->changeMode();
     }
     else if(buttonState[0] == HIGH && lastButtonState[0] == LOW) { downTime = -1 ; }
     lastButtonState[0] = buttonState[0];
@@ -39,9 +38,8 @@ void OLED::eventListener(){
     //Decrease temperature when editable on button B
     if(buttonState[1] == LOW && lastButtonState[1] == HIGH) {
         downTime = millis();
-        if(this->isEditable) {
-            this->decrementTemp();
-        }
+        if(this->isEditable) this->decrementTemp();
+        else this->changeMode();
     }
     else if(buttonState[1] == HIGH && lastButtonState[1] == LOW) { downTime = -1 ; }
     lastButtonState[1] = buttonState[1];
@@ -81,19 +79,20 @@ void OLED::refresh(){
     display.setCursor(13, 0);
     if(this->currentMode == brew) {
         if(this->isEditable) {
-            wait(500,(char*)("Set Brew: %.1f C"), this->getTargetTemp(), (char*)("Set Brew: "), 0x0);
+            wait(400, (char *)("Set Brew: %.1f C"), this->getTargetTemp(), (char *)("Set Brew: "), 0x0);
         }
         else {
-            wait(2000, (char*)("Pressure: %.1f bar\n"), this->getPX(), (char*)("Temp: \n %.1f C\n"), this->getActualTemp());
+            wait(1900, (char *)("Pressure: %.1f bar\n"), this->getPX(), (char *)("Temp: \n %.1f C\n"), this->getActualTemp());
         }
     }
     if(this->currentMode == steam) {
-        display.println("Steam");
+        wait(900, (char *)("Steaming. %.1f C\n"), this->getActualTemp(), (char *)("Steaming  %.1f C\n"), this->getActualTemp());
     }
     display.display();
 }
 
 void OLED::changeMode(){
+    display.clearDisplay();
     if(this->currentMode == brew) this->currentMode = steam;
     else this->currentMode = brew;
 }

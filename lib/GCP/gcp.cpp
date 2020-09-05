@@ -42,7 +42,6 @@ void GCP::decrementTemp() {
 
 
 float GCP::getTargetTemp() {
-	//if a temperature value was saved in the EEPROM, then retrieve it
 	return this->targetTemp;
 }
 
