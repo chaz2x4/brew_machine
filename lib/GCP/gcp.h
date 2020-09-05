@@ -29,6 +29,7 @@ class GCP {
 private:
     float targetTemp = DEFAULT_TARGET_TEMP; //95 celcius
     float actualTemp = DEFAULT_ACTUAL_TEMP; // #4 coffee thermostat; turns off heating element when = targetBrewTemp
+    float pressure = 15; 
 
     /* 
         Manual Switch Status

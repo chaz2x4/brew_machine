@@ -18,6 +18,7 @@ void setup() {
 // the loop function runs over and over again until power down or reset
 void loop() {
 	brew_machine.refresh();
-	delay(250);
+	brew_machine.eventListener();
+	delay(50);
 	yield();
 }

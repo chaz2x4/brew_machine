@@ -48,6 +48,10 @@ float GCP::getTargetTemp() {
 	return this->targetTemp;
 }
 
+float GCP::getPX() {
+	return this->pressure;
+}
+
 float GCP::getActualTemp() {
 	return this->actualTemp;
 }

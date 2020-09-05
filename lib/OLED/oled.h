@@ -18,12 +18,12 @@ enum mode{brew, steam};
 class OLED : public GCP {
 public:
     void start();
-    void event();
+    void eventListener();
     void refresh();
     void changeMode();
 private:
     mode currentMode = brew;
-    bool isEditable = true;
+    bool isEditable = false;
 };
 
 #endif
