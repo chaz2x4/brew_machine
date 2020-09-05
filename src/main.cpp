@@ -18,4 +18,5 @@ void setup() {
 void loop() {
 	brew_machine.refresh();
 	delay(250);
+	yield();
 }
