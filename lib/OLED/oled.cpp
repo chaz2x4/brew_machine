@@ -19,40 +19,56 @@ void OLED::start(){
 
 ulong downTime = -1;
 int triggerTime = 1000;
-bool buttonAState = HIGH;
-bool buttonBState = HIGH;
-bool buttonCState = HIGH;
-bool lastButtonState = HIGH;
+int buttonState[3] = {HIGH, HIGH, HIGH};
+int lastButtonState[3] = {HIGH, HIGH, HIGH};
 void OLED::eventListener(){
+    buttonState[0] = digitalRead(BUTTON_A);
+    buttonState[1] = digitalRead(BUTTON_B);
+    buttonState[2] = digitalRead(BUTTON_C);
+
+    //Increase temperature when editable on button A
+    if(buttonState[0] == LOW && lastButtonState[0] == HIGH) {
+        downTime = millis();
+        if(this->isEditable) {
+            this->incrementTemp();
+        }
+    }
+    else if(buttonState[0] == HIGH && lastButtonState[0] == LOW) { downTime = -1 ; }
+    lastButtonState[0] = buttonState[0];
+
+    //Decrease temperature when editable on button B
+    if(buttonState[1] == LOW && lastButtonState[1] == HIGH) {
+        downTime = millis();
+        if(this->isEditable) {
+            this->decrementTemp();
+        }
+    }
+    else if(buttonState[1] == HIGH && lastButtonState[1] == LOW) { downTime = -1 ; }
+    lastButtonState[1] = buttonState[1];
+
     //Change mode if button C is pressed
-    buttonCState = digitalRead(BUTTON_C);
-    if(buttonCState == LOW && lastButtonState == HIGH) {
+    if(buttonState[2] == LOW && lastButtonState[2] == HIGH) {
         downTime = millis();
         if(this->isEditable) {
             this->isEditable = false;
         }
     }
-    else if(buttonCState == HIGH && lastButtonState == LOW) {
+    else if(buttonState[2] == HIGH && lastButtonState[2] == LOW) {
         downTime = -1;
     }
-    if(buttonCState == LOW && this->currentMode == brew && (millis() - downTime) >= triggerTime) {
+    if(buttonState[2] == LOW && this->currentMode == brew && (millis() - downTime) >= triggerTime) {
         this->isEditable = true;
     }
-    lastButtonState = buttonCState;
+    lastButtonState[2] = buttonState[2];
 }
 
 ulong lastTime = -1;
 bool flash = false;
 void wait (int delay, char* text1, float var1, char* text2, float var2){
-    if((millis() - lastTime) >= delay && flash) {
+    if((millis() - lastTime) >= delay) {
         display.clearDisplay();
-        display.printf(text1, var1);
-        lastTime = millis();
-        flash = !flash;
-    } 
-    else if((millis() - lastTime) >= delay && !flash) {
-        display.clearDisplay();
-        display.printf(text2, var2);
+        if(flash) display.printf(text1, var1);
+        else display.printf(text2, var2);
         lastTime = millis();
         flash = !flash;
     }

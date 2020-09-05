@@ -18,7 +18,6 @@ void GCP::init(float targetTemp){
 GCP::~GCP() {
 	float targetTemp = this->getTargetTemp(); //get current target temp
 	if (targetTemp > MAX_BREW_TEMP) targetTemp = DEFAULT_TARGET_TEMP; //if it's higher than max value, then set it to default value of 95.0
-	EEPROM.put(0, targetTemp); //save target temp to hardware for next startup
 };
 
 void GCP::setTargetTemp(float temp) {
@@ -29,16 +28,15 @@ void GCP::setTargetTemp(float temp, float minTemp, float maxTemp) {
 	if (temp < minTemp) temp = minTemp;
 	else if (temp > maxTemp) temp = maxTemp;
 	this->targetTemp = temp;
-	EEPROM.put(0, temp);
 }
 
 void GCP::incrementTemp() {
-	int temp = this->getTargetTemp();
+	float temp = this->getTargetTemp();
 	this->setTargetTemp(temp + 0.5);
 }
 
 void GCP::decrementTemp() {
-	int temp = this->getTargetTemp();
+	float temp = this->getTargetTemp();
 	this->setTargetTemp(temp - 0.5);
 }
 
