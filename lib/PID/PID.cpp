@@ -5,7 +5,7 @@
 #include "PID.h"
 
 void PID::initialize(float targetTemp, float actualTemp){
-	runTime = (BOILER_SIZE * (targetTemp - actualTemp) * CP_WATER / HEATER_POWER) / EFFICIENCY; // initially set the boiler to heat for a minimum of this many seconds
+	int runTime = (BOILER_SIZE * (targetTemp - actualTemp) * CP_WATER / HEATER_POWER) / EFFICIENCY; // initially set the boiler to heat for a minimum of this many seconds
 	this->heater_status = true;
 	Serial.printf("target temp: %.1f; actual temp: %.1f; time to heat: %i\n", targetTemp, actualTemp, runTime);
 }
@@ -58,5 +58,5 @@ void PID::PWM(float powerPercent){
 	if(millis() - lastCycleTime >= onTime) {
 		this->heater_status = false;
 	}
-	Serial.printf("lastOnTime: %lu currentTime: %lu powerStatus: %i, on \%: %f \n", lastCycleTime, millis(), this->heater_status, powerPercent);
+	Serial.printf("Last Cycle Time: %lu Current Time: %lu Power Status: %i, Target Wattage: %i \n", lastCycleTime, millis(), this->heater_status, (int) (powerPercent * HEATER_POWER));
 }

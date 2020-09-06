@@ -1,5 +1,4 @@
 // PID.h
-
 #ifndef _PID_h
 #define _PID_h
 
@@ -8,7 +7,6 @@
 #define BOILER_SIZE .1 // 3.5oz = 100 ml
 #define EFFICIENCY .60 // 60% efficiency
 #define CP_WATER 4186.0 // Specific Heat Capacity of Water
-
 #define DUTY_CYCLE 4000 //4 seconds cycle to manage PWM; keep it slow to avoid SSR zero crossing errors
 
 class PID {
@@ -22,7 +20,6 @@ private:
     int td = 0;
     int tu = 0;
 
-    int runTime;
     ulong lastTime;
     ulong lastTu;
     float errSum;
@@ -41,4 +38,3 @@ public:
 };
 
 #endif
-
