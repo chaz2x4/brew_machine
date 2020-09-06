@@ -70,10 +70,11 @@ void OLED::eventListener(){
 }
 
 void OLED::wait (int delay, char* text1, float var1, char* text2, float var2){
+    display.clearDisplay();
+    if(flash) display.printf(text1, var1);
+    else display.printf(text2, var2);
+    
     if((millis() - lastTime) >= delay) {
-        display.clearDisplay();
-        if(flash) display.printf(text1, var1);
-        else display.printf(text2, var2);
         lastTime = millis();
         flash = !flash;
     }

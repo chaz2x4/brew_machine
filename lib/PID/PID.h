@@ -6,7 +6,7 @@
 #include <Arduino.h>
 #define HEATER_POWER 1370 // 1370 watt heating power
 #define BOILER_SIZE .1 // 3.5oz = 100 ml
-#define EFFICIENCY .90 // 90% efficiency
+#define EFFICIENCY .60 // 90% efficiency
 #define CP_WATER 4186.0 // Specific Heat Capacity of Water
 
 class PID {
