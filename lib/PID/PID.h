@@ -6,8 +6,10 @@
 #include <Arduino.h>
 #define HEATER_POWER 1370 // 1370 watt heating power
 #define BOILER_SIZE .1 // 3.5oz = 100 ml
-#define EFFICIENCY .60 // 90% efficiency
+#define EFFICIENCY .60 // 60% efficiency
 #define CP_WATER 4186.0 // Specific Heat Capacity of Water
+
+#define DUTY_CYCLE 4000 //4 seconds cycle to manage PWM; keep it slow to avoid SSR zero crossing errors
 
 class PID {
 private:
@@ -21,18 +23,21 @@ private:
     int tu = 0;
 
     int runTime;
+    ulong lastTime;
+    ulong lastTu;
     float errSum;
-    float lastTime;
     float lastTemp;
+    float lastErr;
     float outputV;
 
-    bool heating_element;
+    ulong lastCycleTime = -1;
+    bool heater_status = true;
+
+    void PWM(float onPercent);
 public:
     void initialize(float targetTemp, float actualTemp);
     void compute(float targetTemp, float actualTemp);
-    void setTunings(float ku, int tu);
-    void setRuntime(int runTime);
-    bool runHeater();
+    bool isHeaterRunning();
 };
 
 #endif

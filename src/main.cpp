@@ -5,7 +5,7 @@ OLED brew_machine;
 void setup() {
 	while (!Serial) ; // wait for serial port to connect. Needed for native USB port only
 	//Primary Mission: start coffee machine
-	Serial.begin(115200);
+	Serial.begin(9600);
 	brew_machine.start();
 	//Secondary Mission: connect to coffee server
 }
@@ -14,6 +14,6 @@ void setup() {
 void loop() {
 	brew_machine.refresh();
 	brew_machine.eventListener();
-	delay(5);
+	delay(100);
 	yield();
 }

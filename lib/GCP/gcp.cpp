@@ -71,7 +71,7 @@ void GCP::update() {
 	float actualTemp = this->getActualTemp();
 
 	temperatureManager.compute(targetTemp, actualTemp);
-	this->heating_switch = temperatureManager.runHeater();
+	this->heating_switch = temperatureManager.isHeaterRunning();
 
 	//Turn on lights if within 1 degree C of target temp
 	float dtemp = targetTemp - actualTemp; //temperature difference
