@@ -9,10 +9,11 @@ GCP::GCP(float targetTemp) {
 }
 
 void GCP::init(float targetTemp){
-	float actualTemp = this->getActualTemp();
-	this->setTargetTemp(targetTemp);
+	this->tempProbe.begin(MAX31865_3WIRE);
 	this->power_light = ON;
-	this->temperatureManager.compute(targetTemp, actualTemp);
+	this->setTargetTemp(targetTemp);
+	float actualTemp = this->getActualTemp();
+	this->temperatureManager.initialize(targetTemp, actualTemp);
 }
 
 GCP::~GCP() {
@@ -40,7 +41,6 @@ void GCP::decrementTemp() {
 	this->setTargetTemp(temp - 0.5);
 }
 
-
 float GCP::getTargetTemp() {
 	return this->targetTemp;
 }
@@ -50,7 +50,8 @@ float GCP::getPX() {
 }
 
 float GCP::getActualTemp() {
-	return this->actualTemp;
+	float temp =  tempProbe.temperature(100, RREF);
+	return temp;
 }
 
 bool GCP::isSteamReady() {
@@ -68,11 +69,13 @@ bool GCP::isPowerOn() {
 void GCP::update() {
 	float targetTemp = this->getTargetTemp();
 	float actualTemp = this->getActualTemp();
-	this->temperatureManager.compute(targetTemp, actualTemp);
+
+	temperatureManager.compute(targetTemp, actualTemp);
+	this->heating_switch = temperatureManager.runHeater();
 
 	//Turn on lights if within 1 degree C of target temp
-	float error = targetTemp - actualTemp;
-	if (error >= -1.0 || error <= 1.0) {
+	float dtemp = targetTemp - actualTemp; //temperature difference
+	if (dtemp >= -1.0 || dtemp <= 1.0) {
 		bool steam_switch = this->steam_switch;
 		if (steam_switch) {
 			this->steam_light = ON; 
@@ -87,4 +90,13 @@ void GCP::update() {
 		this->steam_light = OFF;
 		this->brew_light = OFF;
 	}
+
+	if(actualTemp >= EMERGENCY_SHUTOFF_TEMP) {
+		heating_switch = OFF;
+	}
+
+	digitalWrite(HEATER_PIN, heating_switch);
+	digitalWrite(STEAM_LIGHT_PIN, steam_light);
+	digitalWrite(BREW_LIGHT_PIN, brew_light);
+	digitalWrite(POWER_LIGHT_PIN, power_light);
 }

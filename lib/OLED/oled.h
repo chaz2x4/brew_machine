@@ -16,14 +16,16 @@
 enum mode{brew, steam};
 
 class OLED : public GCP {
+private:
+    Adafruit_SSD1306 display = Adafruit_SSD1306(128, 32, &Wire);
+    mode currentMode = brew;
+    bool isEditable = false;
+    void wait(int delay, char* text1, float var1, char* text2, float var2);
 public:
     void start();
     void eventListener();
     void refresh();
     void changeMode();
-private:
-    mode currentMode = brew;
-    bool isEditable = false;
 };
 
 #endif

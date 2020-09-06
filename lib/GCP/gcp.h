@@ -13,11 +13,13 @@
 
 */
 
+#include <Adafruit_MAX31865.h>
 #include <EEPROM.h>
 #include "PID.h"
 
-#define ON true;
-#define OFF false;
+#define ON HIGH;
+#define OFF LOW;
+
 #define DEFAULT_TARGET_TEMP 95.0
 #define DEFAULT_ACTUAL_TEMP 15.0
 #define MAX_BREW_TEMP 96.0
@@ -25,10 +27,21 @@
 #define MAX_STEAM_TEMP 155.0
 #define MIN_STEAM_TEMP 145.0
 
+#define EMERGENCY_SHUTOFF_TEMP 165.0
+
+#define POWER_LIGHT_PIN 33
+#define BREW_LIGHT_PIN 12
+#define STEAM_LIGHT_PIN 13
+#define HEATER_PIN 27
+#define TEMP_PROBE_READY_PIN 36;
+#define RREF 430
+
 class GCP {
 private:
+    PID temperatureManager;
+    Adafruit_MAX31865 tempProbe = Adafruit_MAX31865(A5);
+
     float targetTemp = DEFAULT_TARGET_TEMP; //95 celcius
-    float actualTemp = DEFAULT_ACTUAL_TEMP; // #4 coffee thermostat; turns off heating element when = targetBrewTemp
     float pressure = 15; 
 
     /* 
@@ -48,11 +61,6 @@ private:
     bool power_light = OFF; // #2 on/off light; turns on with power switch
     bool brew_light = OFF; // #11 pilot light; at the brew temperature
     bool steam_light = OFF;  //at the steam temperature
-
-    // #6 is the heating element
-    // #8 is the solenoid valve
-
-    PID temperatureManager;
 
     void init(float targetTemp);
 

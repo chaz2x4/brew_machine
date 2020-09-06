@@ -4,8 +4,6 @@
 
 #include "oled.h"
 
-Adafruit_SSD1306 display = Adafruit_SSD1306(128, 32, &Wire);
-
 void OLED::start(){
     display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
     display.clearDisplay();
@@ -62,7 +60,7 @@ void OLED::eventListener(){
 
 ulong lastTime = -1;
 bool flash = false;
-void wait (int delay, char* text1, float var1, char* text2, float var2){
+void OLED::wait (int delay, char* text1, float var1, char* text2, float var2){
     if((millis() - lastTime) >= delay) {
         display.clearDisplay();
         if(flash) display.printf(text1, var1);

@@ -2,47 +2,42 @@
 	Setup new PID function that works in the same way that 
 */
 
-
 #include "PID.h"
 
-#define MAX_OUTPUT 100
-#define MIN_OUTPUT 0
+void PID::initialize(float targetTemp, float actualTemp){
+	runTime = (BOILER_SIZE * (targetTemp - actualTemp) * CP_WATER / HEATER_POWER) / EFFICIENCY; // initially set the boiler to heat for a minimum of this many seconds
+	Serial.printf("target temp: %.1f; actual temp: %.1f; time to heat: %i\n", targetTemp, actualTemp, runTime);
+}
 
-void PID::compute(int sp, float pv) {
-	int targetTemp = sp;
-	float actualTemp = pv;
-
+void PID::compute(float targetTemp, float actualTemp) {
+	//find ultimate gain
 	unsigned long now = millis();
 	int timeChange = (now - this->lastTime);
 
+	float pval = 0.05;
+
 	if (timeChange >= runTime) {
-		float error = targetTemp - actualTemp; //Error = setPoint - processVariable e(t) = SP-PV(t). Difference between set temperature and actual temperature
-		float dError = actualTemp - this->lastTemp; // de(t)/dt = change in error. Difference between last temperature at last runtime and current temperature
+		kp = pval * ku;
+		if( ti > 0) {
+			ki = kp / ti;
+		}
+		kd = kp * td;
 
-		float P = error * this->kp;
-		float I = this->iTerm + (this->ki * error); // integral e(T)dT = sum of errors up to this point. 
-		float D = dError * this->kd;
+		float error = targetTemp - actualTemp;
+		float dError  = actualTemp - lastTemp;
 
-		if (I > MAX_OUTPUT) I = MAX_OUTPUT;
-		else if (I < MIN_OUTPUT) I = MIN_OUTPUT;
-
-		float outputV = P + I - D;
-
-		if (outputV > MAX_OUTPUT) outputV = MAX_OUTPUT;
-		else if (outputV < MIN_OUTPUT) outputV = MIN_OUTPUT;
-
-		this->outputV = outputV;
-		this->lastTime = now;
-		this->lastTemp = actualTemp;
-		this->iTerm = I;
+		errSum = errSum + error;
+		outputV = (kp * error) + (ki * errSum) + (kd * dError);
 	}
 }
 
-void PID::setTunings(float kp, float ki, float kd) {
-	int runTime = this->runTime;
-	this->kp = kp;
-	this->ki = ki * runTime;
-	this->kd = kd / runTime;
+bool PID::runHeater() {
+	return heating_element;
+}
+
+void PID::setTunings(float ku, int tu) {
+	this->ku = ku;
+	this->tu = tu;
 }
 
 void PID::setRuntime(int runTime) {
