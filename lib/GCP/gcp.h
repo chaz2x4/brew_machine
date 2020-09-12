@@ -21,7 +21,6 @@
 #define OFF LOW;
 
 #define DEFAULT_TARGET_TEMP 95.0
-#define DEFAULT_ACTUAL_TEMP 15.0
 #define MAX_BREW_TEMP 96.0
 #define MIN_BREW_TEMP 90.0
 #define MAX_STEAM_TEMP 155.0
@@ -40,7 +39,7 @@ private:
     Adafruit_MAX31865 tempProbe = Adafruit_MAX31865(A5);
 
     float targetTemp = DEFAULT_TARGET_TEMP; //95 celcius
-    float pressure = 15; 
+    float pressure = 0.0; 
 
     /* 
         Manual Switch Status

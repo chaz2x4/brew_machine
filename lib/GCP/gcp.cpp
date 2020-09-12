@@ -51,6 +51,17 @@ float GCP::getPX() {
 
 float GCP::getActualTemp() {
 	float temp =  tempProbe.temperature(100, RREF);
+	uint8_t fault = tempProbe.readFault();
+	if (fault) {
+		Serial.print("Fault 0x"); Serial.println(fault, HEX);
+		if (fault & MAX31865_FAULT_HIGHTHRESH) Serial.println("RTD High Threshold");
+		if (fault & MAX31865_FAULT_LOWTHRESH) Serial.println("RTD Low Threshold"); 
+		if (fault & MAX31865_FAULT_REFINLOW) Serial.println("REFIN- > 0.85 x Bias");
+		if (fault & MAX31865_FAULT_REFINHIGH) Serial.println("REFIN- < 0.85 x Bias - FORCE- open");
+		if (fault & MAX31865_FAULT_RTDINLOW) Serial.println("RTDIN- < 0.85 x Bias - FORCE- open");
+		if (fault & MAX31865_FAULT_OVUV) Serial.println("Under/Over voltage");
+		tempProbe.clearFault();
+	}
 	return temp;
 }
 
@@ -69,9 +80,12 @@ bool GCP::isPowerOn() {
 void GCP::update() {
 	float targetTemp = this->getTargetTemp();
 	float actualTemp = this->getActualTemp();
+	float pressure = this->getPX();
 
 	temperatureManager.compute(targetTemp, actualTemp);
 	this->heating_switch = temperatureManager.isHeaterRunning();
+
+	Serial.printf("Set Temp: %0.1f; Actual Temp: %0.1f; Pressure: %0.1f bar \n", targetTemp, actualTemp, pressure);
 
 	//Turn on lights if within 1 degree C of target temp
 	float dtemp = targetTemp - actualTemp; //temperature difference
