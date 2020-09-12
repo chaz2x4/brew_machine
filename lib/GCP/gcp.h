@@ -29,11 +29,9 @@
 
 #define EMERGENCY_SHUTOFF_TEMP 165.0
 
-#define POWER_LIGHT_PIN 33
-#define BREW_LIGHT_PIN 12
 #define STEAM_LIGHT_PIN 13
+#define BREW_LIGHT_PIN 12
 #define HEATER_PIN 27
-#define TEMP_PROBE_READY_PIN 36;
 #define RREF 430
 
 class GCP {

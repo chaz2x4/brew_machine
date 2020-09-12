@@ -98,5 +98,4 @@ void GCP::update() {
 	digitalWrite(HEATER_PIN, heating_switch);
 	digitalWrite(STEAM_LIGHT_PIN, steam_light);
 	digitalWrite(BREW_LIGHT_PIN, brew_light);
-	digitalWrite(POWER_LIGHT_PIN, power_light);
 }
