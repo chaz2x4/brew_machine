@@ -85,7 +85,7 @@ void GCP::update() {
 
 		If steam switch is pushed then the brew lamp is turned off
 		Power defaults to steam relay, brew relay is off
-		Both steam lamp and brew lamp turn on when steam relay & brew relay are off
+		Steam lamp turn on when steam relay is off
 
 		If temperature rises above maximum brew temperature (boiling temp) turn off relay
 		If temperature rises above maixmum safe temperature (10C above steam temp) turn off relay

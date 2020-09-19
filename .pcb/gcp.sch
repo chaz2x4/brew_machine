@@ -792,9 +792,9 @@ Source: http://sharp-world.com/products/device/lineup/data/pdf/datasheet/s102s02
 <attribute name="NAME" x="-294.64" y="-71.12" size="1.778" layer="95" rot="R180"/>
 <attribute name="VALUE" x="-294.64" y="-64.77" size="1.778" layer="96" rot="R180"/>
 </instance>
-<instance part="STEAM_LAMP" gate="G$1" x="-274.32" y="-2.54" smashed="yes" rot="R90">
-<attribute name="NAME" x="-278.765" y="-5.08" size="1.778" layer="95" rot="R90"/>
-<attribute name="VALUE" x="-267.97" y="-5.08" size="1.778" layer="96" rot="R90"/>
+<instance part="STEAM_LAMP" gate="G$1" x="-231.14" y="0" smashed="yes" rot="R90">
+<attribute name="NAME" x="-235.585" y="-2.54" size="1.778" layer="95" rot="R90"/>
+<attribute name="VALUE" x="-224.79" y="-2.54" size="1.778" layer="96" rot="R90"/>
 </instance>
 <instance part="PUMP" gate="G$1" x="-187.96" y="5.08" smashed="yes" rot="R90">
 <attribute name="NAME" x="-193.04" y="0" size="1.778" layer="95" rot="R90"/>
@@ -815,8 +815,8 @@ Source: http://sharp-world.com/products/device/lineup/data/pdf/datasheet/s102s02
 <instance part="U$4" gate="G$1" x="-203.2" y="40.64" smashed="yes" rot="R90">
 <attribute name="VALUE" x="-215.9" y="22.86" size="1.778" layer="96" rot="R90"/>
 </instance>
-<instance part="SSR-40DA1" gate="G$1" x="-251.46" y="7.62" smashed="yes" rot="R90">
-<attribute name="NAME" x="-257.81" y="0" size="1.778" layer="95" font="vector" rot="R90"/>
+<instance part="SSR-40DA1" gate="G$1" x="-246.38" y="7.62" smashed="yes" rot="R90">
+<attribute name="NAME" x="-252.73" y="0" size="1.778" layer="95" font="vector" rot="R90"/>
 </instance>
 </instances>
 <busses>
@@ -857,8 +857,8 @@ Source: http://sharp-world.com/products/device/lineup/data/pdf/datasheet/s102s02
 </segment>
 <segment>
 <pinref part="SSR-40DA1" gate="G$1" pin="K"/>
-<wire x1="-248.92" y1="-2.54" x2="-248.92" y2="-5.08" width="0.1524" layer="91"/>
-<label x="-248.92" y="-5.08" size="1.778" layer="95" rot="R270"/>
+<wire x1="-243.84" y1="-2.54" x2="-243.84" y2="-5.08" width="0.1524" layer="91"/>
+<label x="-243.84" y="-5.08" size="1.778" layer="95" rot="R270"/>
 </segment>
 </net>
 <net name="BOILER_PWM" class="0">
@@ -871,9 +871,9 @@ Source: http://sharp-world.com/products/device/lineup/data/pdf/datasheet/s102s02
 <net name="GREY" class="0">
 <segment>
 <pinref part="STEAM_LAMP" gate="G$1" pin="1"/>
-<wire x1="-274.32" y1="-15.24" x2="-274.32" y2="-7.62" width="0.1524" layer="91"/>
+<wire x1="-231.14" y1="-15.24" x2="-231.14" y2="-5.08" width="0.1524" layer="91"/>
 <pinref part="HEATER2" gate="G$1" pin="P$2"/>
-<wire x1="-261.62" y1="-15.24" x2="-274.32" y2="-15.24" width="0.1524" layer="91"/>
+<wire x1="-261.62" y1="-15.24" x2="-231.14" y2="-15.24" width="0.1524" layer="91"/>
 <wire x1="-254" y1="-27.94" x2="-254" y2="-33.02" width="0.1524" layer="91"/>
 <pinref part="HEATER1" gate="G$1" pin="P$2"/>
 <wire x1="-269.24" y1="-33.02" x2="-269.24" y2="-27.94" width="0.1524" layer="91"/>
@@ -884,16 +884,13 @@ Source: http://sharp-world.com/products/device/lineup/data/pdf/datasheet/s102s02
 <junction x="-261.62" y="-27.94"/>
 <pinref part="SSR-40DA" gate="G$1" pin="DS1"/>
 <wire x1="-259.08" y1="30.48" x2="-261.62" y2="30.48" width="0.1524" layer="91"/>
-<pinref part="STEAM_LAMP" gate="G$1" pin="2"/>
-<wire x1="-274.32" y1="5.08" x2="-274.32" y2="17.78" width="0.1524" layer="91"/>
 <pinref part="COFFEE_LAMP" gate="G$1" pin="1"/>
 <wire x1="-274.32" y1="27.94" x2="-274.32" y2="17.78" width="0.1524" layer="91"/>
 <wire x1="-261.62" y1="30.48" x2="-261.62" y2="17.78" width="0.1524" layer="91"/>
 <wire x1="-261.62" y1="17.78" x2="-261.62" y2="-15.24" width="0.1524" layer="91"/>
 <junction x="-261.62" y="17.78"/>
 <wire x1="-261.62" y1="17.78" x2="-274.32" y2="17.78" width="0.1524" layer="91"/>
-<junction x="-274.32" y="17.78"/>
-<wire x1="-254" y1="17.78" x2="-261.62" y2="17.78" width="0.1524" layer="91"/>
+<wire x1="-248.92" y1="17.78" x2="-261.62" y2="17.78" width="0.1524" layer="91"/>
 <pinref part="SSR-40DA1" gate="G$1" pin="DS1"/>
 </segment>
 </net>
@@ -940,8 +937,8 @@ Source: http://sharp-world.com/products/device/lineup/data/pdf/datasheet/s102s02
 <net name="STEAM_PWM" class="0">
 <segment>
 <pinref part="SSR-40DA1" gate="G$1" pin="A"/>
-<wire x1="-254" y1="-2.54" x2="-254" y2="-5.08" width="0.1524" layer="91"/>
-<label x="-256.54" y="-5.08" size="1.778" layer="95" rot="R270"/>
+<wire x1="-248.92" y1="-2.54" x2="-248.92" y2="-5.08" width="0.1524" layer="91"/>
+<label x="-251.46" y="-5.08" size="1.778" layer="95" rot="R270"/>
 </segment>
 </net>
 <net name="WHITE" class="0">
@@ -1000,11 +997,15 @@ Source: http://sharp-world.com/products/device/lineup/data/pdf/datasheet/s102s02
 </net>
 <net name="N$2" class="0">
 <segment>
-<wire x1="-193.04" y1="17.78" x2="-248.92" y2="17.78" width="0.1524" layer="91"/>
+<wire x1="-193.04" y1="17.78" x2="-231.14" y2="17.78" width="0.1524" layer="91"/>
 <pinref part="U$4" gate="G$1" pin="4"/>
+<wire x1="-231.14" y1="17.78" x2="-243.84" y2="17.78" width="0.1524" layer="91"/>
 <wire x1="-200.66" y1="48.26" x2="-193.04" y2="48.26" width="0.1524" layer="91"/>
 <wire x1="-193.04" y1="48.26" x2="-193.04" y2="17.78" width="0.1524" layer="91"/>
 <pinref part="SSR-40DA1" gate="G$1" pin="DS2"/>
+<pinref part="STEAM_LAMP" gate="G$1" pin="2"/>
+<wire x1="-231.14" y1="7.62" x2="-231.14" y2="17.78" width="0.1524" layer="91"/>
+<junction x="-231.14" y="17.78"/>
 </segment>
 </net>
 </nets>
