@@ -28,9 +28,9 @@
 
 #define EMERGENCY_SHUTOFF_TEMP 165.0
 
-#define STEAM_LIGHT_PIN 13
-#define BREW_LIGHT_PIN 12
 #define HEATER_PIN 27
+#define STEAM_PIN 13
+
 #define RREF 430
 
 class GCP {
@@ -47,17 +47,11 @@ private:
         Hopefully with a powerful enough resistor then this doesn't matter
         It might be possible to detect status through thermocouple
     */
-    bool power_switch; // #1 on/off switch
-    bool coffee_switch; // #9 coffee switch; turns on pump
+
+    /* Relay controlled switches */
+    bool heating_switch; // #3 thermal cut off?
     bool steam_switch; // #7 coffee/steam switch (off when the other is on)
     bool pump_switch; // #10 motor operated water pump; turns on with brew switch
-
-    /* Temperature controlled switches */
-    bool heating_switch; // #3 thermal cut off?
-
-    bool power_light = OFF; // #2 on/off light; turns on with power switch
-    bool brew_light = OFF; // #11 pilot light; at the brew temperature
-    bool steam_light = OFF;  //at the steam temperature
 
     void init(float targetTemp);
 

@@ -10,7 +10,6 @@ GCP::GCP(float targetTemp) {
 
 void GCP::init(float targetTemp){
 	this->tempProbe.begin(MAX31865_3WIRE);
-	this->power_light = ON;
 	this->setTargetTemp(targetTemp);
 	float actualTemp = this->getActualTemp();
 	this->temperatureManager.initialize(targetTemp, actualTemp);
@@ -65,18 +64,6 @@ float GCP::getActualTemp() {
 	return temp;
 }
 
-bool GCP::isSteamReady() {
-	return this->steam_light;
-}
-
-bool GCP::isBrewReady() {
-	return this->brew_light;
-}
-
-bool GCP::isPowerOn() {
-	return this->power_light;
-}
-
 void GCP::update() {
 	float targetTemp = this->getTargetTemp();
 	float actualTemp = this->getActualTemp();
@@ -87,29 +74,11 @@ void GCP::update() {
 
 	Serial.printf("Set Temp: %0.1f; Actual Temp: %0.1f; Pressure: %0.1f bar \n", targetTemp, actualTemp, pressure);
 
-	//Turn on lights if within 1 degree C of target temp
-	float dtemp = targetTemp - actualTemp; //temperature difference
-	if (dtemp >= -1.0 || dtemp <= 1.0) {
-		bool steam_switch = this->steam_switch;
-		if (steam_switch) {
-			this->steam_light = ON; 
-			this->brew_light = OFF;
-		}
-		else { 
-			this->brew_light = ON; 
-			this->steam_light = OFF;
-		}
-	}
-	else {
-		this->steam_light = OFF;
-		this->brew_light = OFF;
-	}
-
 	if(actualTemp >= EMERGENCY_SHUTOFF_TEMP) {
 		heating_switch = OFF;
+		steam_switch = OFF;
 	}
 
 	digitalWrite(HEATER_PIN, heating_switch);
-	digitalWrite(STEAM_LIGHT_PIN, steam_light);
-	digitalWrite(BREW_LIGHT_PIN, brew_light);
+	digitalWrite(STEAM_PIN, steam_switch);
 }
