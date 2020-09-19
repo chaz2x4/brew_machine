@@ -21,10 +21,9 @@
 #define OFF LOW;
 
 #define DEFAULT_TARGET_TEMP 95.0
-#define MAX_BREW_TEMP 96.0
-#define MIN_BREW_TEMP 90.0
-#define MAX_STEAM_TEMP 155.0
-#define MIN_STEAM_TEMP 145.0
+#define TARGET_STEAM_TEMP 155.0
+#define MAX_BREW_TEMP 100.0
+#define MIN_BREW_TEMP 85.0
 
 #define EMERGENCY_SHUTOFF_TEMP 165.0
 
@@ -35,7 +34,8 @@
 
 class GCP {
 private:
-    PID temperatureManager;
+    PID brewTempManager;
+    PID steamTempManager;
     Adafruit_MAX31865 tempProbe = Adafruit_MAX31865(A5);
 
     float targetTemp = DEFAULT_TARGET_TEMP; //95 celcius
@@ -49,9 +49,10 @@ private:
     */
 
     /* Relay controlled switches */
-    bool heating_switch; // #3 thermal cut off?
-    bool steam_switch; // #7 coffee/steam switch (off when the other is on)
-    bool pump_switch; // #10 motor operated water pump; turns on with brew switch
+    bool brew_switch; // brew heater switch
+    bool steam_switch; // coffee/steam switch (off when the other is on)
+    bool pump_switch; // motor operated water pump; turns on with brew switch
+    bool flush_switch; // runs pump for 5 seconds to flush grouphead
 
     void init(float targetTemp);
 
@@ -70,5 +71,6 @@ public:
     void setTargetTemp(float temp); // Sets temperature to control to (setpoint)
     void setTargetTemp(float temp, float minTemp, float maxTemp); // Sets temperature to control to (setpoint), wrap around with a set minimum / maximum temperature
     void update();
+    void PWM(float powerPercent);
 };
 #endif

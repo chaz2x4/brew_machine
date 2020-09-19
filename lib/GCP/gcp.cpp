@@ -12,7 +12,8 @@ void GCP::init(float targetTemp){
 	this->tempProbe.begin(MAX31865_3WIRE);
 	this->setTargetTemp(targetTemp);
 	float actualTemp = this->getActualTemp();
-	this->temperatureManager.initialize(targetTemp, actualTemp);
+	this->brewTempManager.initialize(targetTemp, actualTemp);
+	this->steamTempManager.initialize(TARGET_STEAM_TEMP, actualTemp);
 }
 
 GCP::~GCP() {
@@ -69,16 +70,31 @@ void GCP::update() {
 	float actualTemp = this->getActualTemp();
 	float pressure = this->getPX();
 
-	temperatureManager.compute(targetTemp, actualTemp);
-	this->heating_switch = temperatureManager.isHeaterRunning();
+	brewTempManager.compute(targetTemp, actualTemp);
+	this->brew_switch = brewTempManager.isHeaterRunning();
+
+	steamTempManager.compute(TARGET_STEAM_TEMP, actualTemp);
+	this->steam_switch = steamTempManager.isHeaterRunning();
 
 	Serial.printf("Set Temp: %0.1f; Actual Temp: %0.1f; Pressure: %0.1f bar \n", targetTemp, actualTemp, pressure);
 
-	if(actualTemp >= EMERGENCY_SHUTOFF_TEMP) {
-		heating_switch = OFF;
-		steam_switch = OFF;
-	}
+	/* 
+		Brew Relay and Steam Relay will always be calculating
+		When power switch is on the heater will heat until it gets to targetBrewtemp
+		Brew Lamp will turn on once the brew relay is off (once target temp is reached)
 
-	digitalWrite(HEATER_PIN, heating_switch);
+		If steam switch is pushed then the brew lamp is turned off
+		Power defaults to steam relay, brew relay is off
+		Both steam lamp and brew lamp turn on when steam relay & brew relay are off
+
+		If temperature rises above maximum brew temperature (boiling temp) turn off relay
+		If temperature rises above maixmum safe temperature (10C above steam temp) turn off relay
+
+	*/
+	if(actualTemp > MAX_BREW_TEMP) brew_switch = OFF;
+	if(actualTemp >= EMERGENCY_SHUTOFF_TEMP) steam_switch = OFF;
+
+	digitalWrite(HEATER_PIN, brew_switch);
 	digitalWrite(STEAM_PIN, steam_switch);
 }
+
