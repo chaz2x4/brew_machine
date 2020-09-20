@@ -45,7 +45,7 @@ bool PID::isHeaterRunning() {
 
 /* 
 	PWM process plant that varies the wattage down to 
-	We'll use a 4 second cycle which should result in a 200ms off cycle at 0.05 power
+	We'll use a 0.5 second cycle which should result in a 1.666% resolution
 */
 void PID::PWM(float powerPercent){
 	long onTime = DUTY_CYCLE * powerPercent;

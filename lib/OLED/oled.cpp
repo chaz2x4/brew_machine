@@ -98,14 +98,14 @@ void OLED::refresh(){
     display.setCursor(13, 0);
     if(this->currentMode == brew) {
         if(this->isEditable) {
-            wait(400, (char *)("Set Brew: %.1f C"), this->getTargetTemp(), (char *)("Set Brew: "), 0x0);
+            wait(500, (char *)("Set Brew: %.1f C"), this->getTargetTemp(), (char *)("Set Brew: "), 0x0);
         }
         else {
-            wait(1900, (char *)("Pressure: %.1f bar\n"), this->getPX(), (char *)("Temp: \n %.1f C\n"), this->getActualTemp());
+            wait(2000, (char *)("Pressure: %.1f bar\n"), this->getPX(), (char *)("Temp: \n %.1f C\n"), this->getActualTemp());
         }
     }
     if(this->currentMode == steam) {
-        wait(900, (char *)("Steaming. %.1f C\n"), this->getActualTemp(), (char *)("Steaming  %.1f C\n"), this->getActualTemp());
+        wait(1000, (char *)("Steaming. %.1f C\n"), this->getActualTemp(), (char *)("Steaming  %.1f C\n"), this->getActualTemp());
     }
     display.display();
 }

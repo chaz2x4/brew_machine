@@ -7,7 +7,7 @@
 #define BOILER_SIZE .1 // 3.5oz = 100 ml
 #define EFFICIENCY .60 // 60% efficiency
 #define CP_WATER 4186.0 // Specific Heat Capacity of Water
-#define DUTY_CYCLE 4000 //4 seconds cycle to manage PWM; keep it slow to avoid SSR zero crossing errors
+#define DUTY_CYCLE 500 //500ms cycle time manage PWM;
 
 class PID {
 private:
