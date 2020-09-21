@@ -17,16 +17,24 @@ void PID::compute(float targetTemp, float actualTemp){
 	if(millis() - lastCycleTime >= DUTY_CYCLE) {
 		//Record the value of proportional gain and check if it matches the last ultimate gain to determine oscillations
 		if(actualTemp > targetTemp) {
-			if(kp == ku) tu = millis() - lastPeriodTime;
-			ku = kp;
-			kp = 0;
-			lastPeriodTime = millis();
+			if(kp > 0 && tu == 0) {
+				if(kp == ku) {
+					if(millis() - lastTime == periodTime) {
+						tu = periodTime;
+					}
+					periodTime = millis() - lastTime;
+				}
+				ku = kp;
+				kp = 0; //if stable oscillation isn't found then reset proportional gain
+				lastTime = millis();
+			}
 		}
+		if(actualTemp < targetTemp && tu == 0) kp = kp + 0.01; //slow increase proportional gain on every duty cycle; Results in 5 seconds to get to maximum heater output at an error of 1.0
+		Serial.printf("Kp: %f Ku: %f periodTime: %lu Tu: %lu Temp: %f\n", kp, ku, periodTime, tu, actualTemp);
 		lastTemp = actualTemp;
-		kp = kp + 0.01; //slow increase proportional gain on every duty cycle; Results in 5 seconds to get to maximum heater output at an error of 1.0
 	}
 
-	if(ku > 0) {
+	if(tu > 0) {
 		//Use the Pessen Integration Rule to determine ti and td
 		float ki = 0.0;
 		float kd = 0.0;
@@ -59,7 +67,7 @@ void PID::PWM(float powerPercent){
 	if(powerPercent < 0.0) powerPercent = 0;
 	long onTime = DUTY_CYCLE * powerPercent;
 	if(millis() - lastCycleTime >= DUTY_CYCLE) {
-		lastCycleTime = millis();
+		this->lastCycleTime = millis();
 		this->heater_status = true;
 	}
 	if(millis() - lastCycleTime >= onTime) {
