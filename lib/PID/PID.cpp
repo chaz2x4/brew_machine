@@ -8,43 +8,34 @@ void PID::initialize(float targetTemp, float actualTemp){
 	this->heater_status = true;
 }
 
-void PID::compute(float targetTemp, float actualTemp) {
-	//find ultimate gain by recording the last time we got above sp, and how long the curve was above sp
-	if(targetTemp > actualTemp && heater_status) {
-		this->lastTime = millis();
-		this->lastErr = targetTemp - actualTemp;
-		this->heater_status = true;
-	}
-	if(targetTemp < actualTemp && !heater_status) {
-		this->heater_status = false;
-		tu = millis() - this->lastTime;
-	}
-
-	//if new tu is within 5% of the last tu, then we're considered stable. set ku to the difference
+void PID::compute(float targetTemp, float actualTemp){
 	float error = targetTemp - actualTemp;
-	if(((lastErr * .95) - tu) > 0 && ((lastErr * 1.05) + tu) < 0){
-		ku = error;
-	}
-	float pval = 1;
-	
-	kp = pval * ku;
-	if( ti > 0) {
-		ki = kp / ti;
-	}
-	kd = kp * td;
-	float dError  = actualTemp - lastTemp;
-	errSum = errSum + error;
-	outputV = (kp * error) + (ki * errSum) + (kd * dError);
+	float dErr = lastErr - error;
+	float ki = 0.0;
+	float kd = 0.0;
 
+	//Use the Pessen Integration Rule to determine ti and td
+	float kp = (7 * ku) / 10.0;
+	float ti = (2 * tu) / 5.0;
+	float td = (3 * tu) / 20.0;
+
+	if ( ti > 0 ) ki = kp / ti;
+	kd = kp * td;
+
+	lastErr = error;
+	lastTemp = actualTemp;
+	errSum = errSum + error;
+
+	float outputV = (kp * error) + (ki * errSum) + (kd * dErr);
 	PWM(outputV);
 }
 
-bool PID::isHeaterRunning() {
+bool PID::isHeaterRunning(){
 	return heater_status;
 }
 
 /* 
-	PWM process plant that varies the wattage down to 
+	PWM process plant that varies the wattage
 	We'll use a 0.5 second cycle which should result in a 1.666% resolution
 */
 void PID::PWM(float powerPercent){
