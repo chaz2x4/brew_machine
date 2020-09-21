@@ -76,8 +76,6 @@ void GCP::update() {
 	steamTempManager.compute(TARGET_STEAM_TEMP, actualTemp);
 	this->steam_switch = steamTempManager.isHeaterRunning();
 
-	Serial.printf("Set Temp: %0.1f; Actual Temp: %0.1f; Pressure: %0.1f bar \n", targetTemp, actualTemp, pressure);
-
 	/* 
 		Brew Relay and Steam Relay will always be calculating
 		When power switch is on the heater will heat until it gets to targetBrewtemp

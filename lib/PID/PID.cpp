@@ -58,7 +58,6 @@ void PID::PWM(float powerPercent){
 	if(powerPercent > 1.0) powerPercent = 1;
 	if(powerPercent < 0.0) powerPercent = 0;
 	long onTime = DUTY_CYCLE * powerPercent;
-	Serial.printf("Output: %0.1f, On Time: %l \n", powerPercent * 100.0, onTime);
 	if(millis() - lastCycleTime >= DUTY_CYCLE) {
 		lastCycleTime = millis();
 		this->heater_status = true;
