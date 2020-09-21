@@ -36,6 +36,7 @@ void PID::compute(float targetTemp, float actualTemp){
 
 	if(tu > 0) {
 		//Use the Pessen Integration Rule to determine ti and td
+		if(kp = 0) tu = 0;
 		float ki = 0.0;
 		float kd = 0.0;
 		float ti = (2 * tu) / 5.0;
