@@ -11,22 +11,38 @@ void PID::initialize(float targetTemp, float actualTemp){
 void PID::compute(float targetTemp, float actualTemp){
 	float error = targetTemp - actualTemp;
 	float dErr = lastErr - error;
-	float ki = 0.0;
-	float kd = 0.0;
+	float outputV = 1; //Set heater to maximum value initially to get things started
 
-	//Use the Pessen Integration Rule to determine ti and td
-	float kp = (7 * ku) / 10.0;
-	float ti = (2 * tu) / 5.0;
-	float td = (3 * tu) / 20.0;
+	//Find ku
+	if(millis() - lastCycleTime >= DUTY_CYCLE) {
+		//Record the value of proportional gain and check if it matches the last ultimate gain to determine oscillations
+		if(actualTemp > targetTemp) {
+			if(kp == ku) tu = millis() - lastPeriodTime;
+			ku = kp;
+			kp = 0;
+			lastPeriodTime = millis();
+		}
+		lastTemp = actualTemp;
+		kp = kp + 0.01; //slow increase proportional gain on every duty cycle; Results in 5 seconds to get to maximum heater output at an error of 1.0
+	}
 
-	if ( ti > 0 ) ki = kp / ti;
-	kd = kp * td;
+	if(ku > 0) {
+		//Use the Pessen Integration Rule to determine ti and td
+		float ki = 0.0;
+		float kd = 0.0;
+		float ti = (2 * tu) / 5.0;
+		float td = (3 * tu) / 20.0;
 
-	lastErr = error;
-	lastTemp = actualTemp;
-	errSum = errSum + error;
+		kp = (7 * ku) / 10.0;
+		if ( ti > 0 ) ki = kp / ti;
+		kd = kp * td;
 
-	float outputV = (kp * error) + (ki * errSum) + (kd * dErr);
+		lastErr = error;
+		errSum = errSum + error;
+
+		outputV = (kp * error) + (ki * errSum) + (kd * dErr);
+	}
+
 	PWM(outputV);
 }
 
@@ -39,7 +55,10 @@ bool PID::isHeaterRunning(){
 	We'll use a 0.5 second cycle which should result in a 1.666% resolution
 */
 void PID::PWM(float powerPercent){
+	if(powerPercent > 1.0) powerPercent = 1;
+	if(powerPercent < 0.0) powerPercent = 0;
 	long onTime = DUTY_CYCLE * powerPercent;
+	Serial.printf("Output: %0.1f, On Time: %l \n", powerPercent * 100.0, onTime);
 	if(millis() - lastCycleTime >= DUTY_CYCLE) {
 		lastCycleTime = millis();
 		this->heater_status = true;

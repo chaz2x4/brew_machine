@@ -8,8 +8,10 @@
 
 class PID {
 private:
+    float kp = 0.0; // Proportional gain
     float ku = 0.0; // Ultimate Gain = Kp at neutral stability
-    int tu = 0; // Neutral stability period
+    ulong tu = -1; // Neutral stability period
+    ulong lastPeriodTime = -1; //time the last ku oscillation started
 
     float errSum;
     float lastTemp;
