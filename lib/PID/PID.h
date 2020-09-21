@@ -4,7 +4,11 @@
 
 #include <Arduino.h>
 #define HEATER_POWER 1370 // 1370 watt heating power
-#define DUTY_CYCLE 500 //500ms cycle time manage PWM;
+#define DUTY_PERIOD 500 //500ms cycle time manage PWM;
+
+#define PWM_FREQUENCY 2048
+#define PWM_CHANNEL 0
+#define PWM_RESOLUTION 10
 
 class PID {
 private:
@@ -18,14 +22,11 @@ private:
     float lastTemp;
     float lastErr;
 
+    ulong fullDutyCycle = -1;
     ulong lastCycleTime = -1;
-    bool heater_status = true;
-
-    void PWM(float onPercent);
 public:
-    void initialize(float targetTemp, float actualTemp);
+    void initialize(int pwm_pin, float targetTemp, float actualTemp);
     void compute(float targetTemp, float actualTemp);
-    bool isHeaterRunning();
 };
 
 #endif

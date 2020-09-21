@@ -8,12 +8,16 @@ GCP::GCP(float targetTemp) {
 	init(targetTemp);
 }
 
+void GCP::init(){
+	init(DEFAULT_TARGET_TEMP);
+}
+
 void GCP::init(float targetTemp){
 	this->tempProbe.begin(MAX31865_3WIRE);
 	this->setTargetTemp(targetTemp);
 	float actualTemp = this->getActualTemp();
-	this->brewTempManager.initialize(targetTemp, actualTemp);
-	this->steamTempManager.initialize(TARGET_STEAM_TEMP, actualTemp);
+	this->brewTempManager.initialize(HEATER_PIN, targetTemp, actualTemp);
+	this->steamTempManager.initialize(STEAM_PIN, TARGET_STEAM_TEMP, actualTemp);
 }
 
 GCP::~GCP() {
@@ -71,10 +75,8 @@ void GCP::update() {
 	float pressure = this->getPX();
 
 	brewTempManager.compute(targetTemp, actualTemp);
-	this->brew_switch = brewTempManager.isHeaterRunning();
 
 	steamTempManager.compute(TARGET_STEAM_TEMP, actualTemp);
-	this->steam_switch = steamTempManager.isHeaterRunning();
 
 	/* 
 		Brew Relay and Steam Relay will always be calculating
@@ -89,10 +91,7 @@ void GCP::update() {
 		If temperature rises above maixmum safe temperature (10C above steam temp) turn off relay
 
 	*/
-	if(actualTemp > MAX_BREW_TEMP) brew_switch = OFF;
-	if(actualTemp >= EMERGENCY_SHUTOFF_TEMP) steam_switch = OFF;
-
-	digitalWrite(HEATER_PIN, brew_switch);
-	digitalWrite(STEAM_PIN, steam_switch);
+	if(actualTemp > MAX_BREW_TEMP) digitalWrite(HEATER_PIN, OFF);
+	if(actualTemp >= EMERGENCY_SHUTOFF_TEMP) digitalWrite(STEAM_PIN, OFF);
 }
 

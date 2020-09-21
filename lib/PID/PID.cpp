@@ -4,17 +4,19 @@
 
 #include "PID.h"
 
-void PID::initialize(float targetTemp, float actualTemp){
-	this->heater_status = true;
+void PID::initialize(int pwm_pin, float targetTemp, float actualTemp){
+	ledcSetup(PWM_CHANNEL, PWM_FREQUENCY, PWM_RESOLUTION);
+	ledcAttachPin(pwm_pin, PWM_CHANNEL);
+	this->fullDutyCycle = pow(2, PWM_RESOLUTION);
 }
 
 void PID::compute(float targetTemp, float actualTemp){
 	float error = targetTemp - actualTemp;
 	float dErr = lastErr - error;
-	float outputV = 1; //Set heater to maximum value initially to get things started
+	float outputV = fullDutyCycle; //Set heater to maximum value initially to get things started
 
 	//Find ku
-	if(millis() - lastCycleTime >= DUTY_CYCLE) {
+	if(millis() - lastCycleTime >= DUTY_PERIOD) {
 		//Record the value of proportional gain and check if it matches the last ultimate gain to determine oscillations
 		if(actualTemp > targetTemp) {
 			if(kp > 0 && tu == 0) {
@@ -29,7 +31,7 @@ void PID::compute(float targetTemp, float actualTemp){
 				lastTime = millis();
 			}
 		}
-		if(actualTemp < targetTemp && tu == 0) kp = kp + 0.01; //slow increase proportional gain on every duty cycle; Results in 5 seconds to get to maximum heater output at an error of 1.0
+		if(actualTemp < targetTemp && tu == 0) kp = kp + 0.1; //slow increase proportional gain on every duty cycle; Results in 5 seconds to get to maximum heater output at an error of 1.0
 		Serial.printf("Kp: %f Ku: %f periodTime: %lu Tu: %lu Temp: %f\n", kp, ku, periodTime, tu, actualTemp);
 		lastTemp = actualTemp;
 	}
@@ -52,26 +54,8 @@ void PID::compute(float targetTemp, float actualTemp){
 		outputV = (kp * error) + (ki * errSum) + (kd * dErr);
 	}
 
-	PWM(outputV);
-}
+	if(outputV > fullDutyCycle) outputV = fullDutyCycle;
+	if(outputV < 0) outputV = 0;
 
-bool PID::isHeaterRunning(){
-	return heater_status;
-}
-
-/* 
-	PWM process plant that varies the wattage
-	We'll use a 0.5 second cycle which should result in a 1.666% resolution
-*/
-void PID::PWM(float powerPercent){
-	if(powerPercent > 1.0) powerPercent = 1;
-	if(powerPercent < 0.0) powerPercent = 0;
-	long onTime = DUTY_CYCLE * powerPercent;
-	if(millis() - lastCycleTime >= DUTY_CYCLE) {
-		this->lastCycleTime = millis();
-		this->heater_status = true;
-	}
-	if(millis() - lastCycleTime >= onTime) {
-		this->heater_status = false;
-	}
+	ledcWrite(PWM_CHANNEL, outputV);
 }
