@@ -20,7 +20,7 @@ void PID::compute(float targetTemp, float actualTemp){
 		//Record the value of proportional gain and check if it matches the last ultimate gain to determine oscillations
 		if(actualTemp > targetTemp) {
 			if(kp > 0 && tu == 0) {
-				if(kp == lastKp && period == lastPeriod) {
+				if(kp == lastKp && (abs(period - lastPeriod) < 1000)) {
 					tu = period;
 					ku = kp;
 				}
