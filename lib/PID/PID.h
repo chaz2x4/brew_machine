@@ -13,10 +13,13 @@
 class PID {
 private:
     float kp = 0.0; // Proportional gain
+    float lastKp = 0.0; // Used to compare oscillations to determine ku
+    ulong period = 0; // Period of oscillation
+    ulong lastPeriod = 0; // Used to compare oscillations to determine tu
+    ulong lastTime;
+    
     float ku = 0.0; // Ultimate Gain = Kp at neutral stability
     ulong tu = 0; // Neutral stability period
-    ulong lastTime = 0; //time the last oscillation started
-    ulong periodTime = 0; //period of last oscillation
 
     float errSum;
     float lastTemp;

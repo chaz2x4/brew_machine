@@ -20,31 +20,30 @@ void PID::compute(float targetTemp, float actualTemp){
 		//Record the value of proportional gain and check if it matches the last ultimate gain to determine oscillations
 		if(actualTemp > targetTemp) {
 			if(kp > 0 && tu == 0) {
-				if(kp == ku) {
-					if(millis() - lastTime == periodTime) {
-						tu = periodTime;
-					}
-					periodTime = millis() - lastTime;
+				if(kp == lastKp && period == lastPeriod) {
+					tu = period;
+					ku = kp;
 				}
-				ku = kp;
-				kp = 0; //if stable oscillation isn't found then reset proportional gain
+				lastPeriod = period;
+				period = millis() - lastTime;
+				lastKp = kp;
+				kp = 0;
 				lastTime = millis();
 			}
+			outputV = 0;
 		}
-		if(actualTemp < targetTemp && tu == 0) kp = kp + 0.1; //slow increase proportional gain on every duty cycle; Results in 5 seconds to get to maximum heater output at an error of 1.0
-		Serial.printf("Kp: %f Ku: %f periodTime: %lu Tu: %lu Temp: %f\n", kp, ku, periodTime, tu, actualTemp);
-		lastTemp = actualTemp;
+		Serial.printf("Kp: %f lastKp: %f period: %lu lastPeriod: %lu ", kp, lastKp, period, lastPeriod);
+		if(actualTemp < targetTemp && tu == 0) kp = kp + 0.05; //slow increase proportional gain on every duty cycle; Results in 5 seconds to get to maximum heater output at an error of 1.0
 	}
 
-	if(tu > 0) {
-		//Use the Pessen Integration Rule to determine ti and td
-		if(kp == 0) tu = 0;
+	//Use the Ziegler Nichols Classic PID calculations
+	if(ku > 0 && tu > 0) {
 		float ki = 0.0;
 		float kd = 0.0;
-		float ti = (2 * tu) / 5.0;
-		float td = (3 * tu) / 20.0;
+		float ti =  tu / 2.0;
+		float td =  tu / 8.0;
 
-		kp = (7 * ku) / 10.0;
+		kp = (3 * ku) / 5.0;
 		if ( ti > 0 ) ki = kp / ti;
 		kd = kp * td;
 
@@ -53,6 +52,8 @@ void PID::compute(float targetTemp, float actualTemp){
 
 		outputV = (kp * error) + (ki * errSum) + (kd * dErr);
 	}
+
+	Serial.printf("TargetTemp: %f Temp: %f OutputV: %f\n", targetTemp, actualTemp, outputV);
 
 	if(outputV > fullDutyCycle) outputV = fullDutyCycle;
 	if(outputV < 0) outputV = 0;
