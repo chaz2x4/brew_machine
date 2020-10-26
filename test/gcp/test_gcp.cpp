@@ -3,7 +3,7 @@
 
 GCP bm;
 
-void test_constructor(){
+void test_constructor() {
     GCP bm(92.0);
     TEST_ASSERT_EQUAL_FLOAT(92.0, bm.getTargetTemp());
 }
@@ -18,21 +18,21 @@ void test_setTargetTemp() {
     bm.setTargetTemp(DEFAULT_TARGET_TEMP);
 }
 
-void test_incrementTemp(){
+void test_incrementTemp() {
     float targetTemp = bm.getTargetTemp() + 0.5;
     bm.incrementTemp();
     TEST_ASSERT_EQUAL_FLOAT(targetTemp, bm.getTargetTemp());
     bm.setTargetTemp(DEFAULT_TARGET_TEMP);
 }
 
-void test_decrementTemp(){
+void test_decrementTemp() {
     float targetTemp = bm.getTargetTemp() - 0.5;
     bm.decrementTemp();
     TEST_ASSERT_EQUAL_FLOAT(targetTemp, bm.getTargetTemp());
     bm.setTargetTemp(DEFAULT_TARGET_TEMP);
 }
 
-void test_maxBrewTemp(){
+void test_maxBrewTemp() {
     bm.setTargetTemp(MAX_BREW_TEMP + 10);
     TEST_ASSERT_EQUAL_FLOAT(MAX_BREW_TEMP, bm.getTargetTemp());
     bm.incrementTemp();
@@ -40,7 +40,7 @@ void test_maxBrewTemp(){
     bm.setTargetTemp(DEFAULT_TARGET_TEMP);
 }
 
-void test_minBrewTemp(){
+void test_minBrewTemp() {
     bm.setTargetTemp(MIN_BREW_TEMP - 10);
     TEST_ASSERT_EQUAL_FLOAT(MIN_BREW_TEMP, bm.getTargetTemp());
     bm.decrementTemp();
