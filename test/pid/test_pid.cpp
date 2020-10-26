@@ -30,7 +30,7 @@ void test_isProperlyHeating() {
     double m = .1; // Boiler capacity of GCP in kg https://www.gaggia-na.com/products/gaggia-classic-pro#specs
     double dt = 0.25; // Simulated step time
 
-    for(int k = 0; k < (1800 / dt); k++) { // 30 second simulated time
+    for(int k = 0; k < (1800 / dt); k++) { // 30 minute simulated time
         int t = k * dt;
         output = pid.compute(TARGET_TEMP, actualTemp);
         
