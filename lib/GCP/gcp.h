@@ -30,10 +30,11 @@
 #define HEATER_PIN 27
 #define STEAM_PIN 13
 
-#define PWM_FREQUENCY 2048
-#define PWM_BREW_CHANNEL 0
+#define PWM_FREQUENCY 10 // PWM Frequency of 10Hz
+#define PWM_RESOLUTION 10 // Resolution of 10 bits
+#define PWM_DUTY_CYCLE 1023 // 10-bit resolution results in a duty cycle of 0 - 1023
+#define PWM_BREW_CHANNEL 0 // Different PWM channels to control different relays
 #define PWM_STEAM_CHANNEL 1
-#define PWM_RESOLUTION 10
 
 #define RREF 430
 

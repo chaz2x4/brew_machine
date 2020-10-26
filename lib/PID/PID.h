@@ -3,7 +3,6 @@
 #define _PID_h
 
 #include <Arduino.h>
-#define MAX_HEATER_POWER 1370 // 1370 watt heating power
 #define MAX_TERM_VALUE 1000
 
 class PID {

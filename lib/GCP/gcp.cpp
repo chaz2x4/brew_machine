@@ -79,6 +79,9 @@ void GCP::update() {
 	double brew_output = brewTempManager.compute(targetTemp, actualTemp);
 	double steam_output = steamTempManager.compute(TARGET_STEAM_TEMP, actualTemp);
 
+	Serial.printf("\nActual Temp: %f\n", actualTemp);
+	Serial.printf("Brew  Temp: %f PWM %%: %f\n", targetTemp, brew_output * 100);
+	Serial.printf("Steam Temp: %f PWM %%: %f\n", TARGET_STEAM_TEMP, steam_output * 100);
 	/* 
 		Brew Relay and Steam Relay will always be calculating
 		When power switch is on the heater will heat until it gets to targetBrewtemp
@@ -95,8 +98,8 @@ void GCP::update() {
 	*/
 
 	/****** PWM IS A WORK IN PROGRESS ******/
-	ledcWrite(PWM_BREW_CHANNEL, brew_output);
-	ledcWrite(PWM_STEAM_CHANNEL, steam_output);
+	ledcWrite(PWM_BREW_CHANNEL, brew_output * PWM_DUTY_CYCLE);
+	ledcWrite(PWM_STEAM_CHANNEL, steam_output * PWM_DUTY_CYCLE);
 
 	if(actualTemp >= EMERGENCY_SHUTOFF_TEMP) digitalWrite(STEAM_PIN, OFF);
 }

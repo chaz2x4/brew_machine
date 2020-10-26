@@ -28,14 +28,10 @@ double PID::compute(double targetTemp, double actualTemp){
 
 	lastErr = error;
 	double pV = P + I + D;
-	Serial.println(millis());
-	Serial.printf("Error: %f Rate of Error: %f P: %f I: %f D: %f \n", error, dErr, P, I, D);
 
 	if(pV < 0) pV = 0;
 	else if(pV > MAX_TERM_VALUE) pV = MAX_TERM_VALUE;
 
-	double output = ( pV / 1000 ) * MAX_HEATER_POWER;
-	Serial.printf("TargetTemp: %f Temp: %f OutputV: %f\n", targetTemp, actualTemp, output);
-	
+	double output =  pV / 1000;
 	return output;
 }
