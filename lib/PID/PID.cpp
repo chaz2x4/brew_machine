@@ -4,59 +4,43 @@
 
 #include "PID.h"
 
-void PID::initialize(int pwm_pin, float targetTemp, float actualTemp){
+void PID::initialize(int pwm_pin, double targetTemp, double actualTemp){
 	ledcSetup(PWM_CHANNEL, PWM_FREQUENCY, PWM_RESOLUTION);
 	ledcAttachPin(pwm_pin, PWM_CHANNEL);
-	this->fullDutyCycle = pow(2, PWM_RESOLUTION);
 }
 
-void PID::compute(float targetTemp, float actualTemp){
-	float error = targetTemp - actualTemp;
-	float dErr = lastErr - error;
-	float outputV = fullDutyCycle; //Set heater to maximum value initially to get things started
+void PID::tune(double kp, double ki, double kd){
+	this->kp = kp;
+	this->ki = ki;
+	this->kd = kd;
+}
 
-	//Find ku
-	if(millis() - lastCycleTime >= DUTY_PERIOD) {
-		//Record the value of proportional gain and check if it matches the last ultimate gain to determine oscillations
-		if(actualTemp > targetTemp) {
-			if(kp > 0 && tu == 0) {
-				if(kp == lastKp && (abs(period - lastPeriod) < 1000)) {
-					tu = period;
-					ku = kp;
-				}
-				lastPeriod = period;
-				period = millis() - lastTime;
-				lastKp = kp;
-				kp = 0;
-				lastTime = millis();
-			}
-			outputV = 0;
-		}
-		Serial.printf("Kp: %f lastKp: %f period: %lu lastPeriod: %lu ", kp, lastKp, period, lastPeriod);
-		if(actualTemp < targetTemp && tu == 0) kp = kp + 0.05; //slow increase proportional gain on every duty cycle; Results in 5 seconds to get to maximum heater output at an error of 1.0
-	}
+void PID::compute(double targetTemp, double actualTemp){
+	double error = targetTemp - actualTemp;
+	double dErr = error - lastErr;
 
-	//Use the Ziegler Nichols Classic PID calculations
-	if(ku > 0 && tu > 0) {
-		float ki = 0.0;
-		float kd = 0.0;
-		float ti =  tu / 2.0;
-		float td =  tu / 8.0;
+	P = kp  * error;
+	if(P > MAX_TERM_VALUE) P = MAX_TERM_VALUE;
+	else if(P < -1 * MAX_TERM_VALUE) P = -1 * MAX_TERM_VALUE;
 
-		kp = (3 * ku) / 5.0;
-		if ( ti > 0 ) ki = kp / ti;
-		kd = kp * td;
+	I = I + (ki * error);
+	if(I > MAX_TERM_VALUE) I = MAX_TERM_VALUE;
+	else if(I < -1 * MAX_TERM_VALUE) I = -1 * MAX_TERM_VALUE;
 
-		lastErr = error;
-		errSum = errSum + error;
+	D =  kd * dErr;
+	if(D > MAX_TERM_VALUE) D = MAX_TERM_VALUE;
+	else if(D < -1 * MAX_TERM_VALUE) D = -1 * MAX_TERM_VALUE;
 
-		outputV = (kp * error) + (ki * errSum) + (kd * dErr);
-	}
+	lastErr = error;
+	double pV = P + I + D;
+	Serial.println(millis());
+	Serial.printf("Error: %f Rate of Error: %f P: %f I: %f D: %f \n", error, dErr, P, I, D);
 
-	Serial.printf("TargetTemp: %f Temp: %f OutputV: %f\n", targetTemp, actualTemp, outputV);
+	if(pV < 0) pV = 0;
+	else if(pV > MAX_TERM_VALUE) pV = MAX_TERM_VALUE;
 
-	if(outputV > fullDutyCycle) outputV = fullDutyCycle;
-	if(outputV < 0) outputV = 0;
+	double output =  ( pV / 1000 ) * MAX_HEATER_POWER;
+	Serial.printf("TargetTemp: %f Temp: %f OutputV: %f\n", targetTemp, actualTemp, output);
 
-	ledcWrite(PWM_CHANNEL, outputV);
+	ledcWrite(PWM_CHANNEL, output);
 }

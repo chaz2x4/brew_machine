@@ -3,33 +3,30 @@
 #define _PID_h
 
 #include <Arduino.h>
-#define HEATER_POWER 1370 // 1370 watt heating power
+#define MAX_HEATER_POWER 1370 // 1370 watt heating power
 #define DUTY_PERIOD 500 //500ms cycle time manage PWM;
 
 #define PWM_FREQUENCY 2048
 #define PWM_CHANNEL 0
 #define PWM_RESOLUTION 10
 
+#define MAX_TERM_VALUE 1000
+
 class PID {
 private:
-    float kp = 0.0; // Proportional gain
-    float lastKp = 0.0; // Used to compare oscillations to determine ku
-    ulong period = 0; // Period of oscillation
-    ulong lastPeriod = 0; // Used to compare oscillations to determine tu
-    ulong lastTime;
-    
-    float ku = 0.0; // Ultimate Gain = Kp at neutral stability
-    ulong tu = 0; // Neutral stability period
+    double kp = 25;     // Proportional gain
+    double ki = 1000;   // Integral gain
+    double kd = 9;      // Derivative gain
 
-    float errSum;
-    float lastTemp;
-    float lastErr;
+    double P = 0.0;
+    double I = 0.0;
+    double D = 0.0;
 
-    ulong fullDutyCycle = -1;
-    ulong lastCycleTime = -1;
+    double lastErr;
 public:
-    void initialize(int pwm_pin, float targetTemp, float actualTemp);
-    void compute(float targetTemp, float actualTemp);
+    void initialize(int pwm_pin, double targetTemp, double actualTemp);
+    void tune(double kp, double ki, double kd);
+    void compute(double targetTemp, double actualTemp);
 };
 
 #endif
