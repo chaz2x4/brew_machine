@@ -4,18 +4,13 @@
 
 #include "PID.h"
 
-void PID::initialize(int pwm_pin, double targetTemp, double actualTemp){
-	ledcSetup(PWM_CHANNEL, PWM_FREQUENCY, PWM_RESOLUTION);
-	ledcAttachPin(pwm_pin, PWM_CHANNEL);
-}
-
 void PID::tune(double kp, double ki, double kd){
 	this->kp = kp;
 	this->ki = ki;
 	this->kd = kd;
 }
 
-void PID::compute(double targetTemp, double actualTemp){
+double PID::compute(double targetTemp, double actualTemp){
 	double error = targetTemp - actualTemp;
 	double dErr = error - lastErr;
 
@@ -39,8 +34,8 @@ void PID::compute(double targetTemp, double actualTemp){
 	if(pV < 0) pV = 0;
 	else if(pV > MAX_TERM_VALUE) pV = MAX_TERM_VALUE;
 
-	double output =  ( pV / 1000 ) * MAX_HEATER_POWER;
+	double output = ( pV / 1000 ) * MAX_HEATER_POWER;
 	Serial.printf("TargetTemp: %f Temp: %f OutputV: %f\n", targetTemp, actualTemp, output);
-
-	ledcWrite(PWM_CHANNEL, output);
+	
+	return output;
 }

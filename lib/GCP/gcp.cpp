@@ -15,9 +15,11 @@ void GCP::init(){
 void GCP::init(float targetTemp){
 	this->tempProbe.begin(MAX31865_3WIRE);
 	this->setTargetTemp(targetTemp);
-	float actualTemp = this->getActualTemp();
-	this->brewTempManager.initialize(HEATER_PIN, targetTemp, actualTemp);
-	this->steamTempManager.initialize(STEAM_PIN, TARGET_STEAM_TEMP, actualTemp);
+
+	ledcSetup(PWM_BREW_CHANNEL, PWM_FREQUENCY, PWM_RESOLUTION);
+	ledcAttachPin(HEATER_PIN, PWM_BREW_CHANNEL);
+	ledcSetup(PWM_STEAM_CHANNEL, PWM_FREQUENCY, PWM_RESOLUTION);
+	ledcAttachPin(STEAM_PIN, PWM_STEAM_CHANNEL);
 }
 
 GCP::~GCP() {
@@ -74,9 +76,8 @@ void GCP::update() {
 	float actualTemp = this->getActualTemp();
 	float pressure = this->getPX();
 
-	brewTempManager.compute(targetTemp, actualTemp);
-
-	steamTempManager.compute(TARGET_STEAM_TEMP, actualTemp);
+	double brew_output = brewTempManager.compute(targetTemp, actualTemp);
+	double steam_output = steamTempManager.compute(TARGET_STEAM_TEMP, actualTemp);
 
 	/* 
 		Brew Relay and Steam Relay will always be calculating
@@ -87,11 +88,16 @@ void GCP::update() {
 		Power defaults to steam relay, brew relay is off
 		Steam lamp turn on when steam relay is off
 
-		If temperature rises above maximum brew temperature (boiling temp) turn off relay
+		This is all handled on the hardware side.
+
 		If temperature rises above maixmum safe temperature (10C above steam temp) turn off relay
 
 	*/
-	if(actualTemp > MAX_BREW_TEMP) digitalWrite(HEATER_PIN, OFF);
+
+	/****** PWM IS A WORK IN PROGRESS ******/
+	ledcWrite(PWM_BREW_CHANNEL, brew_output);
+	ledcWrite(PWM_STEAM_CHANNEL, steam_output);
+
 	if(actualTemp >= EMERGENCY_SHUTOFF_TEMP) digitalWrite(STEAM_PIN, OFF);
 }
 
