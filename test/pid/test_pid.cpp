@@ -30,16 +30,17 @@ void test_isProperlyHeating() {
     double m = .1; // Boiler capacity of GCP in kg https://www.gaggia-na.com/products/gaggia-classic-pro#specs
     double dt = 0.25; // Simulated step time
 
+    pid.tune(3.4, 50, 40);
+
     for(int k = 0; k < (1800 / dt); k++) { // 30 minute simulated time
-        int t = k * dt;
         output = pid.compute(TARGET_TEMP, actualTemp);
         
         double outputWattage = output * BOILER_POWER;
 
         actualTemp += ((outputWattage - (actualTemp - ambientTemp) / heatResistance) * dt / (cWater * m));
 
-        if(t % 12 == 0) { // Print every 5th step interval
-            Serial.printf("\nTime: %0.1f Temp: %f PWM %%: %f Power: %f", t / 60.0, actualTemp, output * 100.0, outputWattage);
+        if(k % 10 == 0) {
+            Serial.printf("\nTime: %0.2f Temp: %f PWM %%: %f Power: %f", (k / 60.0) * dt, actualTemp, output * 100.0, outputWattage);
         }
     }
 }
