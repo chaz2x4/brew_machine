@@ -53,16 +53,13 @@ public:
     GCP(float targetTemp);
     ~GCP();
     void init();
+    void setTargetTemp(float temp); // Sets temperature to control to (setpoint)
+    void setTargetTemp(float temp, float minTemp, float maxTemp); // Sets temperature to control to (setpoint), wrap around with a set minimum / maximum temperature
     void incrementTemp();
     void decrementTemp();
     float getTargetTemp();
-    float getActualTemp(); //returns current temperature value
-    bool isSteamReady();
-    bool isBrewReady();
-    bool isPowerOn();
     float getPX(); //returns current pressure value
-    void setTargetTemp(float temp); // Sets temperature to control to (setpoint)
-    void setTargetTemp(float temp, float minTemp, float maxTemp); // Sets temperature to control to (setpoint), wrap around with a set minimum / maximum temperature
+    float getActualTemp(); //returns current temperature value
     void update();
 };
 #endif

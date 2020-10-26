@@ -8,18 +8,6 @@ void test_constructor(){
     TEST_ASSERT_EQUAL_FLOAT(92.0, bm.getTargetTemp());
 }
 
-void test_isBrewReady () {
-    TEST_ASSERT_FALSE(bm.isBrewReady());
-}
-
-void test_isSteamReady () {
-    TEST_ASSERT_FALSE(bm.isSteamReady());
-}
-
-void test_isPowerOn(){
-    TEST_ASSERT_TRUE(bm.isPowerOn());
-}
-
 void test_defaultTargetTemp() {
     TEST_ASSERT_EQUAL_FLOAT(DEFAULT_TARGET_TEMP, bm.getTargetTemp());
 }
@@ -60,25 +48,11 @@ void test_minBrewTemp(){
     bm.setTargetTemp(DEFAULT_TARGET_TEMP);
 }
 
-void test_maxSteamTemp(){
-    bm.setTargetTemp(165.0, MIN_STEAM_TEMP, MAX_STEAM_TEMP);
-    TEST_ASSERT_EQUAL_FLOAT(MAX_STEAM_TEMP, bm.getTargetTemp());
-}
-
-void test_minSteamTemp(){
-    bm.setTargetTemp(130.0, MIN_STEAM_TEMP, MAX_STEAM_TEMP);
-    TEST_ASSERT_EQUAL_FLOAT(MIN_STEAM_TEMP, bm.getTargetTemp());
-}
-
 void setup() {
     delay(2000);
     UNITY_BEGIN();
     
     RUN_TEST(test_constructor);
-
-    RUN_TEST(test_isBrewReady);
-    RUN_TEST(test_isSteamReady);
-    RUN_TEST(test_isPowerOn);
 
     RUN_TEST(test_defaultTargetTemp);
     RUN_TEST(test_setTargetTemp);
@@ -88,9 +62,6 @@ void setup() {
 
     RUN_TEST(test_minBrewTemp);
     RUN_TEST(test_maxBrewTemp);
-
-    RUN_TEST(test_minSteamTemp);
-    RUN_TEST(test_maxSteamTemp);
 }
 
 void loop () {
