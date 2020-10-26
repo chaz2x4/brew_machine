@@ -7,9 +7,9 @@
 
 class PID {
 private:
-    double kp = 25;     // Proportional gain
-    double ki = 1000;   // Integral gain
-    double kd = 9;      // Derivative gain
+    double kp = 3.4;     // Proportional gain
+    double ki = 0.3;   // Integral gain
+    double kd = 40.0;      // Derivative gain
 
     double P = 0.0;
     double I = 0.0;
