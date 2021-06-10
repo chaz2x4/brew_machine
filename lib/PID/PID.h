@@ -20,7 +20,7 @@ private:
     double lastInput;
     double outputSum;
 
-    double cycleTime = 200;
+    double cycleTime = 200; //how long one cycle window lasts
 public:
     PID(double *input, double *output, double *setpoint);
     void tune(double kp, double ki, double kd);
