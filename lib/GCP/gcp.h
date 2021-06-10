@@ -9,8 +9,6 @@
     Only input should be steam switch, which moves PID temp to 155 C
     For now leave pump switch manually on the coffee switch
 
-    Pre-infusion Theory
-
 */
 
 #include <Adafruit_MAX31865.h>
@@ -20,46 +18,46 @@
 #define ON HIGH
 #define OFF LOW
 
-#define DEFAULT_TARGET_TEMP 95.0
-#define TARGET_STEAM_TEMP 155.0
-#define MAX_BREW_TEMP 100.0
-#define MIN_BREW_TEMP 85.0
-
-#define EMERGENCY_SHUTOFF_TEMP 165.0
-
 #define HEATER_PIN 27
 #define STEAM_PIN 13
-
-#define PWM_FREQUENCY 10 // PWM Frequency of 10Hz
-#define PWM_RESOLUTION 10 // Resolution of 10 bits
-#define PWM_DUTY_CYCLE 1023 // 10-bit resolution results in a duty cycle of 0 - 1023
-#define PWM_BREW_CHANNEL 0 // Different PWM channels to control different relays
-#define PWM_STEAM_CHANNEL 1
 
 #define RREF 430
 
 class GCP {
 private:
-    PID brewTempManager;
-    PID steamTempManager;
     Adafruit_MAX31865 tempProbe = Adafruit_MAX31865(A5);
 
-    float targetTemp = DEFAULT_TARGET_TEMP; //95 celcius
-    float pressure = 0.0; 
+    double actualTemp;
+    double targetTemp = 100.0;
+    double targetSteamTemp = 155.0;
+    double pressure = 0.0; 
+    
+    double maxBrewTemp = 100.0;
+    double minBrewTemp = 75.0;
+    double emergencyShutoffTemp = 165.0;
 
-    void init(float targetTemp);
+    void init(double targetTemp);
+
+    double brew_output;
+    double steam_output;
+
+    PID brewTempManager = PID(&actualTemp, &brew_output, &targetTemp);
+    PID steamTempManager = PID(&actualTemp, &steam_output, &targetSteamTemp);
+    
 public:
     GCP();
-    GCP(float targetTemp);
+    GCP(double targetTemp);
     ~GCP();
     void init();
-    void setTargetTemp(float temp); // Sets temperature to control to (setpoint)
-    void setTargetTemp(float temp, float minTemp, float maxTemp); // Sets temperature to control to (setpoint), wrap around with a set minimum / maximum temperature
     void incrementTemp();
     void decrementTemp();
-    float getTargetTemp();
-    float getPX(); //returns current pressure value
-    float getActualTemp(); //returns current temperature value
+    double getTargetTemp();
+    double getActualTemp(); //returns current temperature value
+    bool isSteamReady();
+    bool isBrewReady();
+    bool isPowerOn();
+    double getPX(); //returns current pressure value
+    void setTargetTemp(double temp); // Sets temperature to control to (setpoint)
     void update();
 };
 #endif
