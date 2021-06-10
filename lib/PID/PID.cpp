@@ -4,34 +4,37 @@
 
 #include "PID.h"
 
+PID::PID(double* input, double *output, double *setpoint){
+	this->lastTime = millis() - sampleTime;
+}
+
 void PID::tune(double kp, double ki, double kd){
 	this->kp = kp;
 	this->ki = ki;
 	this->kd = kd;
 }
 
-double PID::compute(double targetTemp, double actualTemp){
-	double error = targetTemp - actualTemp;
-	double dErr = error - lastErr;
+void PID::compute(){
+	ulong now = millis();
+	ulong timeChange = now - lastTime;
+	if(timeChange >= sampleTime) {
+		double input = *(this->input);
+		double error = *(this->setpoint) - input;
+		double dInput = input - lastInput;
+		outputSum += (ki * error);
 
-	P = kp  * error;
-	if(P > MAX_TERM_VALUE) P = MAX_TERM_VALUE;
-	else if(P < -1 * MAX_TERM_VALUE) P = -1 * MAX_TERM_VALUE;
+		if(outputSum > cycleTime) outputSum = cycleTime;
+		else if (outputSum < 0) outputSum = 0;
 
-	I = I + (ki * error);
-	if(I > MAX_TERM_VALUE) I = MAX_TERM_VALUE;
-	else if(I < -1 * MAX_TERM_VALUE) I = -1 * MAX_TERM_VALUE;
+		double result = 0;
+		result += outputSum - kd * dInput;
 
-	D =  kd * dErr;
-	if(D > MAX_TERM_VALUE) D = MAX_TERM_VALUE;
-	else if(D < -1 * MAX_TERM_VALUE) D = -1 * MAX_TERM_VALUE;
+		if(outputSum > cycleTime) outputSum = cycleTime;
+		else if (outputSum < 0) outputSum = 0;
 
-	lastErr = error;
-	double pV = P + I + D;
+		*(this->output) = result;
 
-	if(pV < 0) pV = 0;
-	else if(pV > MAX_TERM_VALUE) pV = MAX_TERM_VALUE;
-
-	double output =  pV / 1000;
-	return output;
+		lastInput = input;
+		lastTime = now;
+	}
 }

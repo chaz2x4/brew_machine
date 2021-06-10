@@ -1,62 +1,54 @@
 #include "gcp.h"
 
 GCP::GCP() {
-	GCP(DEFAULT_TARGET_TEMP);
+	GCP(targetTemp);
 }
 
-GCP::GCP(float targetTemp) {
+GCP::GCP(double targetTemp) {
 	init(targetTemp);
 }
 
 void GCP::init(){
-	init(DEFAULT_TARGET_TEMP);
+	init(targetTemp);
 }
 
-void GCP::init(float targetTemp){
+void GCP::init(double targetTemp){
 	this->tempProbe.begin(MAX31865_3WIRE);
 	this->setTargetTemp(targetTemp);
-
-	ledcSetup(PWM_BREW_CHANNEL, PWM_FREQUENCY, PWM_RESOLUTION);
-	ledcAttachPin(HEATER_PIN, PWM_BREW_CHANNEL);
-	ledcSetup(PWM_STEAM_CHANNEL, PWM_FREQUENCY, PWM_RESOLUTION);
-	ledcAttachPin(STEAM_PIN, PWM_STEAM_CHANNEL);
+	this->actualTemp = this->getActualTemp();
 }
 
 GCP::~GCP() {
-	float targetTemp = this->getTargetTemp(); //get current target temp
-	if (targetTemp > MAX_BREW_TEMP) targetTemp = DEFAULT_TARGET_TEMP; //if it's higher than max value, then set it to default value of 95.0
+	double targetTemp = this->getTargetTemp();
+	if (targetTemp > maxBrewTemp) targetTemp = maxBrewTemp;
 };
 
-void GCP::setTargetTemp(float temp) {
-	setTargetTemp(temp, MIN_BREW_TEMP, MAX_BREW_TEMP); //Set max default brew temperature to between 90 - 96 degrees
-}
-
-void GCP::setTargetTemp(float temp, float minTemp, float maxTemp) {
-	if (temp < minTemp) temp = minTemp;
-	else if (temp > maxTemp) temp = maxTemp;
+void GCP::setTargetTemp(double temp) {
+	if (temp < minBrewTemp) temp = minBrewTemp;
+	else if (temp > maxBrewTemp) temp = maxBrewTemp;
 	this->targetTemp = temp;
 }
 
 void GCP::incrementTemp() {
-	float temp = this->getTargetTemp();
+	double temp = this->getTargetTemp();
 	this->setTargetTemp(temp + 0.5);
 }
 
 void GCP::decrementTemp() {
-	float temp = this->getTargetTemp();
+	double temp = this->getTargetTemp();
 	this->setTargetTemp(temp - 0.5);
 }
 
-float GCP::getTargetTemp() {
+double GCP::getTargetTemp() {
 	return this->targetTemp;
 }
 
-float GCP::getPX() {
+double GCP::getPX() {
 	return this->pressure;
 }
 
-float GCP::getActualTemp() {
-	float temp =  tempProbe.temperature(100, RREF);
+double GCP::getActualTemp() {
+	double temp =  tempProbe.temperature(100, RREF);
 	uint8_t fault = tempProbe.readFault();
 	if (fault) {
 		Serial.print("Fault 0x"); Serial.println(fault, HEX);
@@ -72,16 +64,15 @@ float GCP::getActualTemp() {
 }
 
 void GCP::update() {
-	float targetTemp = this->getTargetTemp();
-	float actualTemp = this->getActualTemp();
-	float pressure = this->getPX();
+	double targetTemp = this->getTargetTemp();
+	double actualTemp = this->getActualTemp();
 
-	double brew_output = brewTempManager.compute(targetTemp, actualTemp);
-	double steam_output = steamTempManager.compute(TARGET_STEAM_TEMP, actualTemp);
+	brewTempManager.compute();
+	steamTempManager.compute();
 
 	Serial.printf("\nActual Temp: %f\n", actualTemp);
 	Serial.printf("Brew  Temp: %f PWM %%: %f\n", targetTemp, brew_output * 100);
-	Serial.printf("Steam Temp: %f PWM %%: %f\n", TARGET_STEAM_TEMP, steam_output * 100);
+	Serial.printf("Steam Temp: %f PWM %%: %f\n", targetSteamTemp, steam_output * 100);
 	/* 
 		Brew Relay and Steam Relay will always be calculating
 		When power switch is on the heater will heat until it gets to targetBrewtemp
@@ -97,10 +88,6 @@ void GCP::update() {
 
 	*/
 
-	/****** PWM IS A WORK IN PROGRESS ******/
-	ledcWrite(PWM_BREW_CHANNEL, brew_output * PWM_DUTY_CYCLE);
-	ledcWrite(PWM_STEAM_CHANNEL, steam_output * PWM_DUTY_CYCLE);
-
-	if(actualTemp >= EMERGENCY_SHUTOFF_TEMP) digitalWrite(STEAM_PIN, OFF);
+	if(actualTemp >= emergencyShutoffTemp) digitalWrite(STEAM_PIN, OFF);
 }
 
