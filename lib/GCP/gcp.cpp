@@ -71,6 +71,7 @@ double GCP::getActualTemp() {
 		if (fault & MAX31865_FAULT_OVUV) Serial.println("Under/Over voltage");
 		tempProbe.clearFault();
 	}
+	this->actualTemp = temp;
 	return temp;
 }
 
