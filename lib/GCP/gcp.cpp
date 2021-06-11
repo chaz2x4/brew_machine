@@ -1,90 +1,126 @@
 #include "gcp.h"
 
 GCP::GCP() {
-	GCP(DEFAULT_TARGET_TEMP);
+	GCP(targetTemp = DEFAULT_BREW_TEMP, tempOffset = 0.0);
 }
 
-GCP::GCP(float targetTemp) {
-	init(targetTemp);
-}
-
-void GCP::init(float targetTemp){
-	float actualTemp = this->getActualTemp();
+GCP::GCP(double targetTemp, double offset) {
+	this->tempProbe.begin(MAX31865_3WIRE);
 	this->setTargetTemp(targetTemp);
-	this->power_light = ON;
-	this->temperatureManager.compute(targetTemp, actualTemp);
+	this->setTempOffset(offset);
+	this->actualTemp = this->getActualTemp();
 }
 
 GCP::~GCP() {
-	float targetTemp = this->getTargetTemp(); //get current target temp
-	if (targetTemp > MAX_BREW_TEMP) targetTemp = DEFAULT_TARGET_TEMP; //if it's higher than max value, then set it to default value of 95.0
+	double targetTemp = this->getTargetTemp();
+	if (targetTemp > maxBrewTemp) targetTemp = maxBrewTemp;
 };
 
-void GCP::setTargetTemp(float temp) {
-	setTargetTemp(temp, MIN_BREW_TEMP, MAX_BREW_TEMP); //Set max default brew temperature to between 90 - 96 degrees
+mode GCP::getCurrentMode() {
+	return this->currentMode;
 }
 
-void GCP::setTargetTemp(float temp, float minTemp, float maxTemp) {
-	if (temp < minTemp) temp = minTemp;
-	else if (temp > maxTemp) temp = maxTemp;
+void GCP::setMode(mode currentMode){
+	this->currentMode = currentMode;
+}
+
+void GCP::setTargetTemp(double temp) {
+	if (temp < minBrewTemp) temp = minBrewTemp;
+	else if (temp > maxBrewTemp) temp = maxBrewTemp;
 	this->targetTemp = temp;
 }
 
+void GCP::setTargetSteamTemp(double temp) {
+	if (temp < minSteamTemp) temp = minSteamTemp;
+	else if (temp > maxSteamTemp) temp = maxSteamTemp;
+	this->targetSteamTemp = temp;
+}
+
 void GCP::incrementTemp() {
-	float temp = this->getTargetTemp();
-	this->setTargetTemp(temp + 0.5);
+	double *temp;
+	if(this->currentMode == steam) temp = &targetSteamTemp;
+	else temp = &targetTemp;
+	*temp += 0.5;
 }
 
 void GCP::decrementTemp() {
-	float temp = this->getTargetTemp();
-	this->setTargetTemp(temp - 0.5);
+	double *temp;
+	if(this->currentMode == steam) temp = &targetSteamTemp;
+	else temp = &targetTemp;
+	*temp -= 0.5;
 }
 
-
-float GCP::getTargetTemp() {
+double GCP::getTargetTemp() {
 	return this->targetTemp;
 }
 
-float GCP::getPX() {
-	return this->pressure;
+double GCP::getTargetSteamTemp() {
+	return this->targetSteamTemp;
 }
 
-float GCP::getActualTemp() {
-	return this->actualTemp;
+double GCP::getActualTemp() {
+	double temp =  tempProbe.temperature(100, RREF);
+	uint8_t fault = tempProbe.readFault();
+	if (fault) {
+		Serial.print("Fault 0x"); Serial.println(fault, HEX);
+		if (fault & MAX31865_FAULT_HIGHTHRESH) Serial.println("RTD High Threshold");
+		if (fault & MAX31865_FAULT_LOWTHRESH) Serial.println("RTD Low Threshold"); 
+		if (fault & MAX31865_FAULT_REFINLOW) Serial.println("REFIN- > 0.85 x Bias");
+		if (fault & MAX31865_FAULT_REFINHIGH) Serial.println("REFIN- < 0.85 x Bias - FORCE- open");
+		if (fault & MAX31865_FAULT_RTDINLOW) Serial.println("RTDIN- < 0.85 x Bias - FORCE- open");
+		if (fault & MAX31865_FAULT_OVUV) Serial.println("Under/Over voltage");
+		tempProbe.clearFault();
+	}
+	return temp;
 }
 
-bool GCP::isSteamReady() {
-	return this->steam_light;
+double GCP::getTempOffset(){
+	return this->tempOffset;
 }
 
-bool GCP::isBrewReady() {
-	return this->brew_light;
-}
-
-bool GCP::isPowerOn() {
-	return this->power_light;
+void GCP::setTempOffset(double offset){
+	this->tempOffset = offset;
 }
 
 void GCP::update() {
-	float targetTemp = this->getTargetTemp();
-	float actualTemp = this->getActualTemp();
-	this->temperatureManager.compute(targetTemp, actualTemp);
+	double targetTemp = this->getTargetTemp();
+	double targetSteamTemp = this->getTargetSteamTemp();
+	double actualTemp = this->getActualTemp();
+	double offset = this->getTempOffset();
 
-	//Turn on lights if within 1 degree C of target temp
-	float error = targetTemp - actualTemp;
-	if (error >= -1.0 || error <= 1.0) {
-		bool steam_switch = this->steam_switch;
-		if (steam_switch) {
-			this->steam_light = ON; 
-			this->brew_light = OFF;
-		}
-		else { 
-			this->brew_light = ON; 
-			this->steam_light = OFF;
-		}
+	brewTempManager.compute();
+	steamTempManager.compute();
+
+	Serial.printf("\nActual Temp: %f\n", actualTemp);
+	Serial.printf("Brew  Temp: %f %f\n", targetTemp, brew_output);
+	Serial.printf("Steam Temp: %f %f\n", targetSteamTemp, steam_output);
+	Serial.printf("Offset: %f\n", offset);
+	/* 
+		Brew Relay and Steam Relay will always be calculating
+		When power switch is on the heater will heat until it gets to targetBrewtemp
+		Brew Lamp will turn on once the brew relay is off (once target temp is reached)
+
+		If steam switch is pushed then the brew lamp is turned off
+		Power defaults to steam relay, brew relay is off
+		Steam lamp turn on when steam relay is off
+
+		This is all handled on the hardware side.
+
+		If temperature rises above maximum safe temperature turn off relay
+	*/
+
+	if(millis() - cycleStartTime > cycleRunTime) {
+		cycleStartTime += cycleRunTime;
 	}
-	else {
-		this->steam_light = OFF;
-		this->brew_light = OFF;
+	
+	if(brew_output < millis() - cycleStartTime) digitalWrite(HEATER_PIN, ON);
+	else digitalWrite(HEATER_PIN, OFF);
+
+	if(steam_output < millis() - cycleStartTime) digitalWrite(STEAM_PIN, ON);
+	else digitalWrite(STEAM_PIN, OFF);
+
+	if(actualTemp >= EMERGENCY_SHUTOFF_TEMP) {
+		digitalWrite(STEAM_PIN, OFF);
+		digitalWrite(HEATER_PIN, OFF);
 	}
 }

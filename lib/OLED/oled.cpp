@@ -1,7 +1,3 @@
-// 
-// 
-// 
-
 #include "oled.h"
 
 void OLED::start(){
@@ -62,7 +58,7 @@ void OLED::eventListener(){
         else if(buttonState[2] == HIGH && lastButtonState[2] == LOW) {
             downTime = -1;
         }
-        if(buttonState[2] == LOW && this->currentMode == brew && (millis() - downTime) >= TRIGGER_TIME) {
+        if(buttonState[2] == LOW && this->getCurrentMode() == brew && (millis() - downTime) >= TRIGGER_TIME) {
             this->isEditable = true;
         }
         lastButtonState[2] = buttonState[2];
@@ -70,10 +66,11 @@ void OLED::eventListener(){
 }
 
 void OLED::wait (int delay, char* text1, float var1, char* text2, float var2){
+    display.clearDisplay();
+    if(flash) display.printf(text1, var1);
+    else display.printf(text2, var2);
+    
     if((millis() - lastTime) >= delay) {
-        display.clearDisplay();
-        if(flash) display.printf(text1, var1);
-        else display.printf(text2, var2);
         lastTime = millis();
         flash = !flash;
     }
@@ -95,22 +92,23 @@ void OLED::refresh(){
     display.setTextSize(2);
     display.setTextColor(SSD1306_WHITE);
     display.setCursor(13, 0);
-    if(this->currentMode == brew) {
+    mode currentMode = this->getCurrentMode();
+    if(currentMode == brew) {
         if(this->isEditable) {
-            wait(400, (char *)("Set Brew: %.1f C"), this->getTargetTemp(), (char *)("Set Brew: "), 0x0);
+            wait(500, (char *)("Set Brew: %.1f C"), this->getTargetTemp(), (char *)("Set Brew: "), 0x0);
         }
         else {
-            wait(1900, (char *)("Pressure: %.1f bar\n"), this->getPX(), (char *)("Temp: \n %.1f C\n"), this->getActualTemp());
+            wait(2000, (char *)("Target Temp: %.1f C\n"), this->getTargetTemp(), (char *)("Temp: \n %.1f C\n"), this->getActualTemp());
         }
     }
-    if(this->currentMode == steam) {
-        wait(900, (char *)("Steaming. %.1f C\n"), this->getActualTemp(), (char *)("Steaming  %.1f C\n"), this->getActualTemp());
+    if(currentMode == steam) {
+        wait(1000, (char *)("Target Temp: %.1f C\n"), this->getTargetSteamTemp(), (char *)("Steam Temp: %.1f C\n"), this->getActualTemp());
     }
     display.display();
 }
 
 void OLED::changeMode(){
     display.clearDisplay();
-    if(this->currentMode == brew) this->currentMode = steam;
-    else this->currentMode = brew;
+    if(this->getCurrentMode() == brew) this->setMode(steam);
+    else this->setMode(brew);
 }

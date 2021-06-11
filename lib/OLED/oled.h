@@ -16,8 +16,6 @@
 #define SCREEN_TIMEOUT 30000 //amount of milliseconds before screen goes blank
 #define TRIGGER_TIME 1000 //amount of time to hold button for settings change
 
-enum mode{ brew, steam };
-
 class OLED : public GCP {
 public:
     void start(); //Starts the display with the appropriate pins initialize
@@ -26,7 +24,6 @@ public:
     void changeMode(); //switches between brew and steam mode
 private:
     Adafruit_SSD1306 display = Adafruit_SSD1306(128, 32, &Wire); //OLED screen
-    mode currentMode = brew; // Current modes are brew or steam
     bool flash = false; //controls which version of the OLED screen to display
 
     ulong timeLastButton = -1; //records the last time a button was pressed
@@ -42,4 +39,3 @@ private:
 };
 
 #endif
-

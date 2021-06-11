@@ -1,5 +1,4 @@
 // PID.h
-
 #ifndef _PID_h
 #define _PID_h
 
@@ -7,21 +6,26 @@
 
 class PID {
 private:
-    float kp = 0.5;
-    float ki = 0;
-    float kd = 0;
-    int runTime = 500; //half a second run time
+    double kp = 2;     // Proportional gain
+    double ki = 5;   // Integral gain
+    double kd = 1;      // Derivative gain
 
-    float iTerm;
-    float lastTime;
-    float lastTemp;
-    float outputV;
+    ulong lastTime;
+    ulong sampleTime;
 
+    double *currentTemp;
+    double *onTime;
+    double *targetTemp;
+
+    double lastInput;
+    double outputSum;
+
+    double cycleRunTime;
 public:
-    void compute(int targetTemp, float actualTemp);
-    void setTunings(float kp, float ki, float kd);
-    void setRuntime(int runTime);
+    PID(double *input, double *output, double *setpoint, ulong time);
+    void tune(double kp, double ki, double kd);
+    void compute();
+    void setCycleTime(double time);
 };
 
 #endif
-

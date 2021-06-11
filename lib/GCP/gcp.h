@@ -9,67 +9,65 @@
     Only input should be steam switch, which moves PID temp to 155 C
     For now leave pump switch manually on the coffee switch
 
-    Pre-infusion Theory
-
 */
 
+#include <Adafruit_MAX31865.h>
 #include <EEPROM.h>
 #include "PID.h"
 
-#define ON true;
-#define OFF false;
-#define DEFAULT_TARGET_TEMP 95.0
-#define DEFAULT_ACTUAL_TEMP 15.0
-#define MAX_BREW_TEMP 96.0
-#define MIN_BREW_TEMP 90.0
-#define MAX_STEAM_TEMP 155.0
-#define MIN_STEAM_TEMP 145.0
+#define ON HIGH
+#define OFF LOW
+
+#define HEATER_PIN 27
+#define STEAM_PIN 13
+
+#define RREF 430
+#define DEFAULT_BREW_TEMP 95.0
+#define DEFAULT_STEAM_TEMP 145.0
+#define EMERGENCY_SHUTOFF_TEMP 170.0
+
+enum mode{brew, steam};
 
 class GCP {
 private:
-    float targetTemp = DEFAULT_TARGET_TEMP; //95 celcius
-    float actualTemp = DEFAULT_ACTUAL_TEMP; // #4 coffee thermostat; turns off heating element when = targetBrewTemp
-    float pressure = 15; 
+    Adafruit_MAX31865 tempProbe = Adafruit_MAX31865(A5);
+    mode currentMode = brew;
 
-    /* 
-        Manual Switch Status
-        There's a chance I will not be able to detect the status of these
-        Hopefully with a powerful enough resistor then this doesn't matter
-        It might be possible to detect status through thermocouple
-    */
-    bool power_switch; // #1 on/off switch
-    bool coffee_switch; // #9 coffee switch; turns on pump
-    bool steam_switch; // #7 coffee/steam switch (off when the other is on)
-    bool pump_switch; // #10 motor operated water pump; turns on with brew switch
+    double actualTemp;
+    double targetTemp = DEFAULT_BREW_TEMP;
+    double targetSteamTemp = DEFAULT_STEAM_TEMP;
+    double tempOffset = 10.0;
+    
+    double maxBrewTemp = 100.0;
+    double minBrewTemp = 75.0;
 
-    /* Temperature controlled switches */
-    bool heating_switch; // #3 thermal cut off?
+    double maxSteamTemp = 160.0;
+    double minSteamTemp = 140.0;
 
-    bool power_light = OFF; // #2 on/off light; turns on with power switch
-    bool brew_light = OFF; // #11 pilot light; at the brew temperature
-    bool steam_light = OFF;  //at the steam temperature
+    double brew_output;
+    double steam_output;
 
-    // #6 is the heating element
-    // #8 is the solenoid valve
+    ulong cycleStartTime;
+    ulong cycleRunTime;
 
-    PID temperatureManager;
-
-    void init(float targetTemp);
+    PID brewTempManager = PID(&actualTemp, &brew_output, &targetTemp, 5000);
+    PID steamTempManager = PID(&actualTemp, &steam_output, &targetSteamTemp, 5000);
 
 public:
     GCP();
-    GCP(float targetTemp);
+    GCP(double targetTemp, double offset);
     ~GCP();
+    mode getCurrentMode();
+    void setMode(mode);
     void incrementTemp();
     void decrementTemp();
-    float getTargetTemp();
-    float getActualTemp(); //returns current temperature value
-    bool isSteamReady();
-    bool isBrewReady();
-    bool isPowerOn();
-    float getPX(); //returns current pressure value
-    void setTargetTemp(float temp); // Sets temperature to control to (setpoint)
-    void setTargetTemp(float temp, float minTemp, float maxTemp); // Sets temperature to control to (setpoint), wrap around with a set minimum / maximum temperature
+    double getTargetTemp();
+    double getTargetSteamTemp();
+    double getActualTemp(); //returns current temperature value
+    double getTempOffset();
+    void setTargetTemp(double temp); // Sets temperature to control to (setpoint)
+    void setTargetSteamTemp(double temp); // Sets temperature to control to (setpoint)
+    void setTempOffset(double offset);
     void update();
 };
 #endif
