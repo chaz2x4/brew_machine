@@ -23,19 +23,26 @@
 
 #define RREF 430
 #define DEFAULT_BREW_TEMP 95.0
+#define DEFAULT_STEAM_TEMP 145.0
+#define EMERGENCY_SHUTOFF_TEMP 170.0
+
+enum mode{brew, steam};
 
 class GCP {
 private:
     Adafruit_MAX31865 tempProbe = Adafruit_MAX31865(A5);
+    mode currentMode = brew;
 
     double actualTemp;
     double targetTemp = DEFAULT_BREW_TEMP;
-    double targetSteamTemp = 155.0;
-    double pressure = 0.0; 
+    double targetSteamTemp = DEFAULT_STEAM_TEMP;
+    double tempOffset = 10.0;
     
     double maxBrewTemp = 100.0;
     double minBrewTemp = 75.0;
-    double emergencyShutoffTemp = 165.0;
+
+    double maxSteamTemp = 160.0;
+    double minSteamTemp = 140.0;
 
     double brew_output;
     double steam_output;
@@ -48,17 +55,19 @@ private:
 
 public:
     GCP();
-    GCP(double targetTemp);
+    GCP(double targetTemp, double offset);
     ~GCP();
+    mode getCurrentMode();
+    void setMode(mode);
     void incrementTemp();
     void decrementTemp();
     double getTargetTemp();
+    double getTargetSteamTemp();
     double getActualTemp(); //returns current temperature value
-    bool isSteamReady();
-    bool isBrewReady();
-    bool isPowerOn();
-    double getPX(); //returns current pressure value
+    double getTempOffset();
     void setTargetTemp(double temp); // Sets temperature to control to (setpoint)
+    void setTargetSteamTemp(double temp); // Sets temperature to control to (setpoint)
+    void setTempOffset(double offset);
     void update();
 };
 #endif
