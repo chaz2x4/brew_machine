@@ -7,7 +7,6 @@ void setup() {
 	//Primary Mission: start coffee machine
 	Serial.begin(9600);
 	brew_machine.start();
-	//Secondary Mission: connect to coffee server
 }
 
 // the loop function runs over and over again until power down or reset

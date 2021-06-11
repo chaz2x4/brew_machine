@@ -22,13 +22,14 @@
 #define STEAM_PIN 13
 
 #define RREF 430
+#define DEFAULT_BREW_TEMP 95.0
 
 class GCP {
 private:
     Adafruit_MAX31865 tempProbe = Adafruit_MAX31865(A5);
 
     double actualTemp;
-    double targetTemp = 100.0;
+    double targetTemp = DEFAULT_BREW_TEMP;
     double targetSteamTemp = 155.0;
     double pressure = 0.0; 
     
@@ -36,19 +37,19 @@ private:
     double minBrewTemp = 75.0;
     double emergencyShutoffTemp = 165.0;
 
-    void init(double targetTemp);
-
     double brew_output;
     double steam_output;
 
-    PID brewTempManager = PID(&actualTemp, &brew_output, &targetTemp);
-    PID steamTempManager = PID(&actualTemp, &steam_output, &targetSteamTemp);
-    
+    ulong cycleStartTime;
+    ulong cycleRunTime;
+
+    PID brewTempManager = PID(&actualTemp, &brew_output, &targetTemp, 5000);
+    PID steamTempManager = PID(&actualTemp, &steam_output, &targetSteamTemp, 5000);
+
 public:
     GCP();
     GCP(double targetTemp);
     ~GCP();
-    void init();
     void incrementTemp();
     void decrementTemp();
     double getTargetTemp();

@@ -1,18 +1,12 @@
 #include "gcp.h"
 
 GCP::GCP() {
-	GCP(targetTemp);
+	GCP(targetTemp = DEFAULT_BREW_TEMP);
 }
+
+
 
 GCP::GCP(double targetTemp) {
-	init(targetTemp);
-}
-
-void GCP::init(){
-	init(targetTemp);
-}
-
-void GCP::init(double targetTemp){
 	this->tempProbe.begin(MAX31865_3WIRE);
 	this->setTargetTemp(targetTemp);
 	this->actualTemp = this->getActualTemp();
@@ -71,8 +65,8 @@ void GCP::update() {
 	steamTempManager.compute();
 
 	Serial.printf("\nActual Temp: %f\n", actualTemp);
-	Serial.printf("Brew  Temp: %f PWM %%: %f\n", targetTemp, brew_output * 100);
-	Serial.printf("Steam Temp: %f PWM %%: %f\n", targetSteamTemp, steam_output * 100);
+	Serial.printf("Brew  Temp: %f %f\n", targetTemp, brew_output);
+	Serial.printf("Steam Temp: %f %f\n", targetSteamTemp, steam_output);
 	/* 
 		Brew Relay and Steam Relay will always be calculating
 		When power switch is on the heater will heat until it gets to targetBrewtemp
@@ -88,6 +82,16 @@ void GCP::update() {
 
 	*/
 
-	if(actualTemp >= emergencyShutoffTemp) digitalWrite(STEAM_PIN, OFF);
+	if(millis() - cycleStartTime > cycleRunTime) {
+		cycleStartTime += cycleRunTime;
+	}
+	
+	if(brew_output < millis() - cycleStartTime) digitalWrite(HEATER_PIN, ON);
+	else digitalWrite(HEATER_PIN, OFF);
+
+	if(actualTemp >= emergencyShutoffTemp) {
+		digitalWrite(STEAM_PIN, OFF);
+		digitalWrite(HEATER_PIN, OFF);
+	}
 }
 

@@ -13,18 +13,19 @@ private:
     ulong lastTime;
     ulong sampleTime;
 
-    double *input;
-    double *output;
-    double *setpoint;
+    double *currentTemp;
+    double *onTime;
+    double *targetTemp;
 
     double lastInput;
     double outputSum;
 
-    double cycleTime = 200; //how long one cycle window lasts
+    double cycleRunTime;
 public:
-    PID(double *input, double *output, double *setpoint);
+    PID(double *input, double *output, double *setpoint, ulong time);
     void tune(double kp, double ki, double kd);
     void compute();
+    void setCycleTime(double time);
 };
 
 #endif

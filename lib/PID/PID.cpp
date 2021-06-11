@@ -4,8 +4,12 @@
 
 #include "PID.h"
 
-PID::PID(double* input, double *output, double *setpoint){
+PID::PID(double* input, double *output, double *setpoint, ulong time){
 	this->lastTime = millis() - sampleTime;
+	currentTemp = input;
+	this->onTime = output;
+	targetTemp = setpoint;
+	cycleRunTime = time;
 }
 
 void PID::tune(double kp, double ki, double kd){
@@ -18,23 +22,25 @@ void PID::compute(){
 	ulong now = millis();
 	ulong timeChange = now - lastTime;
 	if(timeChange >= sampleTime) {
-		double input = *(this->input);
-		double error = *(this->setpoint) - input;
+		double input = *currentTemp;
+		double error = *targetTemp - input;
 		double dInput = input - lastInput;
 		outputSum += (ki * error);
+		outputSum -= kp * dInput;
 
-		if(outputSum > cycleTime) outputSum = cycleTime;
+		if(outputSum > cycleRunTime) outputSum = cycleRunTime;
 		else if (outputSum < 0) outputSum = 0;
 
-		double result = 0;
-		result += outputSum - kd * dInput;
+		double output = 0;
+		output += outputSum - kd * dInput;
 
-		if(outputSum > cycleTime) outputSum = cycleTime;
-		else if (outputSum < 0) outputSum = 0;
-
-		*(this->output) = result;
+		*(this->onTime) = output;
 
 		lastInput = input;
 		lastTime = now;
 	}
+}
+
+void PID::setCycleTime(double time){
+	this->cycleRunTime = time;
 }
