@@ -5,9 +5,9 @@
 #include "PID.h"
 
 PID::PID(double* input, double *output, double *setpoint, ulong time){
-	this->lastTime = millis() - sampleTime;
+	lastTime = millis() - sampleTime;
 	currentTemp = input;
-	this->onTime = output;
+	onTime = output;
 	targetTemp = setpoint;
 	cycleRunTime = time;
 }
@@ -34,7 +34,7 @@ void PID::compute(){
 		double output = 0;
 		output += outputSum - kd * dInput;
 
-		*(this->onTime) = output;
+		*onTime = output;
 
 		lastInput = input;
 		lastTime = now;
