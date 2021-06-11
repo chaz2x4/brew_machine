@@ -1,7 +1,3 @@
-// 
-// 
-// 
-
 #include "oled.h"
 
 void OLED::start(){

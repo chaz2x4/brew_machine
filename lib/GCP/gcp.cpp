@@ -4,8 +4,6 @@ GCP::GCP() {
 	GCP(targetTemp = DEFAULT_BREW_TEMP);
 }
 
-
-
 GCP::GCP(double targetTemp) {
 	this->tempProbe.begin(MAX31865_3WIRE);
 	this->setTargetTemp(targetTemp);
@@ -97,4 +95,3 @@ void GCP::update() {
 		digitalWrite(HEATER_PIN, OFF);
 	}
 }
-
