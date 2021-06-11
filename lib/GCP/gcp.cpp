@@ -106,8 +106,7 @@ void GCP::update() {
 
 		This is all handled on the hardware side.
 
-		If temperature rises above maixmum safe temperature (10C above steam temp) turn off relay
-
+		If temperature rises above maximum safe temperature turn off relay
 	*/
 
 	if(millis() - cycleStartTime > cycleRunTime) {
