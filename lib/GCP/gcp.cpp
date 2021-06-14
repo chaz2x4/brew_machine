@@ -1,7 +1,7 @@
 #include "gcp.h"
 
 GCP::GCP() {
-	GCP(targetTemp = DEFAULT_BREW_TEMP, tempOffset = 0.0);
+	GCP(targetTemp = DEFAULT_BREW_TEMP, tempOffset = DEFAULT_OFFSET);
 }
 
 GCP::GCP(double targetTemp, double offset) {
