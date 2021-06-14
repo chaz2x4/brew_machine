@@ -34,7 +34,6 @@ private:
     int lastButtonState[3] = {HIGH, HIGH, HIGH};
 
     bool timedout(); //turns screen off after a set amount of time
-    void wait(int time, char firstText[], float firstValue, char secondText[], float secondValue); //switches screen on a delay without interrupting processes
     bool isEditable = false; //is screen on the setTemperature method
 };
 

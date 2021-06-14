@@ -34,7 +34,6 @@ void OLED::eventListener(){
             downTime = millis();
             timeLastButton = millis();
             if(this->isEditable) this->incrementTemp();
-            else this->changeMode();
         }
         else if(buttonState[0] == HIGH && lastButtonState[0] == LOW) { downTime = -1 ; }
         lastButtonState[0] = buttonState[0];
@@ -44,7 +43,6 @@ void OLED::eventListener(){
             downTime = millis();
             timeLastButton = millis();
             if(this->isEditable) this->decrementTemp();
-            else this->changeMode();
         }
         else if(buttonState[1] == HIGH && lastButtonState[1] == LOW) { downTime = -1 ; }
         lastButtonState[1] = buttonState[1];
@@ -55,24 +53,11 @@ void OLED::eventListener(){
             timeLastButton = millis();
             if(this->isEditable) this->isEditable = false;
         }
-        else if(buttonState[2] == HIGH && lastButtonState[2] == LOW) {
-            downTime = -1;
-        }
-        if(buttonState[2] == LOW && this->getCurrentMode() == brew && (millis() - downTime) >= TRIGGER_TIME) {
-            this->isEditable = true;
-        }
-        lastButtonState[2] = buttonState[2];
-    }
-}
+        else if(buttonState[2] == HIGH && lastButtonState[2] == LOW) { downTime = -1; }
 
-void OLED::wait (int delay, char* text1, float var1, char* text2, float var2){
-    display.clearDisplay();
-    if(flash) display.printf(text1, var1);
-    else display.printf(text2, var2);
-    
-    if((millis() - lastTime) >= delay) {
-        lastTime = millis();
-        flash = !flash;
+        if(buttonState[2] == LOW && (millis() - downTime) >= TRIGGER_TIME) this->isEditable = true;
+        else this->changeMode();
+        lastButtonState[2] = buttonState[2];
     }
 }
 
@@ -92,17 +77,29 @@ void OLED::refresh(){
     display.setTextSize(2);
     display.setTextColor(SSD1306_WHITE);
     display.setCursor(13, 0);
-    mode currentMode = this->getCurrentMode();
-    if(currentMode == brew) {
-        if(this->isEditable) {
-            wait(500, (char *)("Set Brew: %.1f C"), this->getTargetTemp(), (char *)("Set Brew: "), 0x0);
-        }
-        else {
-            wait(2000, (char *)("Target Temp: %.1f C\n"), this->getTargetTemp(), (char *)("Temp: \n %.1f C\n"), this->getActualTemp());
-        }
+    display.clearDisplay();
+
+    ulong delay = 2000;
+    char* currentMode = "Brew";
+    double targetTemp = this->getTargetTemp();
+    double currentTemp = this->getActualTemp();
+    if(this->getCurrentMode() == steam) {
+        currentMode = "Steam";
+        targetTemp = this->getTargetSteamTemp();
     }
-    if(currentMode == steam) {
-        wait(1000, (char *)("Target Temp: %.1f C\n"), this->getTargetSteamTemp(), (char *)("Steam Temp: %.1f C\n"), this->getActualTemp());
+    if(this->isEditable) {
+        if(flash) display.printf("Set %s: \n %.1f C", currentMode, targetTemp);
+        else display.printf("Set %s: \n %.1d C", currentMode, 0x0);
+        delay = 500;
+    }
+    else {
+        if(flash) display.printf("%sing \n %.1f C", currentMode, targetTemp);
+        else display.printf("Temp: \n %.1f C", currentTemp);
+    }
+
+    if((millis() - lastTime) >= delay) {
+        lastTime = millis();
+        flash = !flash;
     }
     display.display();
 }
