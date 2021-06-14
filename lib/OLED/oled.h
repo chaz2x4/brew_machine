@@ -16,7 +16,7 @@
 #define SCREEN_TIMEOUT 30000 //amount of milliseconds before screen goes blank
 #define TRIGGER_TIME 1000 //amount of time to hold button for settings change
 
-class OLED : public GCP {
+class OLED {
 public:
     void start(); //Starts the display with the appropriate pins initialize
     void eventListener(); //Listens for button presses
@@ -35,6 +35,8 @@ private:
 
     bool timedout(); //turns screen off after a set amount of time
     bool isEditable = false; //is screen on the setTemperature method
+
+    GCP gcp;
 };
 
 #endif

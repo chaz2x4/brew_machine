@@ -11,6 +11,8 @@ void OLED::start(){
     pinMode(BUTTON_B, INPUT_PULLUP);
     pinMode(BUTTON_C, INPUT_PULLUP);
     timeLastButton = millis();
+
+    gcp = GCP();
 }
 
 void OLED::eventListener(){
@@ -33,7 +35,7 @@ void OLED::eventListener(){
         if(buttonState[0] == LOW && lastButtonState[0] == HIGH) {
             downTime = millis();
             timeLastButton = millis();
-            if(this->isEditable) this->incrementTemp();
+            if(this->isEditable) gcp.incrementTemp();
         }
         else if(buttonState[0] == HIGH && lastButtonState[0] == LOW) { downTime = -1 ; }
         lastButtonState[0] = buttonState[0];
@@ -42,7 +44,7 @@ void OLED::eventListener(){
         if(buttonState[1] == LOW && lastButtonState[1] == HIGH) {
             downTime = millis();
             timeLastButton = millis();
-            if(this->isEditable) this->decrementTemp();
+            if(this->isEditable) gcp.decrementTemp();
         }
         else if(buttonState[1] == HIGH && lastButtonState[1] == LOW) { downTime = -1 ; }
         lastButtonState[1] = buttonState[1];
@@ -72,7 +74,7 @@ bool OLED::timedout(){
 }
 
 void OLED::refresh(){
-    this->update();
+    gcp.update();
     if(timedout()) return;
     display.setTextSize(2);
     display.setTextColor(SSD1306_WHITE);
@@ -81,11 +83,11 @@ void OLED::refresh(){
 
     ulong delay = 2000;
     char* currentMode = "Brew";
-    double targetTemp = this->getTargetTemp();
-    double currentTemp = this->getActualTemp();
-    if(this->getCurrentMode() == steam) {
+    double targetTemp = gcp.getTargetTemp();
+    double currentTemp = gcp.getActualTemp();
+    if(gcp.getCurrentMode() == steam) {
         currentMode = "Steam";
-        targetTemp = this->getTargetSteamTemp();
+        targetTemp = gcp.getTargetSteamTemp();
     }
     if(this->isEditable) {
         if(flash) display.printf("Set %s: \n %.1f C", currentMode, targetTemp);
@@ -106,6 +108,6 @@ void OLED::refresh(){
 
 void OLED::changeMode(){
     display.clearDisplay();
-    if(this->getCurrentMode() == brew) this->setMode(steam);
-    else this->setMode(brew);
+    if(gcp.getCurrentMode() == brew) gcp.setMode(steam);
+    else gcp.setMode(brew);
 }
