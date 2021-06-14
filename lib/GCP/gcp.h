@@ -24,6 +24,7 @@
 #define RREF 430
 #define DEFAULT_BREW_TEMP 95.0
 #define DEFAULT_STEAM_TEMP 145.0
+#define DEFAULT_OFFSET 10.0
 #define EMERGENCY_SHUTOFF_TEMP 170.0
 
 enum mode{brew, steam};
@@ -31,17 +32,17 @@ enum mode{brew, steam};
 class GCP {
 private:
     Adafruit_MAX31865 tempProbe = Adafruit_MAX31865(A5);
-    mode currentMode = brew;
+    mode currentMode;
 
     double actualTemp;
     double targetTemp = DEFAULT_BREW_TEMP;
     double targetSteamTemp = DEFAULT_STEAM_TEMP;
-    double tempOffset = 10.0;
+    double tempOffset = DEFAULT_OFFSET;
     
     double maxBrewTemp = 100.0;
     double minBrewTemp = 75.0;
 
-    double maxSteamTemp = 160.0;
+    double maxSteamTemp = 165.0;
     double minSteamTemp = 140.0;
 
     double brew_output;

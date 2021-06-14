@@ -8,6 +8,7 @@ GCP::GCP(double targetTemp, double offset) {
 	this->tempProbe.begin(MAX31865_3WIRE);
 	this->setTargetTemp(targetTemp);
 	this->setTempOffset(offset);
+	this->setMode(brew);
 	this->actualTemp = this->getActualTemp();
 }
 

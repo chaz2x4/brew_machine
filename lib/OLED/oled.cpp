@@ -11,8 +11,6 @@ void OLED::start(){
     pinMode(BUTTON_B, INPUT_PULLUP);
     pinMode(BUTTON_C, INPUT_PULLUP);
     timeLastButton = millis();
-
-    gcp = GCP();
 }
 
 void OLED::eventListener(){
@@ -55,10 +53,11 @@ void OLED::eventListener(){
             timeLastButton = millis();
             if(this->isEditable) this->isEditable = false;
         }
-        else if(buttonState[2] == HIGH && lastButtonState[2] == LOW) { downTime = -1; }
-
+        else if(buttonState[2] == HIGH && lastButtonState[2] == LOW) {
+            downTime = -1; 
+            this->changeMode();
+        }
         if(buttonState[2] == LOW && (millis() - downTime) >= TRIGGER_TIME) this->isEditable = true;
-        else this->changeMode();
         lastButtonState[2] = buttonState[2];
     }
 }
@@ -81,8 +80,8 @@ void OLED::refresh(){
     display.setCursor(13, 0);
     display.clearDisplay();
 
-    ulong delay = 2000;
-    char* currentMode = "Brew";
+    ulong wait = 2000;
+    char *currentMode = "Brew";
     double targetTemp = gcp.getTargetTemp();
     double currentTemp = gcp.getActualTemp();
     if(gcp.getCurrentMode() == steam) {
@@ -92,14 +91,15 @@ void OLED::refresh(){
     if(this->isEditable) {
         if(flash) display.printf("Set %s: \n %.1f C", currentMode, targetTemp);
         else display.printf("Set %s: \n %.1d C", currentMode, 0x0);
-        delay = 500;
+        wait = 500;
     }
     else {
         if(flash) display.printf("%sing \n %.1f C", currentMode, targetTemp);
         else display.printf("Temp: \n %.1f C", currentTemp);
+        wait = 2000;
     }
 
-    if((millis() - lastTime) >= delay) {
+    if((millis() - lastTime) >= wait) {
         lastTime = millis();
         flash = !flash;
     }
