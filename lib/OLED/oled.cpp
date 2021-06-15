@@ -93,14 +93,13 @@ void OLED::refresh(){
         targetTemp = gcp.getTargetSteamTemp();
     }
     if(this->isEditable) {
-        if(flash) display.printf("Set %s \n %.1f C", currentMode, targetTemp);
+        if(flash) display.printf("Set %s\n %#.1f C", currentMode, targetTemp);
         else display.printf("Set %s", currentMode);
         wait = 500;
     }
     else {
-            Serial.println(targetTemp);
-        if(flash) display.printf("%sing: \n %.1f C", currentMode, targetTemp);
-        else display.printf("Temp: \n %.1f C", currentTemp);
+        if(flash) display.printf("%sing\n %#0.1f C", currentMode, targetTemp);
+        else display.printf("Temp:\n %#.1f C", currentTemp);
         wait = 2000;
     }
 
