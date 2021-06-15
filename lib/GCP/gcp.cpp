@@ -41,17 +41,21 @@ void GCP::setTargetSteamTemp(double temp) {
 }
 
 void GCP::incrementTemp() {
-	double *temp;
-	if(this->currentMode == steam) temp = &targetSteamTemp;
-	else temp = &targetTemp;
-	*temp += 0.5;
+	double temp;
+	if(this->currentMode == steam) temp = targetSteamTemp;
+	else temp = targetTemp;
+	temp += 0.5;
+	if(this->currentMode == steam) this->setTargetSteamTemp(temp);
+	else this->setTargetTemp(temp);
 }
 
 void GCP::decrementTemp() {
-	double *temp;
-	if(this->currentMode == steam) temp = &targetSteamTemp;
-	else temp = &targetTemp;
-	*temp -= 0.5;
+	double temp;
+	if(this->currentMode == steam) temp = targetSteamTemp;
+	else temp = targetTemp;
+	temp -= 0.5;
+	if(this->currentMode == steam) this->setTargetSteamTemp(temp);
+	else this->setTargetTemp(temp);
 }
 
 double GCP::getTargetTemp() {

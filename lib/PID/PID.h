@@ -22,10 +22,10 @@ private:
 
     double cycleRunTime;
 public:
-    PID(double *input, double *output, double *setpoint, ulong time);
-    void tune(double kp, double ki, double kd);
+    PID(double*, double*, double*, ulong);
+    void tune(double, double, double);
     void compute();
-    void setCycleTime(double time);
+    void setCycleTime(double);
 };
 
 #endif

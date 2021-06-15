@@ -67,7 +67,7 @@ public:
     double getActualTemp(); //returns current temperature value
     double getTempOffset();
     void setTargetTemp(double); // Sets temperature to control to (setpoint)
-    void setTargetSteamTemp(double); // Sets temperature to control to (setpoint)
+    void setTargetSteamTemp(double);
     void setTempOffset(double);
     void update();
 };

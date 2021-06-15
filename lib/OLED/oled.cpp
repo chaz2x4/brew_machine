@@ -34,8 +34,9 @@ void OLED::eventListener(){
             downTime = millis();
             timeLastButton = millis();
             if(this->isEditable) gcp.incrementTemp();
+            else this->changeMode();
         }
-        else if(buttonState[0] == HIGH && lastButtonState[0] == LOW) { downTime = -1 ; }
+        else if(buttonState[0] == HIGH && lastButtonState[0] == LOW) downTime = -1 ;
         lastButtonState[0] = buttonState[0];
 
         //Decrease temperature when editable on button B
@@ -43,22 +44,25 @@ void OLED::eventListener(){
             downTime = millis();
             timeLastButton = millis();
             if(this->isEditable) gcp.decrementTemp();
+            else this->changeMode();
         }
-        else if(buttonState[1] == HIGH && lastButtonState[1] == LOW) { downTime = -1 ; }
+        else if(buttonState[1] == HIGH && lastButtonState[1] == LOW) downTime = -1 ;
         lastButtonState[1] = buttonState[1];
 
         //Change mode if button C is pressed
         if(buttonState[2] == LOW && lastButtonState[2] == HIGH) {
             downTime = millis();
             timeLastButton = millis();
-            if(this->isEditable) this->isEditable = false;
+            if(this->isEditable) {
+                this->isEditable = false;
+                lastTime = millis();
+                flash = true;
+            }
         }
-        else if(buttonState[2] == HIGH && lastButtonState[2] == LOW) {
-            downTime = -1; 
-            this->changeMode();
-        }
+        else if(buttonState[2] == HIGH && lastButtonState[2] == LOW) downTime = -1; 
         if(buttonState[2] == LOW && (millis() - downTime) >= TRIGGER_TIME) this->isEditable = true;
         lastButtonState[2] = buttonState[2];
+        display.clearDisplay();
     }
 }
 
@@ -80,7 +84,7 @@ void OLED::refresh(){
     display.setCursor(13, 0);
     display.clearDisplay();
 
-    ulong wait = 2000;
+    ulong wait;
     char *currentMode = "Brew";
     double targetTemp = gcp.getTargetTemp();
     double currentTemp = gcp.getActualTemp();
@@ -89,12 +93,13 @@ void OLED::refresh(){
         targetTemp = gcp.getTargetSteamTemp();
     }
     if(this->isEditable) {
-        if(flash) display.printf("Set %s: \n %.1f C", currentMode, targetTemp);
-        else display.printf("Set %s: \n %.1d C", currentMode, 0x0);
+        if(flash) display.printf("Set %s \n %.1f C", currentMode, targetTemp);
+        else display.printf("Set %s", currentMode);
         wait = 500;
     }
     else {
-        if(flash) display.printf("%sing \n %.1f C", currentMode, targetTemp);
+            Serial.println(targetTemp);
+        if(flash) display.printf("%sing: \n %.1f C", currentMode, targetTemp);
         else display.printf("Temp: \n %.1f C", currentTemp);
         wait = 2000;
     }
@@ -108,6 +113,8 @@ void OLED::refresh(){
 
 void OLED::changeMode(){
     display.clearDisplay();
+    lastTime = millis();
+    flash = true;
     if(gcp.getCurrentMode() == brew) gcp.setMode(steam);
     else gcp.setMode(brew);
 }
