@@ -18,44 +18,47 @@
 #define ON HIGH
 #define OFF LOW
 
-#define HEATER_PIN 27
-#define STEAM_PIN 13
+#define HEATER_PIN 13
+#define STEAM_PIN 27
 
 #define RREF 430
-#define DEFAULT_BREW_TEMP 95.0
-#define DEFAULT_STEAM_TEMP 145.0
+#define DEFAULT_BREW_TEMP 97.5
+#define DEFAULT_STEAM_TEMP 150.0
+#define DEFAULT_OFFSET 6.0
 #define EMERGENCY_SHUTOFF_TEMP 170.0
+
+#define CYCLE_TIME 5000
 
 enum mode{brew, steam};
 
 class GCP {
 private:
     Adafruit_MAX31865 tempProbe = Adafruit_MAX31865(A5);
-    mode currentMode = brew;
+    mode currentMode;
 
     double actualTemp;
     double targetTemp = DEFAULT_BREW_TEMP;
     double targetSteamTemp = DEFAULT_STEAM_TEMP;
-    double tempOffset = 10.0;
+    double tempOffset = DEFAULT_OFFSET;
     
     double maxBrewTemp = 100.0;
     double minBrewTemp = 75.0;
 
-    double maxSteamTemp = 160.0;
+    double maxSteamTemp = 165.0;
     double minSteamTemp = 140.0;
 
     double brew_output;
     double steam_output;
 
     ulong cycleStartTime;
-    ulong cycleRunTime;
+    ulong cycleRunTime = CYCLE_TIME;
 
-    PID brewTempManager = PID(&actualTemp, &brew_output, &targetTemp, 5000);
-    PID steamTempManager = PID(&actualTemp, &steam_output, &targetSteamTemp, 5000);
+    PID brewTempManager = PID(&actualTemp, &brew_output, &targetTemp, CYCLE_TIME);
+    PID steamTempManager = PID(&actualTemp, &steam_output, &targetSteamTemp, CYCLE_TIME);
 
 public:
     GCP();
-    GCP(double targetTemp, double offset);
+    GCP(double, double, double);
     ~GCP();
     mode getCurrentMode();
     void setMode(mode);
@@ -65,9 +68,9 @@ public:
     double getTargetSteamTemp();
     double getActualTemp(); //returns current temperature value
     double getTempOffset();
-    void setTargetTemp(double temp); // Sets temperature to control to (setpoint)
-    void setTargetSteamTemp(double temp); // Sets temperature to control to (setpoint)
-    void setTempOffset(double offset);
+    void setTargetTemp(double); // Sets temperature to control to (setpoint)
+    void setTargetSteamTemp(double);
+    void setTempOffset(double);
     void update();
 };
 #endif

@@ -1,14 +1,18 @@
 #include "gcp.h"
 
 GCP::GCP() {
-	GCP(targetTemp = DEFAULT_BREW_TEMP, tempOffset = 0.0);
+	GCP(targetTemp = DEFAULT_BREW_TEMP, targetSteamTemp = DEFAULT_STEAM_TEMP, tempOffset = DEFAULT_OFFSET);
 }
 
-GCP::GCP(double targetTemp, double offset) {
+GCP::GCP(double targetTemp, double targetSteamTemp, double offset) {
 	this->tempProbe.begin(MAX31865_3WIRE);
 	this->setTargetTemp(targetTemp);
+	this->setTargetSteamTemp(targetSteamTemp);
 	this->setTempOffset(offset);
+	this->setMode(brew);
 	this->actualTemp = this->getActualTemp();
+	pinMode(HEATER_PIN, OUTPUT);
+	pinMode(STEAM_PIN, OUTPUT);
 }
 
 GCP::~GCP() {
@@ -37,17 +41,21 @@ void GCP::setTargetSteamTemp(double temp) {
 }
 
 void GCP::incrementTemp() {
-	double *temp;
-	if(this->currentMode == steam) temp = &targetSteamTemp;
-	else temp = &targetTemp;
-	*temp += 0.5;
+	double temp;
+	if(this->currentMode == steam) temp = targetSteamTemp;
+	else temp = targetTemp;
+	temp += 0.5;
+	if(this->currentMode == steam) this->setTargetSteamTemp(temp);
+	else this->setTargetTemp(temp);
 }
 
 void GCP::decrementTemp() {
-	double *temp;
-	if(this->currentMode == steam) temp = &targetSteamTemp;
-	else temp = &targetTemp;
-	*temp -= 0.5;
+	double temp;
+	if(this->currentMode == steam) temp = targetSteamTemp;
+	else temp = targetTemp;
+	temp -= 0.5;
+	if(this->currentMode == steam) this->setTargetSteamTemp(temp);
+	else this->setTargetTemp(temp);
 }
 
 double GCP::getTargetTemp() {
@@ -87,15 +95,11 @@ void GCP::update() {
 	double targetTemp = this->getTargetTemp();
 	double targetSteamTemp = this->getTargetSteamTemp();
 	double actualTemp = this->getActualTemp();
-	double offset = this->getTempOffset();
 
 	brewTempManager.compute();
 	steamTempManager.compute();
 
-	Serial.printf("\nActual Temp: %f\n", actualTemp);
-	Serial.printf("Brew  Temp: %f %f\n", targetTemp, brew_output);
-	Serial.printf("Steam Temp: %f %f\n", targetSteamTemp, steam_output);
-	Serial.printf("Offset: %f\n", offset);
+	Serial.printf("Temp:%f\tTarget:%f\tSteamTgt:%f\n", actualTemp, targetTemp, targetSteamTemp);
 	/* 
 		Brew Relay and Steam Relay will always be calculating
 		When power switch is on the heater will heat until it gets to targetBrewtemp
@@ -114,11 +118,11 @@ void GCP::update() {
 		cycleStartTime += cycleRunTime;
 	}
 	
-	if(brew_output < millis() - cycleStartTime) digitalWrite(HEATER_PIN, ON);
-	else digitalWrite(HEATER_PIN, OFF);
+	if(brew_output < millis() - cycleStartTime) digitalWrite(HEATER_PIN, OFF);
+	else digitalWrite(HEATER_PIN, ON);
 
-	if(steam_output < millis() - cycleStartTime) digitalWrite(STEAM_PIN, ON);
-	else digitalWrite(STEAM_PIN, OFF);
+	if(steam_output < millis() - cycleStartTime) digitalWrite(STEAM_PIN, OFF);
+	else digitalWrite(STEAM_PIN, ON);
 
 	if(actualTemp >= EMERGENCY_SHUTOFF_TEMP) {
 		digitalWrite(STEAM_PIN, OFF);

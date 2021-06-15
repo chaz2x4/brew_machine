@@ -33,46 +33,36 @@ void OLED::eventListener(){
         if(buttonState[0] == LOW && lastButtonState[0] == HIGH) {
             downTime = millis();
             timeLastButton = millis();
-            if(this->isEditable) this->incrementTemp();
+            if(this->isEditable) gcp.incrementTemp();
             else this->changeMode();
         }
-        else if(buttonState[0] == HIGH && lastButtonState[0] == LOW) { downTime = -1 ; }
+        else if(buttonState[0] == HIGH && lastButtonState[0] == LOW) downTime = -1 ;
         lastButtonState[0] = buttonState[0];
 
         //Decrease temperature when editable on button B
         if(buttonState[1] == LOW && lastButtonState[1] == HIGH) {
             downTime = millis();
             timeLastButton = millis();
-            if(this->isEditable) this->decrementTemp();
+            if(this->isEditable) gcp.decrementTemp();
             else this->changeMode();
         }
-        else if(buttonState[1] == HIGH && lastButtonState[1] == LOW) { downTime = -1 ; }
+        else if(buttonState[1] == HIGH && lastButtonState[1] == LOW) downTime = -1 ;
         lastButtonState[1] = buttonState[1];
 
         //Change mode if button C is pressed
         if(buttonState[2] == LOW && lastButtonState[2] == HIGH) {
             downTime = millis();
             timeLastButton = millis();
-            if(this->isEditable) this->isEditable = false;
+            if(this->isEditable) {
+                this->isEditable = false;
+                lastTime = millis();
+                flash = true;
+            }
         }
-        else if(buttonState[2] == HIGH && lastButtonState[2] == LOW) {
-            downTime = -1;
-        }
-        if(buttonState[2] == LOW && this->getCurrentMode() == brew && (millis() - downTime) >= TRIGGER_TIME) {
-            this->isEditable = true;
-        }
+        else if(buttonState[2] == HIGH && lastButtonState[2] == LOW) downTime = -1; 
+        if(buttonState[2] == LOW && (millis() - downTime) >= TRIGGER_TIME) this->isEditable = true;
         lastButtonState[2] = buttonState[2];
-    }
-}
-
-void OLED::wait (int delay, char* text1, float var1, char* text2, float var2){
-    display.clearDisplay();
-    if(flash) display.printf(text1, var1);
-    else display.printf(text2, var2);
-    
-    if((millis() - lastTime) >= delay) {
-        lastTime = millis();
-        flash = !flash;
+        display.clearDisplay();
     }
 }
 
@@ -87,28 +77,43 @@ bool OLED::timedout(){
 }
 
 void OLED::refresh(){
-    this->update();
+    gcp.update();
     if(timedout()) return;
     display.setTextSize(2);
     display.setTextColor(SSD1306_WHITE);
     display.setCursor(13, 0);
-    mode currentMode = this->getCurrentMode();
-    if(currentMode == brew) {
-        if(this->isEditable) {
-            wait(500, (char *)("Set Brew: %.1f C"), this->getTargetTemp(), (char *)("Set Brew: "), 0x0);
-        }
-        else {
-            wait(2000, (char *)("Target Temp: %.1f C\n"), this->getTargetTemp(), (char *)("Temp: \n %.1f C\n"), this->getActualTemp());
-        }
+    display.clearDisplay();
+
+    ulong wait;
+    char *currentMode = "Brew";
+    double targetTemp = gcp.getTargetTemp();
+    double currentTemp = gcp.getActualTemp();
+    if(gcp.getCurrentMode() == steam) {
+        currentMode = "Steam";
+        targetTemp = gcp.getTargetSteamTemp();
     }
-    if(currentMode == steam) {
-        wait(1000, (char *)("Target Temp: %.1f C\n"), this->getTargetSteamTemp(), (char *)("Steam Temp: %.1f C\n"), this->getActualTemp());
+    if(this->isEditable) {
+        if(flash) display.printf("Set %s\n %#.1f C", currentMode, targetTemp);
+        else display.printf("Set %s", currentMode);
+        wait = 500;
+    }
+    else {
+        if(flash) display.printf("%sing\n %#0.1f C", currentMode, targetTemp);
+        else display.printf("Temp:\n %#.1f C", currentTemp);
+        wait = 2000;
+    }
+
+    if((millis() - lastTime) >= wait) {
+        lastTime = millis();
+        flash = !flash;
     }
     display.display();
 }
 
 void OLED::changeMode(){
     display.clearDisplay();
-    if(this->getCurrentMode() == brew) this->setMode(steam);
-    else this->setMode(brew);
+    lastTime = millis();
+    flash = true;
+    if(gcp.getCurrentMode() == brew) gcp.setMode(steam);
+    else gcp.setMode(brew);
 }

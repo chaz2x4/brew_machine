@@ -13,10 +13,10 @@
 #define BUTTON_B 32 //pin 32; cycle modes; decrement temperature 
 #define BUTTON_C 14 //pin 14; press and hold on brew screen to change temperature
 
-#define SCREEN_TIMEOUT 30000 //amount of milliseconds before screen goes blank
+#define SCREEN_TIMEOUT 60000 //amount of milliseconds before screen goes blank
 #define TRIGGER_TIME 1000 //amount of time to hold button for settings change
 
-class OLED : public GCP {
+class OLED {
 public:
     void start(); //Starts the display with the appropriate pins initialize
     void eventListener(); //Listens for button presses
@@ -34,8 +34,9 @@ private:
     int lastButtonState[3] = {HIGH, HIGH, HIGH};
 
     bool timedout(); //turns screen off after a set amount of time
-    void wait(int time, char firstText[], float firstValue, char secondText[], float secondValue); //switches screen on a delay without interrupting processes
     bool isEditable = false; //is screen on the setTemperature method
+
+    GCP gcp;
 };
 
 #endif
