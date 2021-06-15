@@ -27,7 +27,7 @@
 #define DEFAULT_OFFSET 6.0
 #define EMERGENCY_SHUTOFF_TEMP 170.0
 
-#define CYCLE_TIME 1000
+#define CYCLE_TIME 5000
 
 enum mode{brew, steam};
 
