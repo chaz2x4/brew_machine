@@ -24,8 +24,10 @@
 #define RREF 430
 #define DEFAULT_BREW_TEMP 95.0
 #define DEFAULT_STEAM_TEMP 145.0
-#define DEFAULT_OFFSET 10.0
+#define DEFAULT_OFFSET 6.0
 #define EMERGENCY_SHUTOFF_TEMP 170.0
+
+#define CYCLE_TIME 1000
 
 enum mode{brew, steam};
 
@@ -49,10 +51,10 @@ private:
     double steam_output;
 
     ulong cycleStartTime;
-    ulong cycleRunTime;
+    ulong cycleRunTime = CYCLE_TIME;
 
-    PID brewTempManager = PID(&actualTemp, &brew_output, &targetTemp, 5000);
-    PID steamTempManager = PID(&actualTemp, &steam_output, &targetSteamTemp, 5000);
+    PID brewTempManager = PID(&actualTemp, &brew_output, &targetTemp, CYCLE_TIME);
+    PID steamTempManager = PID(&actualTemp, &steam_output, &targetSteamTemp, CYCLE_TIME);
 
 public:
     GCP();

@@ -122,11 +122,11 @@ void GCP::update() {
 		cycleStartTime += cycleRunTime;
 	}
 	
-	if(brew_output < millis() - cycleStartTime) digitalWrite(HEATER_PIN, ON);
-	else digitalWrite(HEATER_PIN, OFF);
+	if(brew_output < millis() - cycleStartTime) digitalWrite(HEATER_PIN, OFF);
+	else digitalWrite(HEATER_PIN, ON);
 
-	if(steam_output < millis() - cycleStartTime) digitalWrite(STEAM_PIN, ON);
-	else digitalWrite(STEAM_PIN, OFF);
+	if(steam_output < millis() - cycleStartTime) digitalWrite(STEAM_PIN, OFF);
+	else digitalWrite(STEAM_PIN, ON);
 
 	if(actualTemp >= EMERGENCY_SHUTOFF_TEMP) {
 		digitalWrite(STEAM_PIN, OFF);
