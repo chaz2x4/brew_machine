@@ -6,8 +6,8 @@
 
 class PID {
 private:
-    double kp = 2;     // Proportional gain
-    double ki = 5;   // Integral gain
+    double kp = 5;     // Proportional gain
+    double ki = 3;   // Integral gain
     double kd = 1;      // Derivative gain
 
     ulong lastTime;
