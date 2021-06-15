@@ -99,7 +99,7 @@ void GCP::update() {
 	brewTempManager.compute();
 	steamTempManager.compute();
 
-	Serial.printf("\Temp: %f \t Target: %f \t SteamTgt: %f\n", actualTemp, targetTemp, targetSteamTemp);
+	Serial.printf("Temp:%f\tTarget:%f\tSteamTgt:%f\n", actualTemp, targetTemp, targetSteamTemp);
 	/* 
 		Brew Relay and Steam Relay will always be calculating
 		When power switch is on the heater will heat until it gets to targetBrewtemp
