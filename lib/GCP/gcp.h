@@ -18,8 +18,8 @@
 #define ON HIGH
 #define OFF LOW
 
-#define HEATER_PIN 27
-#define STEAM_PIN 13
+#define HEATER_PIN 13
+#define STEAM_PIN 27
 
 #define RREF 430
 #define DEFAULT_BREW_TEMP 95.0
@@ -56,7 +56,7 @@ private:
 
 public:
     GCP();
-    GCP(double targetTemp, double offset);
+    GCP(double, double, double);
     ~GCP();
     mode getCurrentMode();
     void setMode(mode);
@@ -66,9 +66,9 @@ public:
     double getTargetSteamTemp();
     double getActualTemp(); //returns current temperature value
     double getTempOffset();
-    void setTargetTemp(double temp); // Sets temperature to control to (setpoint)
-    void setTargetSteamTemp(double temp); // Sets temperature to control to (setpoint)
-    void setTempOffset(double offset);
+    void setTargetTemp(double); // Sets temperature to control to (setpoint)
+    void setTargetSteamTemp(double); // Sets temperature to control to (setpoint)
+    void setTempOffset(double);
     void update();
 };
 #endif

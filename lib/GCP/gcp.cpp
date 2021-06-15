@@ -1,15 +1,18 @@
 #include "gcp.h"
 
 GCP::GCP() {
-	GCP(targetTemp = DEFAULT_BREW_TEMP, tempOffset = DEFAULT_OFFSET);
+	GCP(targetTemp = DEFAULT_BREW_TEMP, targetSteamTemp = DEFAULT_STEAM_TEMP, tempOffset = DEFAULT_OFFSET);
 }
 
-GCP::GCP(double targetTemp, double offset) {
+GCP::GCP(double targetTemp, double targetSteamTemp, double offset) {
 	this->tempProbe.begin(MAX31865_3WIRE);
 	this->setTargetTemp(targetTemp);
+	this->setTargetSteamTemp(targetSteamTemp);
 	this->setTempOffset(offset);
 	this->setMode(brew);
 	this->actualTemp = this->getActualTemp();
+	pinMode(HEATER_PIN, OUTPUT);
+	pinMode(STEAM_PIN, OUTPUT);
 }
 
 GCP::~GCP() {
