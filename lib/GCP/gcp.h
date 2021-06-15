@@ -25,7 +25,7 @@
 #define DEFAULT_BREW_TEMP 97.5
 #define DEFAULT_STEAM_TEMP 150.0
 #define DEFAULT_OFFSET 6.0
-#define EMERGENCY_SHUTOFF_TEMP 170.0
+#define EMERGENCY_SHUTOFF_TEMP 165.0
 
 #define CYCLE_TIME 5000
 
@@ -44,8 +44,8 @@ private:
     double maxBrewTemp = 100.0;
     double minBrewTemp = 75.0;
 
-    double maxSteamTemp = 165.0;
-    double minSteamTemp = 140.0;
+    double maxSteamTemp = 155.0;
+    double minSteamTemp = 145.0;
 
     double brew_output;
     double steam_output;

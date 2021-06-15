@@ -26,11 +26,12 @@ void PID::compute(){
 		double error = *targetTemp - input;
 		double dInput = input - lastInput;
 		outputSum += (ki * error);
+		outputSum -= (kp * dInput);
 
 		if(outputSum > cycleRunTime) outputSum = cycleRunTime;
 		else if (outputSum < 0) outputSum = 0;
 
-		double output = kp * error;
+		double output = 0;
 		output += outputSum - kd * dInput;
 
 	    if(output > cycleRunTime) output = cycleRunTime;
