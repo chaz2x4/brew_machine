@@ -11,3 +11,5 @@
 #include <WebServer.h>
 #include <ESPmDNS.h>
 #include <Update.h>
+#include <WiFiUdp.h>
+#include <ArduinoOTA.h>
