@@ -5,3 +5,9 @@
 #include "GCP.h"
 #include "PID.h"
 #include "OLED.h"
+
+#include <WiFi.h>
+#include <WiFiClient.h>
+#include <WebServer.h>
+#include <ESPmDNS.h>
+#include <Update.h>

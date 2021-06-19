@@ -1,11 +1,6 @@
-#include <WiFi.h>
-#include <WiFiClient.h>
-#include <WebServer.h>
-#include <ESPmDNS.h>
-#include <Update.h>
-
 #include "header.h"
 #include "passwords.h"
+#include "websites.h"
 
 WebServer server(80);
 OLED brew_machine;
@@ -20,6 +15,9 @@ void setup() {
 		delay(500);
 		Serial.print(".");
 	}
+	Serial.print("IP Address: ");
+	Serial.print(WiFi.localIP());
+	Serial.println("");
 
 	if (!MDNS.begin("gaggia")) { //http://gaggia.local
 		Serial.println("Error setting up MDNS responder!");
@@ -27,8 +25,12 @@ void setup() {
 		delay(1000);
 		}
 	}
-
 	Serial.println("Running on http://gaggia.local");
+
+	server.on("/firmware", HTTP_GET, []() {
+		server.sendHeader("Connection", "close");
+		server.send(200, "text/html", firmwareIndex);
+	});
 
 	server.on("set_tunings", HTTP_POST, [](){
 		server.sendHeader("Connection", "close");
