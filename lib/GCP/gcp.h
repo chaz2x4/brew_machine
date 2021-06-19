@@ -22,9 +22,9 @@
 #define STEAM_PIN 27
 
 #define RREF 430
-#define DEFAULT_BREW_TEMP 100.5
-#define DEFAULT_STEAM_TEMP 152.0
-#define DEFAULT_OFFSET 6.0
+#define DEFAULT_BREW_TEMP 99.0
+#define DEFAULT_STEAM_TEMP 145.0
+#define DEFAULT_OFFSET 8.0
 #define EMERGENCY_SHUTOFF_TEMP 165.0
 
 #define CYCLE_TIME 1000
@@ -37,11 +37,11 @@ private:
     mode currentMode;
 
     double actualTemp;
+    double tempOffset = DEFAULT_OFFSET;
     double targetTemp = DEFAULT_BREW_TEMP;
     double targetSteamTemp = DEFAULT_STEAM_TEMP;
-    double tempOffset = DEFAULT_OFFSET;
     
-    double maxBrewTemp = 105.0;
+    double maxBrewTemp = 100.0;
     double minBrewTemp = 85.0;
 
     double maxSteamTemp = 155.0;

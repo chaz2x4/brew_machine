@@ -79,6 +79,7 @@ double GCP::getActualTemp() {
 		if (fault & MAX31865_FAULT_OVUV) Serial.println("Under/Over voltage");
 		tempProbe.clearFault();
 	}
+	temp -= tempOffset;
 	this->actualTemp = temp;
 	return temp;
 }
@@ -126,7 +127,7 @@ void GCP::update() {
 	if(steam_output < millis() - cycleStartTime) digitalWrite(STEAM_PIN, OFF);
 	else digitalWrite(STEAM_PIN, ON);
 
-	if(actualTemp >= EMERGENCY_SHUTOFF_TEMP) {
+	if((actualTemp + tempOffset) >= EMERGENCY_SHUTOFF_TEMP) {
 		digitalWrite(STEAM_PIN, OFF);
 		digitalWrite(HEATER_PIN, OFF);
 	}
