@@ -21,13 +21,14 @@ void setup() {
 		Serial.print(".");
 	}
 
-	Serial.printf("IP Address: %s\n", WiFi.localIP());
 	if (!MDNS.begin("gaggia")) { //http://gaggia.local
 		Serial.println("Error setting up MDNS responder!");
 		while (1) {
 		delay(1000);
 		}
 	}
+
+	Serial.println("Running on http://gaggia.local");
 
 	server.on("set_tunings", HTTP_POST, [](){
 		server.sendHeader("Connection", "close");
