@@ -6,9 +6,9 @@
 
 class PID {
 private:
-    double kp = 4;     // Proportional gain
-    double ki = 1;   // Integral gain
-    double kd = 2;      // Derivative gain
+    double kp = 12;     // Proportional gain
+    double ki = 0.5;   // Integral gain
+    double kd = 4;      // Derivative gain
 
     ulong lastTime;
     ulong sampleTime;
