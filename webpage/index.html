@@ -167,7 +167,11 @@
             });
             callServer("/get_tunings", function(inherit){
                 var tempData = JSON.parse(inherit.response);
-                console.log(tempData);
+                Object.entries(tempData).forEach(entry => {
+                    const [name, value] = entry;
+                    var input = document.getElementById(name);
+                    input.value = value;
+                });
             });
         }
     </script>
@@ -182,13 +186,13 @@
             </div>
             <div class="target-button-container col"> 
                 <label class="form-label col"> Target: 95 C</label>
-                <button class="btn btn-outline-danger" id="incrementButton"> + </button>
-                <button class="btn btn-outline-secondary" id="decrementButton"> - </button>
+                <button class="btn btn-outline-danger" id="targetplus"> + </button>
+                <button class="btn btn-outline-secondary" id="targetminus"> - </button>
             </div>
             <div class="offset-button-container col"> 
                 <label class="form-label"> Offset: 8 C</label>
-                <button class="btn btn-outline-danger" id="incrementButton"> + </button>
-                <button class="btn btn-outline-secondary" id="decrementButton"> - </button>
+                <button class="btn btn-outline-danger" id="offsetplus"> + </button>
+                <button class="btn btn-outline-secondary" id="offsetminus"> - </button>
             </div>
         </div>
     </div>
