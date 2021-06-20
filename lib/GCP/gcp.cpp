@@ -92,6 +92,14 @@ void GCP::setTempOffset(double offset){
 	this->tempOffset = offset;
 }
 
+double GCP::getBrewOutput(){
+	return this->brew_output;
+}
+
+double GCP::getSteamOutput(){
+	return this->steam_output;
+}
+
 void GCP::update() {
 	double targetTemp = this->getTargetTemp();
 	double targetSteamTemp = this->getTargetSteamTemp();
@@ -99,9 +107,6 @@ void GCP::update() {
 
 	brewTempManager.compute();
 	steamTempManager.compute();
-
-	Serial.printf("\tTemp:%f\tTarget:%f\tError:%f\tOutput:%f\n", actualTemp, targetTemp, (targetTemp-actualTemp), brew_output);
-	Serial.printf("\tTemp:%f\tSteamTgt:%f\tError:%f\tOutput:%f\n", actualTemp, targetSteamTemp, (targetSteamTemp-actualTemp), steam_output);
 
 	/* 
 		Brew Relay and Steam Relay will always be calculating

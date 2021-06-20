@@ -34,6 +34,12 @@ void setup() {
 		server.send(200, "text/html", firmwareIndex);
 	});
 
+	server.on("/get_temps", HTTP_GET, []() {
+		server.sendHeader("Connection", "keep-alive");
+		char* tempOutput = brew_machine.getOutput();
+		server.send(200, "text/json", tempOutput);
+	});
+
 	server.on("set_tunings", HTTP_POST, [](){
 		server.sendHeader("Connection", "close");
 		server.send(200, "text/plain", (Update.hasError()) ? "FAILED TO UPDATE TUNINGS" : "UPDATED TUNINGS");

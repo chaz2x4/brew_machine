@@ -78,6 +78,7 @@ bool OLED::timedout(){
 
 void OLED::refresh(){
     gcp.update();
+    this->getOutput();
     if(timedout()) return;
     display.setTextSize(2);
     display.setTextColor(SSD1306_WHITE);
@@ -116,4 +117,22 @@ void OLED::changeMode(){
     flash = true;
     if(gcp.getCurrentMode() == brew) gcp.setMode(steam);
     else gcp.setMode(brew);
+}
+
+char* OLED::getOutput(){
+    std::ostringstream output;
+    std::string tmp;
+
+    output << "{ temperature: " << gcp.getActualTemp();
+    output << ", brew: { target: " << gcp.getTargetTemp(); 
+    output << ", output: " << gcp.getBrewOutput();
+    output << " } , steam: { target: " << gcp.getTargetSteamTemp();
+    output << ", output: " << gcp.getSteamOutput() << " }}";
+    tmp = output.str();
+
+    int n = tmp.length();
+    char result[n + 1];
+    strcpy(result, tmp.c_str());
+    Serial.println(result);
+    return result;
 }

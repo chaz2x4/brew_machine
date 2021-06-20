@@ -24,7 +24,7 @@
 #define RREF 430
 #define DEFAULT_BREW_TEMP 99.0
 #define DEFAULT_STEAM_TEMP 145.0
-#define DEFAULT_OFFSET 10.0
+#define DEFAULT_OFFSET 7.0
 #define EMERGENCY_SHUTOFF_TEMP 165.0
 
 #define CYCLE_TIME 1000
@@ -68,6 +68,8 @@ public:
     double getTargetSteamTemp();
     double getActualTemp(); //returns current temperature value
     double getTempOffset();
+    double getBrewOutput();
+    double getSteamOutput();
     void setTargetTemp(double); // Sets temperature to control to (setpoint)
     void setTargetSteamTemp(double);
     void setTempOffset(double);
