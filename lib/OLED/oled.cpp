@@ -135,3 +135,18 @@ String OLED::getOutput(){
     Serial.println(output);
     return output;
 }
+
+String OLED::getTunings(){
+    String output;
+    
+    double* tunings = gcp.getTunings();
+    output += "{ \"kp\": ";
+    output += tunings[0];
+    output += ", \"ki\": ";
+    output += tunings[1];
+    output +=  ", \"kd\": ";
+    output += tunings[2];
+    output += " }";
+    Serial.println(output);
+    return output;
+}

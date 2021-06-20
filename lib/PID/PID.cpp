@@ -18,6 +18,11 @@ void PID::tune(double kp, double ki, double kd){
 	this->kd = kd;
 }
 
+double* PID::getTunings(){
+	static double tunings[3] = {this->kp, this->ki, this->kd};
+	return tunings;
+}
+
 void PID::compute(){
 	ulong now = millis();
 	ulong timeChange = now - lastTime;
