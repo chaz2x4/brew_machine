@@ -74,7 +74,7 @@
                         grid: {
                             color: function(context) {
                                 if(brewData.target.length){
-                                    if(context.tick.value == brewData.target[brewData.length - 1].y) return "#FF6384";
+                                    if(context.tick.value == brewData.target[brewData.target.length - 1].y) return "#FF6384";
                                 }
                                 else if(context.tick.value == defaultBrewTarget) return "#FF6384";
                             },
@@ -99,7 +99,7 @@
                     chart.options.scales.y.grid = {
                         color: function(context) {
                             if(brewData.target.length){
-                                if(context.tick.value == brewData.target[brewData.length - 1].y) return "#FF6384";
+                                if(context.tick.value == brewData.target[brewData.target.length - 1].y) return "#FF6384";
                             }
                             else if(context.tick.value == defaultBrewTarget) return "#FF6384";
                         }
@@ -114,7 +114,7 @@
                     chart.options.scales.y.grid = {
                         color: function(context) {
                             if(steamData.target.length){
-                                if(context.tick.value == steamData.target[steamData.length - 1].y) return "#FF6384";
+                                if(context.tick.value == steamData.target[steamData.target.length - 1].y) return "#FF6384";
                             }
                             else if(context.tick.value == defaultSteamTarget) return "#FF6384";
                         }
