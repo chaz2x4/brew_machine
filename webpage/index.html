@@ -2,9 +2,11 @@
 <head>
     <script>
         window.onload = function () {
+            var currentTemp = 0;
             var brewTarget = 100;
             var steamTarget = 145;
-            var offset = 8;
+            var tempOffset = 8;
+            var mode = 'brew';
             var brewData = {target: [], output: []};
             var steamData = {target: [], output: []};
             var labels = [];
@@ -94,8 +96,12 @@
                     chart.options.plugins.title.text = "Brew Temperature";
                     chart.options.scales.y.grid.color = function(context) {
                         if(context.tick.value == brewTarget) return "#FF6384";
-                    },
+                    };
+                    chart.datasets[1].data = brewData.output;
+                    mode = 'brew';
+                    tempPercent = brewTarget / currentTemp;
                     chart.update();
+                    updateElements();
                 },
             }, {
                 name: "Display Steam Temps",
@@ -105,10 +111,18 @@
                     chart.options.plugins.title.text = "Steam Temperature";
                     chart.options.scales.y.grid.color = function(context) {
                         if(context.tick.value == steamTarget) return "#FF6384";
-                    },
+                    };
+                    chart.datasets[1].data = steamData.output;
+                    mode = 'steam';
+                    tempPercent = steamTarget / currentTemp;
                     chart.update();
+                    updateElements();
                 }
             }];
+            
+            function updateElements(){
+
+            }
 
             const ctx = document.getElementById('tempChart').getContext('2d');
             var chart = new Chart(ctx, {
@@ -139,13 +153,16 @@
             callServer("/get_temps", function(inherit){
                 var tempData = JSON.parse(inherit.response);
                 var time = Date.now();
+
+                brewTarget = tempData.brew.target;
+                steamTarget = tempData.steam.target;
+                tempOffset = tempData.offset;
                 labels.push(time);
+
+                currentTemp = tempData.temperature;
                 chart.data.datasets[0].data.push(tempData.temperature);
                 brewData.output.push(tempData.brew.output);
                 steamData.output.push(tempData.steam.output);
-                brewTarget = tempData.brew.target;
-                steamTarget = tempData.steam.target;
-                tempoffset = tempData.offset;
                 
                 if(chart.data.datasets[0].data.length > 120) {
                     labels.shift();
@@ -153,6 +170,8 @@
                     brewData.output.shift();
                     steamData.output.shift();
                 }
+
+                tempPercent = (mode == 'brew') ? brewTarget /  currentTemp * 100 : steamTarget / currentTemp * 100;
                 chart.update();
                 pollServer(inherit, "/get_temps");
             });
@@ -169,7 +188,12 @@
 </head>
 <body class="container">
     <div class="chart-container container" id="tempContainer">
-        <canvas class="justify-content-md-center" id="tempChart"></canvas>
+        <div class="progress row">
+            <div class="progress-bar progress-bar-striped progress-bar-animated bg-danger" role="progressbar" style="width: 75%">
+                Current Temperature: 95 C
+            </div>
+        </div>
+        <canvas class="justify-content-md-center row" id="tempChart"></canvas>
         <div class="justify-content-md-center row">
             <div class="switch-button-container col">
                 <button class="btn btn-outline-primary" id="switch_brew"><span class="d-none d-lg-inline"> Display </span> Brew Temps </button>
