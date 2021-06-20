@@ -166,6 +166,35 @@
     <div id="tempContainer" class="chart-container" style="position:relative; height:40vh; width:120vh; margin:auto;">
         <canvas id="tempChart"></canvas>
     </div>
+    <div class="controller-container" id="tempController" style="display:none">
+        <div class="target-button-container"> 
+            <p> Target: </p>
+            <p id="targetTemp"> 95 C</p>
+            <button id="incrementButton"> + </button>
+            <button id="decrementButton"> - </button>
+        </div>
+        <div>
+            <p> Tunings: </p>
+            <div class="tuning-button-container">
+                <p>Kp:</p>
+                <input class="tuning-input" id="kp" value="">
+                <button class="tuning-button" id="kpplus"> + </button>
+                <button class="tuning-button" id="kpminus"> - </button>
+            </div>
+            <div class="tuning-button">
+                <p>Ki:</p>
+                <input class="tuning-input" id="ki" value="">
+                <button class="tuning-button" id="kiplus"> + </button>
+                <button class="tuning-button" id="kiminus"> - </button>
+            </div>
+            <div class="tuning-button">
+                <p>Kd:</p>
+                <input class="tuning-input" id="kd" value="">
+                <button class="tuning-button" id="kdplus"> + </button>
+                <button class="tuning-button" id="kdminus"> - </button>
+            </div>
+        </div>
+    </div>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.3.2"></script>
     <script src="https://cdn.jsdelivr.net/npm/moment@2.29.1"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment@0.1.1"></script>
