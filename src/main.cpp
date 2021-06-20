@@ -29,7 +29,7 @@ void setup() {
 
 	server.on("/get_temps", HTTP_GET, [](){
 		server.sendHeader("Connection", "keep-alive");
-		server.send(200, "text/plain", brew_machine.getOutput());
+		server.send(200, "text/json", brew_machine.getOutput());
 	});
 
 	server.on("/set_tunings", HTTP_POST, [](){
