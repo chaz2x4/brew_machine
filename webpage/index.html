@@ -57,7 +57,7 @@
                         },
                     },
                     y: {
-                        suggestedMax: 125,
+                        suggestedMax: 100,
                         title: {
                             display: true,
                             text: "Temperature",
@@ -69,14 +69,14 @@
             const actions = [{
                 name: "Display Brew Temps",
                 handler() {
-                    chart.options.scales.y.suggestedMax = 125;
+                    chart.options.scales.y.suggestedMax = 100;
                     chart.options.plugins.title.text = "Brew Temperature";
                     chart.update();
                 },
             }, {
                 name: "Display Steam Temps",
                 handler() {
-                    chart.options.scales.y.suggestedMax = 185;
+                    chart.options.scales.y.suggestedMax = 145;
                     chart.options.plugins.title.text = "Steam Temperature";
                     chart.update();
                 }
@@ -108,11 +108,11 @@
                     steamData.output.push({x: time, y: tempData.steam.output / 10});
 
                     if(chart.data.datasets[0].data.length > 300) {
-                        chart.data.datasets[0].data.pop();
-                        brewData.target.pop();
-                        steamData.target.pop();
-                        brewData.output.pop();
-                        steamData.output.pop();
+                        chart.data.datasets[0].data.shift();
+                        brewData.target.shift();
+                        steamData.target.shift();
+                        brewData.output.shift();
+                        steamData.output.shift();
                     }
                     chart.update();
                     pollServer(this);
