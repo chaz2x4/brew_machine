@@ -2,19 +2,15 @@
 <head>
     <script>
         window.onload = function () {
-            var NUM_POINTS = 1000;
-            var start = 0;
-            var pointData = [];
-            for (let i = 0; i < NUM_POINTS; ++i) {
-                const max = Math.random() < 0.001 ? 100 : 20;
-                pointData.push({x: start + (i * 30000), y: Math.floor(Math.random() * max) + 1});
-            }
-
-            var tempOutput = pointData;
+            var brewData = [];
+            var steamData = [];
             var data = {
                 datasets: [{
-                    label: 'Brew Temperature',
-                    data: tempOutput,
+                    label: 'Temperature',
+                    data: [],
+                }, {
+                    label: 'Output',
+                    data: brewData,
                 }],
             };
 
@@ -28,7 +24,7 @@
                     decimation: {
                         enabled: 'true',
                         algorithm: 'lttb',
-                        samples: 500
+                        samples: 50
                     }
                 },
                 scales: {
@@ -36,10 +32,16 @@
                         type: 'timeseries',
                         time: {
                             unit: 'second',
+                            stepSize: 25,
                         },
                         ticks: {
                             source: 'data',
+                            autoSkip: true,
+                            maxRotation: 10,
                         },
+                    },
+                    y: {
+                        min: 0
                     },
                 },
             }
@@ -47,17 +49,11 @@
             const actions = [{
                 name: "Display Brew Temps",
                 handler() {
-                    chart.data.datasets.forEach( dataset => {
-                        dataset.data = [];
-                    });
                     chart.update();
                 },
             }, {
                 name: "Display Steam Temps",
                 handler() {
-                    chart.data.datasets.forEach( dataset => {
-                        dataset.data = pointData;
-                    });
                     chart.update();
                 }
             }];
@@ -80,11 +76,21 @@
             var xhttp = new XMLHttpRequest();
             xhttp.onreadystatechange = function(){
                 if (this.readyState == 4 && this.status == 200) {
-                    console.log(this);
+                    var tempData = JSON.parse(this.response);
+                    chart.data.datasets[0].data.push({x: Date.now(), y: tempData.temperature});
+                    brewData.push(tempData.brew);
+                    steamData.push(tempData.steam);
+                    chart.update();
+                    pollServer(this);
                 }
             }
-            xhttp.open("GET", "http://gaggia.local/get_temps", false);
-            xhttp.send();
+            function pollServer(xhttp) {
+                console.log(xhttp);
+                xhttp.open("GET", "/get_temps", true);
+                xhttp.send();
+                console.log('hello');
+            }
+            pollServer(xhttp);
         }
     </script>
 </head>
