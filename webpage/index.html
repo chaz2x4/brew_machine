@@ -16,14 +16,17 @@
                     type: 'line',
                     label: 'Temperature',
                     data: [],
-                    borderColor: "#FF6384",
-                    backgroundColor: "#FF6384",
+                    backgroundColor: function () {
+                        var targetTemp = (mode == 'brew') ? brewTarget : steamTarget;
+                        if(currentTemp > (targetTemp + 1)) return '#FF6384';
+                        if(currentTemp < (targetTemp - 1)) return '#63D2FF';
+                        else return '#63FF8F';
+                    },
                     yAxisID: 'y',
                 }, {
                     type: 'bar',
                     label: 'Output',
                     data: brewData.output,
-                    borderColor: "#63FFDD",
                     backgroundColor: "#63FFDD",
                     yAxisID: 'y1',
                 }],
@@ -99,7 +102,6 @@
                     };
                     chart.datasets[1].data = brewData.output;
                     mode = 'brew';
-                    tempPercent = brewTarget / currentTemp;
                     chart.update();
                     updateElements();
                 },
@@ -114,7 +116,6 @@
                     };
                     chart.datasets[1].data = steamData.output;
                     mode = 'steam';
-                    tempPercent = steamTarget / currentTemp;
                     chart.update();
                     updateElements();
                 }
@@ -171,7 +172,6 @@
                     steamData.output.shift();
                 }
 
-                tempPercent = (mode == 'brew') ? brewTarget /  currentTemp * 100 : steamTarget / currentTemp * 100;
                 chart.update();
                 pollServer(inherit, "/get_temps");
             });
