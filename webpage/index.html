@@ -6,7 +6,9 @@
             var defaultSteamTarget = 150;
             var brewData = {target: [], output: []};
             var steamData = {target: [], output: []};
+            var labels = [];
             var data = {
+                labels: labels,
                 datasets: [{
                     type: 'line',
                     label: 'Temperature',
@@ -25,7 +27,7 @@
             };
 
             const options = {
-                spanGaps: 60000,
+                spanGaps: 1000,
                 responsive: true,
                 animations: false,
                 interaction: {
@@ -51,18 +53,13 @@
                             unit: 'second',
                         },
                         ticks: {
-                            source: 'data',
-                            autoSkip: false,
-                            maxRotation: 0,
-                            align: 'start',
-                            major: {
-                                enabled: true
-                            },
+                            display:false,
                         },
                         title: {
                             display: true,
                             text: "Time",
                         },
+                        stepSize: 15,
                     },
                     y: {
                         suggestedMax: defaultBrewTarget,
@@ -74,7 +71,7 @@
                         grid: {
                             color: function(context) {
                                 if(brewData.target.length){
-                                    if(context.tick.value == brewData.target[brewData.target.length - 1].y) return "#FF6384";
+                                    if(context.tick.value == brewData.target[brewData.target.length - 1]) return "#FF6384";
                                 }
                                 else if(context.tick.value == defaultBrewTarget) return "#FF6384";
                             },
@@ -96,14 +93,12 @@
                 handler() {
                     chart.options.scales.y.suggestedMax = defaultBrewTarget;
                     chart.options.plugins.title.text = "Brew Temperature";
-                    chart.options.scales.y.grid = {
-                        color: function(context) {
-                            if(brewData.target.length){
-                                if(context.tick.value == brewData.target[brewData.target.length - 1].y) return "#FF6384";
-                            }
-                            else if(context.tick.value == defaultBrewTarget) return "#FF6384";
+                    chart.options.scales.y.grid.color = function(context) {
+                        if(brewData.target.length){
+                            if(context.tick.value == brewData.target[brewData.target.length - 1]) return "#FF6384";
                         }
-                    }
+                        else if(context.tick.value == defaultBrewTarget) return "#FF6384";
+                    },
                     chart.update();
                 },
             }, {
@@ -111,14 +106,12 @@
                 handler() {
                     chart.options.scales.y.suggestedMax = defaultSteamTarget;
                     chart.options.plugins.title.text = "Steam Temperature";
-                    chart.options.scales.y.grid = {
-                        color: function(context) {
-                            if(steamData.target.length){
-                                if(context.tick.value == steamData.target[steamData.target.length - 1].y) return "#FF6384";
-                            }
-                            else if(context.tick.value == defaultSteamTarget) return "#FF6384";
+                    chart.options.scales.y.grid.color = function(context) {
+                        if(steamData.target.length){
+                            if(context.tick.value == steamData.target[steamData.target.length - 1]) return "#FF6384";
                         }
-                    }
+                        else if(context.tick.value == defaultSteamTarget) return "#FF6384";
+                    },
                     chart.update();
                 }
             }];
@@ -142,13 +135,15 @@
                 if (this.readyState == 4 && this.status == 200) {
                     var tempData = JSON.parse(this.response);
                     var time = Date.now();
-                    chart.data.datasets[0].data.push({x: time, y: tempData.temperature});
-                    brewData.target.push({x: time, y: tempData.brew.target});
-                    brewData.output.push({x: time, y: tempData.brew.output});
-                    steamData.target.push({x: time, y: tempData.steam.target});
-                    steamData.output.push({x: time, y: tempData.steam.output});
+                    labels.push(time);
+                    chart.data.datasets[0].data.push(tempData.temperature);
+                    brewData.target.push(tempData.brew.target);
+                    brewData.output.push(tempData.brew.output);
+                    steamData.target.push(tempData.steam.output);
+                    steamData.output.push(tempData.steam.output);
 
                     if(chart.data.datasets[0].data.length > 100) {
+                        labels.shift();
                         chart.data.datasets[0].data.shift();
                         brewData.target.shift();
                         steamData.target.shift();
