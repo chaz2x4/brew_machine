@@ -125,6 +125,8 @@ String OLED::getOutput(){
     String output;
     output += "{ \"temperature\": ";
     output += gcp.getActualTemp();
+    output += ", \"offset\": ";
+    output += gcp.getTempOffset();
     output += ", \"brew\": { \"target\": ";
     output += gcp.getTargetTemp(); 
     output += ", \"output\": ";

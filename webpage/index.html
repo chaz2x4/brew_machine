@@ -2,8 +2,9 @@
 <head>
     <script>
         window.onload = function () {
-            var defaultBrewTarget = 100;
-            var defaultSteamTarget = 150;
+            var brewTarget = 100;
+            var steamTarget = 145;
+            var offset = 8;
             var brewData = {target: [], output: []};
             var steamData = {target: [], output: []};
             var labels = [];
@@ -59,10 +60,10 @@
                             display: true,
                             text: "Time",
                         },
-                        stepSize: 15,
+                        stepSize: 30,
                     },
                     y: {
-                        suggestedMax: defaultBrewTarget,
+                        suggestedMax: brewTarget,
                         title: {
                             display: true,
                             text: "Temperature",
@@ -70,10 +71,7 @@
                         position: 'left',
                         grid: {
                             color: function(context) {
-                                if(brewData.target.length){
-                                    if(context.tick.value == brewData.target[brewData.target.length - 1]) return "#FF6384";
-                                }
-                                else if(context.tick.value == defaultBrewTarget) return "#FF6384";
+                                if(context.tick.value == brewTarget) return "#FF6384";
                             },
                         },
                     },
@@ -92,13 +90,10 @@
                 name: "Display Brew Temps",
                 id: "brew",
                 handler() {
-                    chart.options.scales.y.suggestedMax = defaultBrewTarget;
+                    chart.options.scales.y.suggestedMax = brewTarget;
                     chart.options.plugins.title.text = "Brew Temperature";
                     chart.options.scales.y.grid.color = function(context) {
-                        if(brewData.target.length){
-                            if(context.tick.value == brewData.target[brewData.target.length - 1]) return "#FF6384";
-                        }
-                        else if(context.tick.value == defaultBrewTarget) return "#FF6384";
+                        if(context.tick.value == brewTarget) return "#FF6384";
                     },
                     chart.update();
                 },
@@ -106,13 +101,10 @@
                 name: "Display Steam Temps",
                 id: "steam",
                 handler() {
-                    chart.options.scales.y.suggestedMax = defaultSteamTarget;
+                    chart.options.scales.y.suggestedMax = steamTarget;
                     chart.options.plugins.title.text = "Steam Temperature";
                     chart.options.scales.y.grid.color = function(context) {
-                        if(steamData.target.length){
-                            if(context.tick.value == steamData.target[steamData.target.length - 1]) return "#FF6384";
-                        }
-                        else if(context.tick.value == defaultSteamTarget) return "#FF6384";
+                        if(context.tick.value == steamTarget) return "#FF6384";
                     },
                     chart.update();
                 }
@@ -149,16 +141,15 @@
                 var time = Date.now();
                 labels.push(time);
                 chart.data.datasets[0].data.push(tempData.temperature);
-                brewData.target.push(tempData.brew.target);
                 brewData.output.push(tempData.brew.output);
-                steamData.target.push(tempData.steam.output);
                 steamData.output.push(tempData.steam.output);
+                brewTarget = tempData.brew.target;
+                steamTarget = tempData.steam.target;
+                tempoffset = tempData.offset;
                 
                 if(chart.data.datasets[0].data.length > 120) {
                     labels.shift();
                     chart.data.datasets[0].data.shift();
-                    brewData.target.shift();
-                    steamData.target.shift();
                     brewData.output.shift();
                     steamData.output.shift();
                 }
