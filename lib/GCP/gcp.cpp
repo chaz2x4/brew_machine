@@ -101,10 +101,6 @@ double GCP::getSteamOutput(){
 }
 
 void GCP::update() {
-	double targetTemp = this->getTargetTemp();
-	double targetSteamTemp = this->getTargetSteamTemp();
-	double actualTemp = this->getActualTemp();
-
 	brewTempManager.compute();
 	steamTempManager.compute();
 
@@ -131,7 +127,8 @@ void GCP::update() {
 
 	if(steam_output < millis() - cycleStartTime) digitalWrite(STEAM_PIN, OFF);
 	else digitalWrite(STEAM_PIN, ON);
-
+	
+	double actualTemp = this->getActualTemp();
 	if((actualTemp + tempOffset) >= EMERGENCY_SHUTOFF_TEMP) {
 		digitalWrite(STEAM_PIN, OFF);
 		digitalWrite(HEATER_PIN, OFF);
