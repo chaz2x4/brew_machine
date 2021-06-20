@@ -1,24 +1,8 @@
 #include "header.h"
-#include "passwords.h"
-#include "websites.h"
 
 WebServer server(80);
 OLED brew_machine;
 char *hostname = "gaggia";
-
-String getHTML(char* filename){
-	FILE* f = fopen(filename, "r");
-	if(!f) return "File Not Found";
-	fseek(f, 0, SEEK_END);
-	size_t size = ftell(f);
-	char* tmp = new char[size];
-	rewind(f);
-	fread(tmp, sizeof(char), size, f);
-	String html = tmp;
-	Serial.println(html);
-	delete[] tmp;
-	return html;
-}
 
 void setup() {
 	while (!Serial) ; // wait for serial port to connect. Needed for native USB port only
@@ -42,7 +26,6 @@ void setup() {
 	Serial.println("Running on http://gaggia.local");
 
 	server.on("/", HTTP_GET, []() {
-		String indexHtml = getHTML("webpage/index.html");
 		server.send(200, "text/html", indexHtml);
 	});
 

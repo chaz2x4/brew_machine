@@ -2,6 +2,9 @@
     #include <Arduino.h>
 #endif
 
+#include "passwords.h"
+#include "websites.h"
+
 #include "GCP.h"
 #include "PID.h"
 #include "OLED.h"
