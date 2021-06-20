@@ -39,6 +39,24 @@ void setup() {
 		Serial.println("Updating...");
 	});
 
+	server.on("/set_steam", HTTP_POST, [](){
+		server.send(200, "text/plain", (Update.hasError()) ? "FAILED TO UPDATE TUNINGS" : "UPDATED TUNINGS");
+	}, [](){
+		Serial.println("Updating...");
+	});
+
+	server.on("/set_brew", HTTP_POST, [](){
+		server.send(200, "text/plain", (Update.hasError()) ? "FAILED TO UPDATE TUNINGS" : "UPDATED TUNINGS");
+	}, [](){
+		Serial.println("Updating...");
+	});
+
+	server.on("/set_offset", HTTP_POST, [](){
+		server.send(200, "text/plain", (Update.hasError()) ? "FAILED TO UPDATE TUNINGS" : "UPDATED TUNINGS");
+	}, [](){
+		Serial.println("Updating...");
+	});
+
 	server.onNotFound([]() {
 		server.send(404, "text/plain", "Not Found");
 	});
