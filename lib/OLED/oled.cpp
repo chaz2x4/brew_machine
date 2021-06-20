@@ -121,7 +121,7 @@ void OLED::changeMode(){
 
 String OLED::getOutput(){
     String output;
-    output += "'{ \"temperature\": ";
+    output += "{ \"temperature\": ";
     output += gcp.getActualTemp();
     output += ", \"brew\": { \"target\": ";
     output += gcp.getTargetTemp(); 
@@ -131,7 +131,7 @@ String OLED::getOutput(){
     output += gcp.getTargetSteamTemp();
     output +=  ", \"output\": ";
     output += gcp.getSteamOutput();
-    output += " }}'";
+    output += " }}";
     Serial.println(output);
     return output;
 }
