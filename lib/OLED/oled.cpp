@@ -119,20 +119,19 @@ void OLED::changeMode(){
     else gcp.setMode(brew);
 }
 
-char* OLED::getOutput(){
-    std::ostringstream output;
-    std::string tmp;
-
-    output << "{ temperature: " << gcp.getActualTemp();
-    output << ", brew: { target: " << gcp.getTargetTemp(); 
-    output << ", output: " << gcp.getBrewOutput();
-    output << " } , steam: { target: " << gcp.getTargetSteamTemp();
-    output << ", output: " << gcp.getSteamOutput() << " }}";
-    tmp = output.str();
-
-    int n = tmp.length();
-    char result[n + 1];
-    strcpy(result, tmp.c_str());
-    Serial.println(result);
-    return result;
+String OLED::getOutput(){
+    String output;
+    output += "{ temperature: ";
+    output += gcp.getActualTemp();
+    output += ", brew: { target: ";
+    output += gcp.getTargetTemp(); 
+    output += ", output: ";
+    output += gcp.getBrewOutput();
+    output += " } , steam: { target: ";
+    output += gcp.getTargetSteamTemp();
+    output +=  ", output: ";
+    output += gcp.getSteamOutput();
+    output += " }}";
+    Serial.println(output);
+    return output;
 }

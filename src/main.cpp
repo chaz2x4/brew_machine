@@ -10,6 +10,7 @@ void setup() {
 	while (!Serial) ; // wait for serial port to connect. Needed for native USB port only
 	//Primary Mission: start coffee machine
 	Serial.begin(115200);
+	Serial.setDebugOutput(true);
 
 	WiFi.mode(WIFI_STA);
 	WiFi.begin(SECRET_SSID, SECRET_PASSWORD);
@@ -23,28 +24,23 @@ void setup() {
 
 	if (!MDNS.begin(hostname)) { //http://gaggia.local
 		Serial.println("Error setting up MDNS responder!");
-		while (1) {
-		delay(1000);
-		}
 	}
 	Serial.println("Running on http://gaggia.local");
 
-	server.on("/firmware", HTTP_GET, []() {
-		server.sendHeader("Connection", "close");
-		server.send(200, "text/html", firmwareIndex);
-	});
-
-	server.on("/get_temps", HTTP_GET, []() {
+	server.on("/get_temps", HTTP_GET, [](){
 		server.sendHeader("Connection", "keep-alive");
-		char* tempOutput = brew_machine.getOutput();
-		server.send(200, "text/json", tempOutput);
+		server.send(200, "text/plain", brew_machine.getOutput());
 	});
 
-	server.on("set_tunings", HTTP_POST, [](){
+	server.on("/set_tunings", HTTP_POST, [](){
 		server.sendHeader("Connection", "close");
 		server.send(200, "text/plain", (Update.hasError()) ? "FAILED TO UPDATE TUNINGS" : "UPDATED TUNINGS");
 	}, [](){
 		Serial.println("Updating...");
+	});
+
+	server.onNotFound([]() {
+		server.send(404, "text/plain", "Not Found");
 	});
 
 	ArduinoOTA.setHostname(hostname);

@@ -24,7 +24,7 @@ public:
     void eventListener(); //Listens for button presses
     void refresh(); //refreshes screen every delay cycle
     void changeMode(); //switches between brew and steam mode
-    char* getOutput(); //returns JSON output
+    String getOutput(); //returns JSON output
 private:
     Adafruit_SSD1306 display = Adafruit_SSD1306(128, 32, &Wire); //OLED screen
     bool flash = false; //controls which version of the OLED screen to display
