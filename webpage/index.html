@@ -1,0 +1,90 @@
+<html>
+<head>
+    <script>
+        window.onload = function () {
+            var NUM_POINTS = 1000;
+            var start = 0;
+            var pointData = [];
+            for (let i = 0; i < NUM_POINTS; ++i) {
+                const max = Math.random() < 0.001 ? 100 : 20;
+                pointData.push({x: start + (i * 30000), y: Math.floor(Math.random() * max) + 1});
+            }
+
+            var tempOutput = pointData;
+            var data = {
+                datasets: [{
+                    label: 'Brew Temperature',
+                    data: tempOutput,
+                }],
+            };
+
+            const options = {
+                interaction: {
+                    mode: 'nearest',
+                    axis: 'x',
+                    intersect: false
+                },
+                plugins: {
+                    decimation: {
+                        enabled: 'true',
+                        algorithm: 'lttb',
+                        samples: 500
+                    }
+                },
+                scales: {
+                    x: {
+                        type: 'timeseries',
+                        time: {
+                            unit: 'second',
+                        },
+                        ticks: {
+                            source: 'data',
+                        },
+                    },
+                },
+            }
+
+            const actions = [{
+                name: "Display Brew Temps",
+                handler() {
+                    chart.data.datasets.forEach( dataset => {
+                        dataset.data = [];
+                    });
+                    chart.update();
+                },
+            }, {
+                name: "Display Steam Temps",
+                handler() {
+                    chart.data.datasets.forEach( dataset => {
+                        dataset.data = pointData;
+                    });
+                    chart.update();
+                }
+            }];
+
+            const ctx = document.getElementById('tempChart').getContext('2d');
+            var chart = new Chart(ctx, {
+                type: 'line',
+                data: data,
+                options: options,
+            });
+
+            const container = document.getElementById('tempContainer');
+            actions.forEach(function(action){
+                const button = document.createElement('button');
+                button.innerHTML = action.name;
+                button.onclick = action.handler;
+                container.appendChild(button);
+            });
+        }
+    </script>
+</head>
+<body>
+    <div id="tempContainer" class="chart-container" style="position:relative; height:40vh; width:120vh; margin:auto;">
+        <canvas id="tempChart"></canvas>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.3.2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/moment@2.29.1"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment@0.1.1"></script>
+</body>
+</html>
