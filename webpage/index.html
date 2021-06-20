@@ -2,19 +2,26 @@
 <head>
     <script>
         window.onload = function () {
-            var brewData = [];
-            var steamData = [];
+            var brewData = {target: [], output: []};
+            var steamData = {target: [], output: []};
             var data = {
                 datasets: [{
+                    type: 'line',
                     label: 'Temperature',
                     data: [],
+                    borderColor: "#FF6384",
+                    backgroundColor: "#FF6384",
                 }, {
+                    type: 'bar',
                     label: 'Output',
-                    data: brewData,
+                    data: brewData.output,
+                    borderColor: "#63FFDD",
+                    backgroundColor: "#63FFDD",
                 }],
             };
 
             const options = {
+                responsive: true,
                 interaction: {
                     mode: 'nearest',
                     axis: 'x',
@@ -24,24 +31,37 @@
                     decimation: {
                         enabled: 'true',
                         algorithm: 'lttb',
-                        samples: 50
-                    }
+                        samples: 15,
+                    },
+                    title: {
+                        display: true,
+                        text: "Brew Temperature",
+                    },
                 },
                 scales: {
                     x: {
                         type: 'timeseries',
                         time: {
                             unit: 'second',
-                            stepSize: 25,
+                            stepSize: 5,
                         },
                         ticks: {
                             source: 'data',
                             autoSkip: true,
-                            maxRotation: 10,
+                            maxRotation: 0,
+                            align: 'start',
+                        },
+                        title: {
+                            display: true,
+                            text: "Time",
                         },
                     },
                     y: {
-                        min: 0
+                        suggestedMax: 125,
+                        title: {
+                            display: true,
+                            text: "Temperature",
+                        },
                     },
                 },
             }
@@ -49,18 +69,21 @@
             const actions = [{
                 name: "Display Brew Temps",
                 handler() {
+                    chart.options.scales.y.suggestedMax = 125;
+                    chart.options.plugins.title.text = "Brew Temperature";
                     chart.update();
                 },
             }, {
                 name: "Display Steam Temps",
                 handler() {
+                    chart.options.scales.y.suggestedMax = 185;
+                    chart.options.plugins.title.text = "Steam Temperature";
                     chart.update();
                 }
             }];
 
             const ctx = document.getElementById('tempChart').getContext('2d');
             var chart = new Chart(ctx, {
-                type: 'line',
                 data: data,
                 options: options,
             });
@@ -78,17 +101,25 @@
                 if (this.readyState == 4 && this.status == 200) {
                     var tempData = JSON.parse(this.response);
                     chart.data.datasets[0].data.push({x: Date.now(), y: tempData.temperature});
-                    brewData.push(tempData.brew);
-                    steamData.push(tempData.steam);
+                    brewData.target.push({x: Date.now(), y: tempData.brew.target});
+                    brewData.output.push({x: Date.now(), y: tempData.brew.output / 100});
+                    steamData.target.push({x: Date.now(), y: tempData.steam.target});
+                    steamData.output.push({x: Date.now(), y: tempData.steam.output / 100});
+
+                    if(chart.data.datasets[0].data.length > 300) {
+                        chart.data.datasets[0].data.pop();
+                        brewData.target.pop();
+                        steamData.target.pop();
+                        brewData.output.pop();
+                        steamData.output.pop();
+                    }
                     chart.update();
                     pollServer(this);
                 }
             }
             function pollServer(xhttp) {
-                console.log(xhttp);
                 xhttp.open("GET", "/get_temps", true);
                 xhttp.send();
-                console.log('hello');
             }
             pollServer(xhttp);
         }
