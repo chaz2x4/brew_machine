@@ -100,11 +100,12 @@
             xhttp.onreadystatechange = function(){
                 if (this.readyState == 4 && this.status == 200) {
                     var tempData = JSON.parse(this.response);
-                    chart.data.datasets[0].data.push({x: Date.now(), y: tempData.temperature});
-                    brewData.target.push({x: Date.now(), y: tempData.brew.target});
-                    brewData.output.push({x: Date.now(), y: tempData.brew.output / 100});
-                    steamData.target.push({x: Date.now(), y: tempData.steam.target});
-                    steamData.output.push({x: Date.now(), y: tempData.steam.output / 100});
+                    var time = Date.now();
+                    chart.data.datasets[0].data.push({x: time, y: tempData.temperature});
+                    brewData.target.push({x: time, y: tempData.brew.target});
+                    brewData.output.push({x: time, y: tempData.brew.output / 10});
+                    steamData.target.push({x: time, y: tempData.steam.target});
+                    steamData.output.push({x: time, y: tempData.steam.output / 10});
 
                     if(chart.data.datasets[0].data.length > 300) {
                         chart.data.datasets[0].data.pop();
