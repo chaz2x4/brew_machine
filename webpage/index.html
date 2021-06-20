@@ -11,17 +11,20 @@
                     data: [],
                     borderColor: "#FF6384",
                     backgroundColor: "#FF6384",
+                    yAxisID: 'y',
                 }, {
                     type: 'bar',
                     label: 'Output',
                     data: brewData.output,
                     borderColor: "#63FFDD",
                     backgroundColor: "#63FFDD",
+                    yAxisID: 'y1',
                 }],
             };
 
             const options = {
                 responsive: true,
+                animations: false,
                 interaction: {
                     mode: 'nearest',
                     axis: 'x',
@@ -31,7 +34,7 @@
                     decimation: {
                         enabled: 'true',
                         algorithm: 'lttb',
-                        samples: 15,
+                        samples: 10,
                     },
                     title: {
                         display: true,
@@ -43,7 +46,7 @@
                         type: 'timeseries',
                         time: {
                             unit: 'second',
-                            stepSize: 5,
+                            stepSize: 10,
                         },
                         ticks: {
                             source: 'data',
@@ -55,6 +58,7 @@
                             display: true,
                             text: "Time",
                         },
+                        max: 60,
                     },
                     y: {
                         suggestedMax: 100,
@@ -62,6 +66,15 @@
                             display: true,
                             text: "Temperature",
                         },
+                        position: 'left',
+                    },
+                    y1: {
+                        suggestedMax: 1000,
+                        title: {
+                            display: true,
+                            text: "Output",
+                        },
+                        position: "right",
                     },
                 },
             }
@@ -103,9 +116,9 @@
                     var time = Date.now();
                     chart.data.datasets[0].data.push({x: time, y: tempData.temperature});
                     brewData.target.push({x: time, y: tempData.brew.target});
-                    brewData.output.push({x: time, y: tempData.brew.output / 10});
+                    brewData.output.push({x: time, y: tempData.brew.output});
                     steamData.target.push({x: time, y: tempData.steam.target});
-                    steamData.output.push({x: time, y: tempData.steam.output / 10});
+                    steamData.output.push({x: time, y: tempData.steam.output});
 
                     if(chart.data.datasets[0].data.length > 300) {
                         chart.data.datasets[0].data.shift();
