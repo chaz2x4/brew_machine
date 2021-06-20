@@ -90,6 +90,7 @@
 
             const actions = [{
                 name: "Display Brew Temps",
+                id: "brew",
                 handler() {
                     chart.options.scales.y.suggestedMax = defaultBrewTarget;
                     chart.options.plugins.title.text = "Brew Temperature";
@@ -103,6 +104,7 @@
                 },
             }, {
                 name: "Display Steam Temps",
+                id: "steam",
                 handler() {
                     chart.options.scales.y.suggestedMax = defaultSteamTarget;
                     chart.options.plugins.title.text = "Steam Temperature";
@@ -124,10 +126,8 @@
 
             const container = document.getElementById('tempContainer');
             actions.forEach(function(action){
-                const button = document.createElement('button');
-                button.innerHTML = action.name;
+                const button = document.getElementById("switch_" + action.id);
                 button.onclick = action.handler;
-                container.appendChild(button);
             });
 
             var xhttp = new XMLHttpRequest();
@@ -162,38 +162,48 @@
         }
     </script>
 </head>
-<body>
-    <div id="tempContainer" class="chart-container" style="position:relative; height:40vh; width:120vh; margin:auto;">
-        <canvas id="tempChart"></canvas>
+<body class="container">
+    <div class="chart-container container" id="tempContainer">
+        <canvas class="justify-content-md-center" id="tempChart"></canvas>
+        <div class="justify-content-md-center row">
+            <div class="switch-button-container col">
+                <button class="btn btn-outline-primary" id="switch_brew"><span class="d-none d-lg-inline"> Display </span> Brew Temps </button>
+                <button class="btn btn-outline-primary" id="switch_steam"><span class="d-none d-lg-inline"> Display </span> Steam Temps </button>
+            </div>
+            <div class="target-button-container col"> 
+                <label class="form-label"> Target: 95 C</label>
+                <button class="btn btn-outline-danger" id="incrementButton"> + </button>
+                <button class="btn btn-outline-secondary" id="decrementButton"> - </button>
+            </div>
+            <div class="offset-button-container col"> 
+                <label class="form-label"> Offset: 8 C</label>
+                <button class="btn btn-outline-danger" id="incrementButton"> + </button>
+                <button class="btn btn-outline-secondary" id="decrementButton"> - </button>
+            </div>
+        </div>
     </div>
-    <div class="controller-container" id="tempController" style="display:none">
-        <div class="target-button-container"> 
-            <p> Target: </p>
-            <p id="targetTemp"> 95 C</p>
-            <button id="incrementButton"> + </button>
-            <button id="decrementButton"> - </button>
-        </div>
-        <div>
-            <p> Tunings: </p>
-            <div class="tuning-button-container">
-                <p>Kp:</p>
-                <input class="tuning-input" id="kp" value="">
-                <button class="tuning-button" id="kpplus"> + </button>
-                <button class="tuning-button" id="kpminus"> - </button>
+    <div class="controller-container container" id="tempController">
+        <label for="tunings-form" class="form-label"> Tunings: </label>
+        <form class="row justify-content-md-center" id="tunings-form">
+            <div class="tuning-button input-group col">
+                <span for="kp" class="input-group-text"> Kp: </span>
+                <input class="tuning-input form-control" type="text" id="kp" value="" placeholder="Proportional" min="0">
+                <button class="tuning-button btn btn-outline-secondary" type="button" id="kpplus"> + </button>
+                <button class="tuning-button btn btn-outline-secondary" type="button" id="kpminus"> - </button>
             </div>
-            <div class="tuning-button">
-                <p>Ki:</p>
-                <input class="tuning-input" id="ki" value="">
-                <button class="tuning-button" id="kiplus"> + </button>
-                <button class="tuning-button" id="kiminus"> - </button>
+            <div class="tuning-button input-group col">
+                <span for="kp" class="input-group-text"> Ki: </span>
+                <input class="tuning-input form-control" type="text" id="ki" value="" placeholder="Integral" min="0">
+                <button class="tuning-button btn btn-outline-secondary" type="button" id="kiplus"> + </button>
+                <button class="tuning-button btn btn-outline-secondary" type="button" id="kiminus"> - </button>
             </div>
-            <div class="tuning-button">
-                <p>Kd:</p>
-                <input class="tuning-input" id="kd" value="">
-                <button class="tuning-button" id="kdplus"> + </button>
-                <button class="tuning-button" id="kdminus"> - </button>
+            <div class="tuning-button input-group col">
+                <span for="kp" class="input-group-text"> Kd: </span>
+                <input class="tuning-input form-control" type="text" id="kd" value="" placeholder="Derivative" min="0">
+                <button class="tuning-button btn btn-outline-secondary" type="button" id="kdplus"> + </button>
+                <button class="tuning-button btn btn-outline-secondary" type="button" id="kdminus"> - </button>
             </div>
-        </div>
+        </form>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.3.2"></script>
     <script src="https://cdn.jsdelivr.net/npm/moment@2.29.1"></script>
