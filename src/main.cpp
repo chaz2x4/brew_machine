@@ -30,12 +30,10 @@ void setup() {
 	});
 
 	server.on("/get_temps", HTTP_GET, [](){
-		server.sendHeader("Connection", "keep-alive");
 		server.send(200, "text/json", brew_machine.getOutput());
 	});
 
 	server.on("/set_tunings", HTTP_POST, [](){
-		server.sendHeader("Connection", "close");
 		server.send(200, "text/plain", (Update.hasError()) ? "FAILED TO UPDATE TUNINGS" : "UPDATED TUNINGS");
 	}, [](){
 		Serial.println("Updating...");
