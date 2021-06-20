@@ -11,6 +11,8 @@ void OLED::start(){
     pinMode(BUTTON_B, INPUT_PULLUP);
     pinMode(BUTTON_C, INPUT_PULLUP);
     timeLastButton = millis();
+
+    gcp.init();
 }
 
 void OLED::eventListener(){

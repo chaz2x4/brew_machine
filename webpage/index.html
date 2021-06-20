@@ -129,36 +129,46 @@
                 const button = document.getElementById("switch_" + action.id);
                 button.onclick = action.handler;
             });
-
-            var xhttp = new XMLHttpRequest();
-            xhttp.onreadystatechange = function(){
-                if (this.readyState == 4 && this.status == 200) {
-                    var tempData = JSON.parse(this.response);
-                    var time = Date.now();
-                    labels.push(time);
-                    chart.data.datasets[0].data.push(tempData.temperature);
-                    brewData.target.push(tempData.brew.target);
-                    brewData.output.push(tempData.brew.output);
-                    steamData.target.push(tempData.steam.output);
-                    steamData.output.push(tempData.steam.output);
-
-                    if(chart.data.datasets[0].data.length > 120) {
-                        labels.shift();
-                        chart.data.datasets[0].data.shift();
-                        brewData.target.shift();
-                        steamData.target.shift();
-                        brewData.output.shift();
-                        steamData.output.shift();
-                    }
-                    chart.update();
-                    pollServer(this);
-                }
-            }
-            function pollServer(xhttp) {
-                xhttp.open("GET", "/get_temps", true);
+            
+            function pollServer(xhttp, url) {
+                xhttp.open("GET", url, true);
                 xhttp.send();
             }
-            pollServer(xhttp);
+            function callServer(url, handler){
+                var xhttp = new XMLHttpRequest();
+                xhttp.onreadystatechange = function(){
+                    if (this.readyState == 4 && this.status == 200) {
+                        handler(this);
+                    }
+                }
+                pollServer(xhttp, url);
+            }
+
+            callServer("/get_temps", function(inherit){
+                var tempData = JSON.parse(inherit.response);
+                var time = Date.now();
+                labels.push(time);
+                chart.data.datasets[0].data.push(tempData.temperature);
+                brewData.target.push(tempData.brew.target);
+                brewData.output.push(tempData.brew.output);
+                steamData.target.push(tempData.steam.output);
+                steamData.output.push(tempData.steam.output);
+                
+                if(chart.data.datasets[0].data.length > 120) {
+                    labels.shift();
+                    chart.data.datasets[0].data.shift();
+                    brewData.target.shift();
+                    steamData.target.shift();
+                    brewData.output.shift();
+                    steamData.output.shift();
+                }
+                chart.update();
+                pollServer(inherit, "/get_temps");
+            });
+            callServer("/get_tunings", function(inherit){
+                var tempData = JSON.parse(inherit.response);
+                console.log(tempData);
+            });
         }
     </script>
 </head>

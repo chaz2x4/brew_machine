@@ -57,9 +57,8 @@ private:
     PID steamTempManager = PID(&actualTemp, &steam_output, &targetSteamTemp, CYCLE_TIME);
 
 public:
-    GCP();
-    GCP(double, double, double);
-    ~GCP();
+    void init();
+    void init(double, double, double);
     mode getCurrentMode();
     void setMode(mode);
     void incrementTemp();
