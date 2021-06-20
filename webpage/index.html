@@ -2,6 +2,8 @@
 <head>
     <script>
         window.onload = function () {
+            var defaultBrewTarget = 100;
+            var defaultSteamTarget = 150;
             var brewData = {target: [], output: []};
             var steamData = {target: [], output: []};
             var data = {
@@ -23,6 +25,7 @@
             };
 
             const options = {
+                spanGaps: 60000,
                 responsive: true,
                 animations: false,
                 interaction: {
@@ -49,23 +52,33 @@
                         },
                         ticks: {
                             source: 'data',
-                            autoSkip: true,
+                            autoSkip: false,
                             maxRotation: 0,
                             align: 'start',
+                            major: {
+                                enabled: true
+                            },
                         },
                         title: {
                             display: true,
                             text: "Time",
                         },
-                        max: 60,
                     },
                     y: {
-                        suggestedMax: 100,
+                        suggestedMax: defaultBrewTarget,
                         title: {
                             display: true,
                             text: "Temperature",
                         },
                         position: 'left',
+                        grid: {
+                            color: function(context) {
+                                if(brewData.target.length){
+                                    if(context.tick.value == brewData.target[brewData.length - 1]) return "#FF6384";
+                                }
+                                else if(context.tick.value == defaultBrewTarget) return "#FF6384";
+                            },
+                        },
                     },
                     y1: {
                         suggestedMax: 1000,
@@ -81,15 +94,32 @@
             const actions = [{
                 name: "Display Brew Temps",
                 handler() {
-                    chart.options.scales.y.suggestedMax = 100;
+                    chart.options.scales.y.suggestedMax = defaultBrewTarget;
                     chart.options.plugins.title.text = "Brew Temperature";
+                    chart.options.scales.y.grid = {
+                        color: function(context) {
+                            console.log(brewData);
+                            if(brewData.target.length){
+                                if(context.tick.value == brewData.target[brewData.length - 1]) return "#FF6384";
+                            }
+                            else if(context.tick.value == defaultBrewTarget) return "#FF6384";
+                        }
+                    }
                     chart.update();
                 },
             }, {
                 name: "Display Steam Temps",
                 handler() {
-                    chart.options.scales.y.suggestedMax = 145;
+                    chart.options.scales.y.suggestedMax = defaultSteamTarget;
                     chart.options.plugins.title.text = "Steam Temperature";
+                    chart.options.scales.y.grid = {
+                        color: function(context) {
+                            if(steamData.target.length){
+                                if(context.tick.value == steamData.target[steamData.length - 1]) return "#FF6384";
+                            }
+                            else if(context.tick.value == defaultSteamTarget) return "#FF6384";
+                        }
+                    }
                     chart.update();
                 }
             }];
@@ -119,7 +149,7 @@
                     steamData.target.push({x: time, y: tempData.steam.target});
                     steamData.output.push({x: time, y: tempData.steam.output});
 
-                    if(chart.data.datasets[0].data.length > 300) {
+                    if(chart.data.datasets[0].data.length > 100) {
                         chart.data.datasets[0].data.shift();
                         brewData.target.shift();
                         steamData.target.shift();
