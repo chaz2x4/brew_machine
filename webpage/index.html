@@ -141,7 +141,7 @@
                 var maxTemp = (mode == "brew") ? 105 : 155;
                 if(mode == "brew") brewTarget = (brewTarget < maxTemp) ? brewTarget + 0.5 : maxTemp;
                 else steamTarget = (steamTarget < maxTemp) ? steamTarget + 0.5 : maxTemp;
-                callServer("/increment_target", "POST");
+                callServer("/increment_target", "POST", mode);
                 updateElements();
             }
 
@@ -149,19 +149,19 @@
                 var minTemp = (mode == "brew") ? 85 : 145;
                 if(mode == "brew") brewTarget = (brewTarget > minTemp) ? brewTarget - 0.5 : minTemp;
                 else steamTarget = (steamTarget > minTemp) ? steamTarget - 0.5 : minTemp;
-                callServer("/decrement_target", "POST");
+                callServer("/decrement_target", "POST", mode);
                 updateElements();
             }
 
             function incrementOffset(){
                 if(tempOffset < 15) tempOffset += 0.5;
-                callServer("/set_offset", "POST");
+                callServer("/set_offset", "POST", mode, tempOffset);
                 updateElements();
             }
 
             function decrementOffset(){
                 if(tempOffset > 0) tempOffset -= 0.5;
-                callServer("/set_offset", "POST");
+                callServer("/set_offset", "POST", tempOffset);
                 updateElements();
             }
 
@@ -181,11 +181,11 @@
                 var xhttp = new XMLHttpRequest();
                 xhttp.onreadystatechange = function(){
                     if (this.readyState == 4 && this.status == 200) {
-                        if(handler) handler(this);
+                        if(typeof handler == "function") handler(this);
                     }
                 }
                 xhttp.open(method, url, true);
-                xhttp.send();
+                xhttp.send(handler);
             }
 
             function refreshTemps(){

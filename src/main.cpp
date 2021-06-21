@@ -38,19 +38,19 @@ void setup() {
 	});
 
 	server.on("/set_tunings", HTTP_POST, [](){
-		server.send(200, "text/plain", (Update.hasError()) ? "FAILED TO UPDATE TUNINGS" : "UPDATED TUNINGS");
+		server.send(200, "text/plain", "");
 	});
 
 	server.on("/increment_target", HTTP_POST, [](){
-		server.send(200, "text/plain", (Update.hasError()) ? "FAILED TO UPDATE TUNINGS" : "UPDATED TUNINGS");
+		server.send(200, "text/plain", "");
 	});
 
 	server.on("/decrement_target", HTTP_POST, [](){
-		server.send(200, "text/plain", (Update.hasError()) ? "FAILED TO UPDATE TUNINGS" : "UPDATED TUNINGS");
+		server.send(200, "text/plain", "");
 	});
 
 	server.on("/set_offset", HTTP_POST, [](){
-		server.send(200, "text/plain", (Update.hasError()) ? "FAILED TO UPDATE TUNINGS" : "UPDATED TUNINGS");
+		server.send(200, "text/plain", "");
 	});
 
 	server.onNotFound([]() {
