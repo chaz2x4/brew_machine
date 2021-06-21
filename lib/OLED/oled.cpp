@@ -125,6 +125,14 @@ void OLED::setMode(mode mode){
     gcp.setMode(mode);
 }
 
+void OLED::incrementTemp(){
+    gcp.incrementTemp();
+}
+
+void OLED::decrementTemp(){
+    gcp.decrementTemp();
+}
+
 String OLED::getOutput(){
     String output;
     output += "{ \"temperature\": ";

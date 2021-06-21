@@ -42,18 +42,21 @@ void setup() {
 	});
 
 	server.on("/increment_target", HTTP_POST, [](){
-		String message = "Arguments: ";
-		message += server.args();
-		message += "\n";
-		for (uint8_t i = 0; i < server.args(); i++) {
-			message += " " + server.argName(i) + ": " + server.arg(i) + "\n";
-		}
-
-		server.send(200, "text/plain", message);
+		String mode = server.arg(0);
+		if(mode.equals("brew")) brew_machine.setMode(brew);
+		else if(mode.equals("steam")) brew_machine.setMode(steam);
+		else return server.send(400, "text/plain", "Invalid Data");
+		brew_machine.incrementTemp();
+		server.send(200, "text/plain", mode);
 	});
 
 	server.on("/decrement_target", HTTP_POST, [](){
-		server.send(200, "text/plain", "");
+		String mode = server.arg(0);
+		if(mode.equals("brew")) brew_machine.setMode(brew);
+		else if(mode.equals("steam")) brew_machine.setMode(steam);
+		else return server.send(400, "text/plain", "Invalid Data");
+		brew_machine.decrementTemp();
+		server.send(200, "text/plain", mode);
 	});
 
 	server.on("/set_offset", HTTP_POST, [](){
