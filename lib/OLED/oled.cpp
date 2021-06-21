@@ -133,6 +133,10 @@ void OLED::decrementTemp(){
     gcp.decrementTemp();
 }
 
+void OLED::setOffset(double offset) {
+    gcp.setTempOffset(offset);
+}
+
 String OLED::getOutput(){
     String output;
     output += "{ \"temperature\": ";

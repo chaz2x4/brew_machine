@@ -47,7 +47,7 @@ void setup() {
 		else if(mode.equals("steam")) brew_machine.setMode(steam);
 		else return server.send(400, "text/plain", "Invalid Data");
 		brew_machine.incrementTemp();
-		server.send(200, "text/plain", mode);
+		server.send(200, "text/plain", "Success");
 	});
 
 	server.on("/decrement_target", HTTP_POST, [](){
@@ -56,11 +56,14 @@ void setup() {
 		else if(mode.equals("steam")) brew_machine.setMode(steam);
 		else return server.send(400, "text/plain", "Invalid Data");
 		brew_machine.decrementTemp();
-		server.send(200, "text/plain", mode);
+		server.send(200, "text/plain", "Success");
 	});
 
 	server.on("/set_offset", HTTP_POST, [](){
-		server.send(200, "text/plain", "");
+		String data = server.arg(0);
+		double offset = data.toDouble();
+		brew_machine.setOffset(offset);
+		server.send(200, "text/plain", "Success");
 	});
 
 	server.onNotFound([]() {
