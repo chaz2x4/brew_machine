@@ -39,26 +39,18 @@ void setup() {
 
 	server.on("/set_tunings", HTTP_POST, [](){
 		server.send(200, "text/plain", (Update.hasError()) ? "FAILED TO UPDATE TUNINGS" : "UPDATED TUNINGS");
-	}, [](){
-		Serial.println("Updating...");
 	});
 
 	server.on("/increment_target", HTTP_POST, [](){
 		server.send(200, "text/plain", (Update.hasError()) ? "FAILED TO UPDATE TUNINGS" : "UPDATED TUNINGS");
-	}, [](){
-		Serial.println("Updating...");
 	});
 
 	server.on("/decrement_target", HTTP_POST, [](){
 		server.send(200, "text/plain", (Update.hasError()) ? "FAILED TO UPDATE TUNINGS" : "UPDATED TUNINGS");
-	}, [](){
-		Serial.println("Updating...");
 	});
 
 	server.on("/set_offset", HTTP_POST, [](){
 		server.send(200, "text/plain", (Update.hasError()) ? "FAILED TO UPDATE TUNINGS" : "UPDATED TUNINGS");
-	}, [](){
-		Serial.println("Updating...");
 	});
 
 	server.onNotFound([]() {

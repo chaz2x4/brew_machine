@@ -121,6 +121,10 @@ void OLED::changeMode(){
     else gcp.setMode(brew);
 }
 
+void OLED::setMode(mode mode){
+    gcp.setMode(mode);
+}
+
 String OLED::getOutput(){
     String output;
     output += "{ \"temperature\": ";

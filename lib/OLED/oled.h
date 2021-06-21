@@ -24,6 +24,7 @@ public:
     void eventListener(); //Listens for button presses
     void refresh(); //refreshes screen every delay cycle
     void changeMode(); //switches between brew and steam mode
+    void setMode(mode mode);
     String getOutput(); //returns JSON output
     String getTunings(); //returns JSON output
 private:
