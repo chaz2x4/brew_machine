@@ -88,7 +88,7 @@ void OLED::refresh(){
     display.clearDisplay();
 
     ulong wait;
-    char *currentMode = "Brew";
+    String currentMode = "Brew";
     double targetTemp = gcp.getTargetTemp();
     double currentTemp = gcp.getActualTemp();
     if(gcp.getCurrentMode() == steam) {
@@ -135,6 +135,10 @@ void OLED::decrementTemp(){
 
 void OLED::setOffset(double offset) {
     gcp.setTempOffset(offset);
+}
+
+void OLED::setTunings(double kp, double ki, double kd){
+    gcp.setTunings(kp, ki, kd);
 }
 
 String OLED::getOutput(){

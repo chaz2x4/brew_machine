@@ -75,6 +75,7 @@ public:
     void setTargetTemp(double); // Sets temperature to control to (setpoint)
     void setTargetSteamTemp(double);
     void setTempOffset(double);
+    void setTunings(double, double, double);
     void update();
 };
 #endif

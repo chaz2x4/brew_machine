@@ -106,6 +106,11 @@ double* GCP::getTunings(){
 	return tunings;
 }
 
+void GCP::setTunings(double kp, double ki, double kd){
+	if(this->currentMode == steam) steamTempManager.tune(kp, ki, kd);
+	else brewTempManager.tune(kp, ki, kd);
+}
+
 void GCP::update() {
 	brewTempManager.compute();
 	steamTempManager.compute();
