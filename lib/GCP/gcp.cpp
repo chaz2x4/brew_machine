@@ -86,7 +86,9 @@ double GCP::getTempOffset(){
 }
 
 void GCP::setTempOffset(double offset){
-	this->tempOffset = offset;
+	if(offset > MAX_OFFSET) this->tempOffset = MAX_OFFSET;
+	else if(offset < MIN_OFFSET) this->tempOffset = MIN_OFFSET;
+	else this->tempOffset = offset;
 }
 
 double GCP::getBrewOutput(){
