@@ -123,6 +123,7 @@
             
             function updateElements(){
                 var targetTemp = (mode == "brew") ? brewTarget : steamTarget;
+                
                 var targetLabel = document.getElementById("target_label");
                 targetLabel.innerHTML = "Target: " + targetTemp + " C";
 
@@ -131,16 +132,37 @@
 
                 var inactiveSwitch = (mode == "brew") ? document.getElementById("switch_steam") : document.getElementById("switch_brew");
                 inactiveSwitch.classList.remove("active");
+
+                var offsetLabel = document.getElementById("offset_label");
+                offsetLabel.innerHTML = "Offset: " + tempOffset + " C";
             }
 
             function incrementTarget(){
-                if(mode == 'brew') brewTarget += 0.5;
-                else steamTarget += 0.5;
-                callServer("/incrementTarget", )
+                var maxTemp = (mode == "brew") ? 105 : 155;
+                if(mode == "brew") brewTarget = (brewTarget < maxTemp) ? brewTarget + 0.5 : maxTemp;
+                else steamTarget = (steamTarget < maxTemp) ? steamTarget + 0.5 : maxTemp;
+                callServer("/incrementTarget", "POST");
+                updateElements();
             }
 
             function decrementTarget(){
-                var targetTemp = (mode == 'brew') ? brewTarget : steamTarget;
+                var minTemp = (mode == "brew") ? 85 : 145;
+                if(mode == "brew") brewTarget = (brewTarget > minTemp) ? brewTarget - 0.5 : minTemp;
+                else steamTarget = (steamTarget > minTemp) ? steamTarget - 0.5 : minTemp;
+                callServer("/incrementTarget", "POST");
+                updateElements();
+            }
+
+            function incrementOffset(){
+                if(tempOffset < 15) tempOffset += 0.5;
+                callServer("/setOffset", "POST");
+                updateElements();
+            }
+
+            function decrementOffset(){
+                if(tempOffset > 0) tempOffset -= 0.5;
+                callServer("/setOffset", "POST");
+                updateElements();
             }
 
             const ctx = document.getElementById('tempChart').getContext('2d');
@@ -201,6 +223,11 @@
                     input.value = value;
                 });
             });
+
+            document.getElementById("targetplus").onclick = incrementTarget;
+            document.getElementById("targetminus").onclick = decrementTarget;
+            document.getElementById("offsetplus").onclick = incrementOffset;
+            document.getElementById("offsetminus").onclick = decrementOffset;
         }
     </script>
 </head>
@@ -218,7 +245,7 @@
                 <button class="btn btn-outline-secondary" id="targetminus"> - </button>
             </div>
             <div class="offset-button-container col"> 
-                <label class="form-label"> Offset: 8 C</label>
+                <label class="form-label" id="offset_label"> Offset: 8 C</label>
                 <button class="btn btn-outline-danger" id="offsetplus"> + </button>
                 <button class="btn btn-outline-secondary" id="offsetminus"> - </button>
             </div>
