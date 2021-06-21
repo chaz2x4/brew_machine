@@ -43,13 +43,13 @@ void setup() {
 		Serial.println("Updating...");
 	});
 
-	server.on("/incrementTarget", HTTP_POST, [](){
+	server.on("/increment_target", HTTP_POST, [](){
 		server.send(200, "text/plain", (Update.hasError()) ? "FAILED TO UPDATE TUNINGS" : "UPDATED TUNINGS");
 	}, [](){
 		Serial.println("Updating...");
 	});
 
-	server.on("/decrementTarget", HTTP_POST, [](){
+	server.on("/decrement_target", HTTP_POST, [](){
 		server.send(200, "text/plain", (Update.hasError()) ? "FAILED TO UPDATE TUNINGS" : "UPDATED TUNINGS");
 	}, [](){
 		Serial.println("Updating...");

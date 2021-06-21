@@ -18,8 +18,8 @@
                     data: [],
                     backgroundColor: function () {
                         var targetTemp = (mode == 'brew') ? brewTarget : steamTarget;
-                        if(currentTemp > (targetTemp + 1)) return '#FF6384';
-                        if(currentTemp < (targetTemp - 1)) return '#63D2FF';
+                        if(currentTemp > (targetTemp + 1)) return '#331F2E';
+                        if(currentTemp < (targetTemp - 1)) return '#FF6384';
                         else return '#63FF8F';
                     },
                     yAxisID: 'y',
@@ -123,7 +123,7 @@
             
             function updateElements(){
                 var targetTemp = (mode == "brew") ? brewTarget : steamTarget;
-                
+
                 var targetLabel = document.getElementById("target_label");
                 targetLabel.innerHTML = "Target: " + targetTemp + " C";
 
@@ -141,7 +141,7 @@
                 var maxTemp = (mode == "brew") ? 105 : 155;
                 if(mode == "brew") brewTarget = (brewTarget < maxTemp) ? brewTarget + 0.5 : maxTemp;
                 else steamTarget = (steamTarget < maxTemp) ? steamTarget + 0.5 : maxTemp;
-                callServer("/incrementTarget", "POST");
+                callServer("/increment_target", "POST");
                 updateElements();
             }
 
@@ -149,19 +149,19 @@
                 var minTemp = (mode == "brew") ? 85 : 145;
                 if(mode == "brew") brewTarget = (brewTarget > minTemp) ? brewTarget - 0.5 : minTemp;
                 else steamTarget = (steamTarget > minTemp) ? steamTarget - 0.5 : minTemp;
-                callServer("/incrementTarget", "POST");
+                callServer("/decrement_target", "POST");
                 updateElements();
             }
 
             function incrementOffset(){
                 if(tempOffset < 15) tempOffset += 0.5;
-                callServer("/setOffset", "POST");
+                callServer("/set_offset", "POST");
                 updateElements();
             }
 
             function decrementOffset(){
                 if(tempOffset > 0) tempOffset -= 0.5;
-                callServer("/setOffset", "POST");
+                callServer("/set_offset", "POST");
                 updateElements();
             }
 
@@ -189,20 +189,20 @@
             }
 
             function refreshTemps(){
-                callServer("/get_temps", "GET", function(inherit){
+                return callServer("/get_temps", "GET", function(inherit){
                     var tempData = JSON.parse(inherit.response);
                     var time = Date.now();
 
-                    brewTarget = tempData.brew.target;
-                    steamTarget = tempData.steam.target;
-                    tempOffset = tempData.offset;
-                    labels.push(time);
+                    if(labels.length == 0) {
+                        [brewTarget, steamTarget, tempOffset] = [tempData.brew.target, tempData.steam.target, tempData.offset]
+                    }
 
+                    labels.push(time);
                     currentTemp = tempData.temperature;
-                    chart.data.datasets[0].data.push(tempData.temperature);
+                    chart.data.datasets[0].data.push(currentTemp);
                     brewData.output.push(tempData.brew.output);
                     steamData.output.push(tempData.steam.output);
-                    
+
                     if(chart.data.datasets[0].data.length > 120) {
                         labels.shift();
                         chart.data.datasets[0].data.shift();
@@ -211,10 +211,12 @@
                     }
 
                     chart.update();
+                    updateElements();
                     refreshTemps();
                 });
             };
             refreshTemps();
+            // [brewTarget, steamTarget, tempOffset] = refreshTemps();
             callServer("/get_tunings", "GET", function(inherit){
                 var tempData = JSON.parse(inherit.response);
                 Object.entries(tempData).forEach(entry => {
