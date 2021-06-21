@@ -141,7 +141,9 @@
                 var maxTemp = (mode == "brew") ? 105 : 155;
                 if(mode == "brew") brewTarget = (brewTarget < maxTemp) ? brewTarget + 0.5 : maxTemp;
                 else steamTarget = (steamTarget < maxTemp) ? steamTarget + 0.5 : maxTemp;
-                callServer("/increment_target", "POST", mode);
+                callServer.post("/increment_target", mode, function(handler){
+                    console.log(handler);
+                });
                 updateElements();
             }
 
@@ -149,19 +151,19 @@
                 var minTemp = (mode == "brew") ? 85 : 145;
                 if(mode == "brew") brewTarget = (brewTarget > minTemp) ? brewTarget - 0.5 : minTemp;
                 else steamTarget = (steamTarget > minTemp) ? steamTarget - 0.5 : minTemp;
-                callServer("/decrement_target", "POST", mode);
+                callServer.post("/decrement_target", mode);
                 updateElements();
             }
 
             function incrementOffset(){
                 if(tempOffset < 15) tempOffset += 0.5;
-                callServer("/set_offset", "POST", mode, tempOffset);
+                callServer.post("/set_offset", tempOffset);
                 updateElements();
             }
 
             function decrementOffset(){
                 if(tempOffset > 0) tempOffset -= 0.5;
-                callServer("/set_offset", "POST", tempOffset);
+                callServer.post("/set_offset", tempOffset);
                 updateElements();
             }
 
@@ -176,20 +178,32 @@
                 const button = document.getElementById("switch_" + action.id);
                 button.onclick = action.handler;
             });
-            
-            function callServer(url, method, handler){
-                var xhttp = new XMLHttpRequest();
-                xhttp.onreadystatechange = function(){
-                    if (this.readyState == 4 && this.status == 200) {
-                        if(typeof handler == "function") handler(this);
+
+
+            var callServer = (function() {
+                function request(url, method, data, callback){
+                    var xhttp = new XMLHttpRequest();
+                    xhttp.onreadystatechange = function(){
+                        if (this.readyState == 4 && this.status == 200) {
+                            if(callback) callback(this);
+                        }
+                    }
+                    xhttp.open(method, url, true);
+                    xhttp.send(data);
+                }
+
+                return {
+                    get: function(url, callback){
+                        request(url, "GET", null, callback);
+                    },
+                    post: function(url, data, callback){
+                        request(url, "POST", data, callback);
                     }
                 }
-                xhttp.open(method, url, true);
-                xhttp.send(handler);
-            }
+            })();
 
             function refreshTemps(){
-                return callServer("/get_temps", "GET", function(inherit){
+                return callServer.get("/get_temps", function(inherit){
                     var tempData = JSON.parse(inherit.response);
                     var time = Date.now();
 
@@ -217,7 +231,7 @@
             };
             refreshTemps();
             // [brewTarget, steamTarget, tempOffset] = refreshTemps();
-            callServer("/get_tunings", "GET", function(inherit){
+            callServer.get("/get_tunings", function(inherit){
                 var tempData = JSON.parse(inherit.response);
                 Object.entries(tempData).forEach(entry => {
                     const [name, value] = entry;

@@ -42,7 +42,14 @@ void setup() {
 	});
 
 	server.on("/increment_target", HTTP_POST, [](){
-		server.send(200, "text/plain", "");
+		String message = "Arguments: ";
+		message += server.args();
+		message += "\n";
+		for (uint8_t i = 0; i < server.args(); i++) {
+			message += " " + server.argName(i) + ": " + server.arg(i) + "\n";
+		}
+
+		server.send(200, "text/plain", message);
 	});
 
 	server.on("/decrement_target", HTTP_POST, [](){
