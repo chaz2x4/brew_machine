@@ -37,31 +37,19 @@ void setup() {
 		server.send(200, "text/json", brew_machine.getTunings());
 	});
 
-	server.on("/set_kp", HTTP_POST, [](){
+	server.on("/set_tunings", HTTP_POST, [](){
 		server.send(200, "text/plain", (Update.hasError()) ? "FAILED TO UPDATE TUNINGS" : "UPDATED TUNINGS");
 	}, [](){
 		Serial.println("Updating...");
 	});
 
-	server.on("/set_ki", HTTP_POST, [](){
+	server.on("/incrementTarget", HTTP_POST, [](){
 		server.send(200, "text/plain", (Update.hasError()) ? "FAILED TO UPDATE TUNINGS" : "UPDATED TUNINGS");
 	}, [](){
 		Serial.println("Updating...");
 	});
 
-	server.on("/set_kd", HTTP_POST, [](){
-		server.send(200, "text/plain", (Update.hasError()) ? "FAILED TO UPDATE TUNINGS" : "UPDATED TUNINGS");
-	}, [](){
-		Serial.println("Updating...");
-	});
-
-	server.on("/set_steam", HTTP_POST, [](){
-		server.send(200, "text/plain", (Update.hasError()) ? "FAILED TO UPDATE TUNINGS" : "UPDATED TUNINGS");
-	}, [](){
-		Serial.println("Updating...");
-	});
-
-	server.on("/set_brew", HTTP_POST, [](){
+	server.on("/decrementTarget", HTTP_POST, [](){
 		server.send(200, "text/plain", (Update.hasError()) ? "FAILED TO UPDATE TUNINGS" : "UPDATED TUNINGS");
 	}, [](){
 		Serial.println("Updating...");

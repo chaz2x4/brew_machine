@@ -92,7 +92,7 @@
             }
 
             const actions = [{
-                name: "Display Brew Temps",
+                name: "Brew Temps",
                 id: "brew",
                 handler() {
                     chart.options.scales.y.suggestedMax = brewTarget;
@@ -106,7 +106,7 @@
                     updateElements();
                 },
             }, {
-                name: "Display Steam Temps",
+                name: "Steam Temps",
                 id: "steam",
                 handler() {
                     chart.options.scales.y.suggestedMax = steamTarget;
@@ -122,7 +122,25 @@
             }];
             
             function updateElements(){
+                var targetTemp = (mode == "brew") ? brewTarget : steamTarget;
+                var targetLabel = document.getElementById("target_label");
+                targetLabel.innerHTML = "Target: " + targetTemp + " C";
 
+                var switchButton = document.getElementById("switch_" + mode);
+                switchButton.classList.add("active");
+
+                var inactiveSwitch = (mode == "brew") ? document.getElementById("switch_steam") : document.getElementById("switch_brew");
+                inactiveSwitch.classList.remove("active");
+            }
+
+            function incrementTarget(){
+                if(mode == 'brew') brewTarget += 0.5;
+                else steamTarget += 0.5;
+                callServer("/incrementTarget", )
+            }
+
+            function decrementTarget(){
+                var targetTemp = (mode == 'brew') ? brewTarget : steamTarget;
             }
 
             const ctx = document.getElementById('tempChart').getContext('2d');
@@ -137,45 +155,45 @@
                 button.onclick = action.handler;
             });
             
-            function pollServer(xhttp, url) {
-                xhttp.open("GET", url, true);
-                xhttp.send();
-            }
-            function callServer(url, handler){
+            function callServer(url, method, handler){
                 var xhttp = new XMLHttpRequest();
                 xhttp.onreadystatechange = function(){
                     if (this.readyState == 4 && this.status == 200) {
                         handler(this);
                     }
                 }
-                pollServer(xhttp, url);
+                xhttp.open(method, url, true);
+                xhttp.send();
             }
 
-            callServer("/get_temps", function(inherit){
-                var tempData = JSON.parse(inherit.response);
-                var time = Date.now();
+            function refreshTemps(){
+                callServer("/get_temps", "GET", function(inherit){
+                    var tempData = JSON.parse(inherit.response);
+                    var time = Date.now();
 
-                brewTarget = tempData.brew.target;
-                steamTarget = tempData.steam.target;
-                tempOffset = tempData.offset;
-                labels.push(time);
+                    brewTarget = tempData.brew.target;
+                    steamTarget = tempData.steam.target;
+                    tempOffset = tempData.offset;
+                    labels.push(time);
 
-                currentTemp = tempData.temperature;
-                chart.data.datasets[0].data.push(tempData.temperature);
-                brewData.output.push(tempData.brew.output);
-                steamData.output.push(tempData.steam.output);
-                
-                if(chart.data.datasets[0].data.length > 120) {
-                    labels.shift();
-                    chart.data.datasets[0].data.shift();
-                    brewData.output.shift();
-                    steamData.output.shift();
-                }
+                    currentTemp = tempData.temperature;
+                    chart.data.datasets[0].data.push(tempData.temperature);
+                    brewData.output.push(tempData.brew.output);
+                    steamData.output.push(tempData.steam.output);
+                    
+                    if(chart.data.datasets[0].data.length > 120) {
+                        labels.shift();
+                        chart.data.datasets[0].data.shift();
+                        brewData.output.shift();
+                        steamData.output.shift();
+                    }
 
-                chart.update();
-                pollServer(inherit, "/get_temps");
-            });
-            callServer("/get_tunings", function(inherit){
+                    chart.update();
+                    refreshTemps();
+                });
+            };
+            refreshTemps();
+            callServer("/get_tunings", "GET", function(inherit){
                 var tempData = JSON.parse(inherit.response);
                 Object.entries(tempData).forEach(entry => {
                     const [name, value] = entry;
@@ -191,11 +209,11 @@
         <canvas class="justify-content-md-center row" id="tempChart"></canvas>
         <div class="justify-content-md-center row">
             <div class="switch-button-container col">
-                <button class="btn btn-outline-primary" id="switch_brew"><span class="d-none d-lg-inline"> Display </span> Brew Temps </button>
-                <button class="btn btn-outline-primary" id="switch_steam"><span class="d-none d-lg-inline"> Display </span> Steam Temps </button>
+                <button class="btn btn-outline-primary active" id="switch_brew"> Brew Temps </button>
+                <button class="btn btn-outline-primary" id="switch_steam"> Steam Temps </button>
             </div>
             <div class="target-button-container col"> 
-                <label class="form-label col"> Target: 95 C</label>
+                <label class="form-label col" id="target_label"> Target: 100 C</label>
                 <button class="btn btn-outline-danger" id="targetplus"> + </button>
                 <button class="btn btn-outline-secondary" id="targetminus"> - </button>
             </div>
