@@ -100,10 +100,8 @@ double GCP::getSteamOutput(){
 }
 
 double* GCP::getTunings(){
-	double* tunings;
-	if(this->currentMode == steam) tunings = steamTempManager.getTunings();
-	else tunings = brewTempManager.getTunings();
-	return tunings;
+	if(this->currentMode == steam) return steamTempManager.getTunings();
+	else return brewTempManager.getTunings();
 }
 
 void GCP::setTunings(double kp, double ki, double kd){
