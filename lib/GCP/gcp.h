@@ -71,7 +71,7 @@ public:
     double getTempOffset();
     double getBrewOutput();
     double getSteamOutput();
-    double* getTunings();
+    double* getTunings(double*);
     void setTargetTemp(double); // Sets temperature to control to (setpoint)
     void setTargetSteamTemp(double);
     void setTempOffset(double);

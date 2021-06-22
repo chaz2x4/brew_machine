@@ -167,8 +167,8 @@ String OLED::getOutput(){
 
 String OLED::getTunings(){
     String output;
-
-    double* tunings = gcp.getTunings();
+    double array[3];
+    double* tunings = gcp.getTunings(array);
     output += "{ \"kp\": ";
     output += tunings[0];
     output += ", \"ki\": ";

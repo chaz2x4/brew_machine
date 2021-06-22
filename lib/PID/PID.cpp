@@ -18,8 +18,10 @@ void PID::tune(double kp, double ki, double kd){
 	this->kd = kd;
 }
 
-double* PID::getTunings(){
-	static double tunings[3] = {this->kp, this->ki, this->kd};
+double* PID::getTunings(double* tunings){
+	tunings[0] = this->kp;
+	tunings[1] = this->ki;
+	tunings[2] = this->kd;
 	return tunings;
 }
 

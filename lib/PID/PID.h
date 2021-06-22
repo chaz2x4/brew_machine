@@ -26,7 +26,7 @@ public:
     void tune(double, double, double);
     void compute();
     void setCycleTime(double);
-    double* getTunings();
+    double* getTunings(double*);
 };
 
 #endif
