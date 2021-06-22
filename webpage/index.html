@@ -106,6 +106,7 @@
                     mode = 'brew';
                     chart.update();
                     updateElements();
+                    callServer.post("/set_mode", mode);
                 },
             }, {
                 name: "Steam Temps",
@@ -120,6 +121,7 @@
                     mode = 'steam';
                     chart.update();
                     updateElements();
+                    callServer.post("/set_mode", mode);
                 }
             }];
             
@@ -143,7 +145,7 @@
                 var maxTemp = (mode == "brew") ? 105 : 155;
                 if(mode == "brew") brewTarget = (brewTarget < maxTemp) ? brewTarget + 0.5 : maxTemp;
                 else steamTarget = (steamTarget < maxTemp) ? steamTarget + 0.5 : maxTemp;
-                callServer.post("/increment_target", mode);
+                callServer.post("/increment_target");
                 updateElements();
             }
 
@@ -151,8 +153,7 @@
                 var minTemp = (mode == "brew") ? 85 : 145;
                 if(mode == "brew") brewTarget = (brewTarget > minTemp) ? brewTarget - 0.5 : minTemp;
                 else steamTarget = (steamTarget > minTemp) ? steamTarget - 0.5 : minTemp;
-                callServer.post("/decrement_target", mode);
-                console.log(mode);
+                callServer.post("/decrement_target");
                 updateElements();
             }
 
@@ -168,6 +169,34 @@
                 updateElements();
             }
 
+            var tunings_open = false;
+            function changeTunings() {
+                var button = this;
+                if(tunings_open) {
+                    button.classList.remove('active');
+                    button.innerHTML = "Setting Tunings...";
+                    button.disabled = true;
+                    tunings_open = false;
+                    var kp = document.getElementById("kp");
+                    var ki = document.getElementById("ki");
+                    var kd = document.getElementById("kd");
+                    var tunings = [kp.value, ki.value, kd.value];
+                    callServer.post("/set_tunings", tunings , function(request){
+                        if(request) {
+                            if(request.status == 200){
+                                button.disabled = false;
+                                button.innerHTML = "Set Tunings:";
+                            }
+                        }
+                    })
+                }
+                else {
+                    button.classList.add('active');
+                    button.innerHTML = "Submit";
+                    tunings_open = true;
+                }
+            }
+
             const ctx = document.getElementById('tempChart').getContext('2d');
             var chart = new Chart(ctx, {
                 data: data,
@@ -179,7 +208,6 @@
                 const button = document.getElementById("switch_" + action.id);
                 button.onclick = action.handler;
             });
-
 
             var callServer = (function() {
                 function request(url, method, data, callback){
@@ -204,8 +232,8 @@
             })();
 
             function refreshTemps(){
-                return callServer.get("/get_temps", function(inherit){
-                    var tempData = JSON.parse(inherit.response);
+                return callServer.get("/get_temps", function(request){
+                    var tempData = JSON.parse(request.response);
                     var time = Date.now();
 
                     if(labels.length == 0) {
@@ -232,8 +260,8 @@
             };
             refreshTemps();
             // [brewTarget, steamTarget, tempOffset] = refreshTemps();
-            callServer.get("/get_tunings", function(inherit){
-                var tempData = JSON.parse(inherit.response);
+            callServer.get("/get_tunings", function(request){
+                var tempData = JSON.parse(request.response);
                 Object.entries(tempData).forEach(entry => {
                     const [name, value] = entry;
                     var input = document.getElementById(name);
@@ -245,6 +273,7 @@
             document.getElementById("targetminus").onclick = decrementTarget;
             document.getElementById("offsetplus").onclick = incrementOffset;
             document.getElementById("offsetminus").onclick = decrementOffset;
+            document.getElementById("tuning_button").onclick = changeTunings;
         }
     </script>
 </head>
@@ -269,43 +298,34 @@
         </div>
     </div>
     <div class="row p-2" id="tunerContainer">
-        <div class="accordion">
-            <div class="accordion-item">
-                <h2 class="accordion-header">
-                    <button class="accordion-button" type="button">
-                        Set Tunings:
-                    </button>
-                </h2>
-                <div class="accordion-collapse collapse show">
-                    <form class="accordion-body" id="tunings-form">
-                        <div class="row">
-                            <div class="tuning-button input-group col">
-                                <span for="kp" class="input-group-text"> Kp: </span>
-                                <input class="tuning-input form-control" type="text" id="kp" value="" placeholder="Proportional" min="0">
-                                <button class="tuning-button btn btn-outline-secondary" type="button" id="kpplus"> + </button>
-                                <button class="tuning-button btn btn-outline-secondary" type="button" id="kpminus"> - </button>
-                            </div>
-                            <div class="tuning-button input-group col">
-                                <span for="kp" class="input-group-text"> Ki: </span>
-                                <input class="tuning-input form-control" type="text" id="ki" value="" placeholder="Integral" min="0">
-                                <button class="tuning-button btn btn-outline-secondary" type="button" id="kiplus"> + </button>
-                                <button class="tuning-button btn btn-outline-secondary" type="button" id="kiminus"> - </button>
-                            </div>
-                            <div class="tuning-button input-group col">
-                                <span for="kp" class="input-group-text"> Kd: </span>
-                                <input class="tuning-input form-control" type="text" id="kd" value="" placeholder="Derivative" min="0">
-                                <button class="tuning-button btn btn-outline-secondary" type="button" id="kdplus"> + </button>
-                                <button class="tuning-button btn btn-outline-secondary" type="button" id="kdminus"> - </button>
-                            </div>
-                        </div>
-                        <div class="row justify-content-center p-3">
-                            <div class="col-1">
-                                <button class="btn btn-primary" type="button"> Submit </button>
-                            </div>
-                        </div>
-                    </form>
+        <p>
+            <button class="btn btn-outline-primary" type="button" id="tuning_button" data-bs-toggle="collapse" data-bs-target="#tunings_tab">
+                Set Tunings:
+            </button>
+        </p>
+        <div class="collapse" id="tunings_tab">
+            <form class="accordion-body" id="tunings-form">
+                <div class="row">
+                    <div class="tuning-button input-group col">
+                        <span for="kp" class="input-group-text"> Kp: </span>
+                        <input class="tuning-input form-control" type="text" id="kp" value="" placeholder="Proportional" min="0">
+                        <button class="tuning-button btn btn-outline-secondary" type="button" id="kpplus"> + </button>
+                        <button class="tuning-button btn btn-outline-secondary" type="button" id="kpminus"> - </button>
+                    </div>
+                    <div class="tuning-button input-group col">
+                        <span for="kp" class="input-group-text"> Ki: </span>
+                        <input class="tuning-input form-control" type="text" id="ki" value="" placeholder="Integral" min="0">
+                        <button class="tuning-button btn btn-outline-secondary" type="button" id="kiplus"> + </button>
+                        <button class="tuning-button btn btn-outline-secondary" type="button" id="kiminus"> - </button>
+                    </div>
+                    <div class="tuning-button input-group col">
+                        <span for="kp" class="input-group-text"> Kd: </span>
+                        <input class="tuning-input form-control" type="text" id="kd" value="" placeholder="Derivative" min="0">
+                        <button class="tuning-button btn btn-outline-secondary" type="button" id="kdplus"> + </button>
+                        <button class="tuning-button btn btn-outline-secondary" type="button" id="kdminus"> - </button>
+                    </div>
                 </div>
-            </div>
+            </form>
         </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.3.2"></script>
