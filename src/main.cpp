@@ -43,14 +43,24 @@ void setup() {
 		if(mode.equals("brew")) brew_machine.setMode(brew);
 		else if(mode.equals("steam")) brew_machine.setMode(steam);
 		else return server.send(400, "text/plain", "Invalid Data");
+		server.send(200, "text/plain", "Success!");
 	});
 
 	server.on("/set_tunings", HTTP_POST, [](){
-		String message;
-		for(uint8_t i = 0 ; i < server.args() ; i++) {
-			message += " ";
-			message += server.arg(i);
+		double tunings[3];
+		String params = server.arg(0);
+		int stringIndex = params.indexOf(",");
+		int arrayIndex = 0;
+		while(stringIndex > 0) {
+			String num = params.substring(0, stringIndex);
+			params = params.substring(stringIndex + 1);
+			stringIndex = params.indexOf(",");
+			double result = num.toDouble();
+			tunings[arrayIndex] = result;
+			arrayIndex++;
 		}
+		tunings[arrayIndex] = params.toDouble();
+		brew_machine.setTunings(tunings[0], tunings[1], tunings[2]);
 		server.send(200, "text/plain", "Success!");
 	});
 

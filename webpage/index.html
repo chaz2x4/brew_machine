@@ -107,6 +107,7 @@
                     chart.update();
                     updateElements();
                     callServer.post("/set_mode", mode);
+                    refreshTunings();
                 },
             }, {
                 name: "Steam Temps",
@@ -122,6 +123,7 @@
                     chart.update();
                     updateElements();
                     callServer.post("/set_mode", mode);
+                    refreshTunings();
                 }
             }];
             
@@ -231,7 +233,7 @@
                 }
             })();
 
-            function refreshTemps(){
+            (function refreshTemps(){
                 return callServer.get("/get_temps", function(request){
                     var tempData = JSON.parse(request.response);
                     var time = Date.now();
@@ -257,18 +259,20 @@
                     updateElements();
                     refreshTemps();
                 });
-            };
-            refreshTemps();
-            // [brewTarget, steamTarget, tempOffset] = refreshTemps();
-            callServer.get("/get_tunings", function(request){
-                var tempData = JSON.parse(request.response);
-                Object.entries(tempData).forEach(entry => {
-                    const [name, value] = entry;
-                    var input = document.getElementById(name);
-                    input.value = value;
-                });
-            });
+            })();
 
+            function refreshTunings() {
+                callServer.get("/get_tunings", function(request){
+                    var tempData = JSON.parse(request.response);
+                    Object.entries(tempData).forEach(entry => {
+                        const [name, value] = entry;
+                        var input = document.getElementById(name);
+                        input.value = value;
+                    });
+                });
+            }
+
+            refreshTunings();
             document.getElementById("targetplus").onclick = incrementTarget;
             document.getElementById("targetminus").onclick = decrementTarget;
             document.getElementById("offsetplus").onclick = incrementOffset;
