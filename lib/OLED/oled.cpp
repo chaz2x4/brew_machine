@@ -11,6 +11,8 @@ void OLED::start(){
     pinMode(BUTTON_B, INPUT_PULLUP);
     pinMode(BUTTON_C, INPUT_PULLUP);
     timeLastButton = millis();
+
+    gcp.init();
 }
 
 void OLED::eventListener(){
@@ -78,6 +80,7 @@ bool OLED::timedout(){
 
 void OLED::refresh(){
     gcp.update();
+    this->getOutput();
     if(timedout()) return;
     display.setTextSize(2);
     display.setTextColor(SSD1306_WHITE);
@@ -85,7 +88,7 @@ void OLED::refresh(){
     display.clearDisplay();
 
     ulong wait;
-    char *currentMode = "Brew";
+    String currentMode = "Brew";
     double targetTemp = gcp.getTargetTemp();
     double currentTemp = gcp.getActualTemp();
     if(gcp.getCurrentMode() == steam) {
@@ -116,4 +119,63 @@ void OLED::changeMode(){
     flash = true;
     if(gcp.getCurrentMode() == brew) gcp.setMode(steam);
     else gcp.setMode(brew);
+}
+
+void OLED::setMode(mode mode){
+    Serial.printf("Set Mode %i\n", mode);
+    gcp.setMode(mode);
+}
+
+void OLED::incrementTemp(){
+    Serial.printf("Increment Temp %i\n", gcp.getCurrentMode());
+    gcp.incrementTemp();
+}
+
+void OLED::decrementTemp(){
+    Serial.printf("Decrement Temp %i\n", gcp.getCurrentMode());
+    gcp.decrementTemp();
+}
+
+void OLED::setOffset(double offset) {
+    Serial.printf("Set Offset: %f\n", offset);
+    gcp.setTempOffset(offset);
+}
+
+void OLED::setTunings(double kp, double ki, double kd){
+    Serial.printf("Set Tuning: %f %f %f\n", kp, ki, kd);
+    gcp.setTunings(kp, ki, kd);
+}
+
+String OLED::getOutput(){
+    String output;
+    output += "{ \"temperature\": ";
+    output += gcp.getActualTemp();
+    output += ", \"offset\": ";
+    output += gcp.getTempOffset();
+    output += ", \"brew\": { \"target\": ";
+    output += gcp.getTargetTemp(); 
+    output += ", \"output\": ";
+    output += gcp.getBrewOutput();
+    output += " } , \"steam\": { \"target\": ";
+    output += gcp.getTargetSteamTemp();
+    output +=  ", \"output\": ";
+    output += gcp.getSteamOutput();
+    output += " }}";
+    Serial.println(output);
+    return output;
+}
+
+String OLED::getTunings(){
+    String output;
+    double array[3];
+    double* tunings = gcp.getTunings(array);
+    output += "{ \"kp\": ";
+    output += tunings[0];
+    output += ", \"ki\": ";
+    output += tunings[1];
+    output +=  ", \"kd\": ";
+    output += tunings[2];
+    output += " }";
+    Serial.println(output);
+    return output;
 }

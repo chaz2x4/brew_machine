@@ -6,9 +6,9 @@
 
 class PID {
 private:
-    double kp = 4;     // Proportional gain
-    double ki = 1;   // Integral gain
-    double kd = 2;      // Derivative gain
+    double kp;     // Proportional gain
+    double ki;   // Integral gain
+    double kd;      // Derivative gain
 
     ulong lastTime;
     ulong sampleTime;
@@ -26,6 +26,7 @@ public:
     void tune(double, double, double);
     void compute();
     void setCycleTime(double);
+    double* getTunings(double*);
 };
 
 #endif

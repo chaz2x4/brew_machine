@@ -22,12 +22,14 @@
 #define STEAM_PIN 27
 
 #define RREF 430
-#define DEFAULT_BREW_TEMP 97.5
-#define DEFAULT_STEAM_TEMP 150.0
+#define DEFAULT_BREW_TEMP 99.0
+#define DEFAULT_STEAM_TEMP 145.0
 #define DEFAULT_OFFSET 6.0
 #define EMERGENCY_SHUTOFF_TEMP 165.0
+#define MAX_OFFSET 15
+#define MIN_OFFSET 0
 
-#define CYCLE_TIME 5000
+#define CYCLE_TIME 1000
 
 enum mode{brew, steam};
 
@@ -37,12 +39,12 @@ private:
     mode currentMode;
 
     double actualTemp;
+    double tempOffset = DEFAULT_OFFSET;
     double targetTemp = DEFAULT_BREW_TEMP;
     double targetSteamTemp = DEFAULT_STEAM_TEMP;
-    double tempOffset = DEFAULT_OFFSET;
     
     double maxBrewTemp = 100.0;
-    double minBrewTemp = 75.0;
+    double minBrewTemp = 85.0;
 
     double maxSteamTemp = 155.0;
     double minSteamTemp = 145.0;
@@ -57,9 +59,8 @@ private:
     PID steamTempManager = PID(&actualTemp, &steam_output, &targetSteamTemp, CYCLE_TIME);
 
 public:
-    GCP();
-    GCP(double, double, double);
-    ~GCP();
+    void init();
+    void init(double, double, double);
     mode getCurrentMode();
     void setMode(mode);
     void incrementTemp();
@@ -68,9 +69,13 @@ public:
     double getTargetSteamTemp();
     double getActualTemp(); //returns current temperature value
     double getTempOffset();
+    double getBrewOutput();
+    double getSteamOutput();
+    double* getTunings(double*);
     void setTargetTemp(double); // Sets temperature to control to (setpoint)
     void setTargetSteamTemp(double);
     void setTempOffset(double);
+    void setTunings(double, double, double);
     void update();
 };
 #endif
