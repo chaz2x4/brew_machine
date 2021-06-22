@@ -161,7 +161,7 @@ String OLED::getOutput(){
     output +=  ", \"output\": ";
     output += gcp.getSteamOutput();
     output += " }}";
-    Serial.printf("Load: %s\n", output);
+    Serial.println(output);
     return output;
 }
 
@@ -176,6 +176,6 @@ String OLED::getTunings(){
     output +=  ", \"kd\": ";
     output += tunings[2];
     output += " }";
-    Serial.printf("Tunings: %s\n", output);
+    Serial.println(output);
     return output;
 }
