@@ -177,6 +177,5 @@ String OLED::getTunings(){
     output += tunings[2];
     output += " }";
     Serial.printf("Tunings: %s\n", output);
-    Serial.println(output);
     return output;
 }
