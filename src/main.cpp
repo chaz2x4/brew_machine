@@ -38,7 +38,7 @@ void setup() {
 		server.send(200, "text/json", brew_machine.getTunings());
 	});
 
-	server.on("set_mode", HTTP_POST, [](){
+	server.on("/set_mode", HTTP_POST, [](){
 		String mode = server.arg(0);
 		if(mode.equals("brew")) brew_machine.setMode(brew);
 		else if(mode.equals("steam")) brew_machine.setMode(steam);
