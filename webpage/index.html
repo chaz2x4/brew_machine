@@ -1,5 +1,7 @@
-<html>
+<html >
 <head>
+    <meta charset="UTF-8">
+    <title>Gaggia - Homebrew Server</title>
     <script>
         window.onload = function () {
             var currentTemp = 0;
@@ -247,47 +249,64 @@
     </script>
 </head>
 <body class="container">
-    <div class="chart-container container" id="tempContainer">
+    <div class="row p-2" id="chartContainer">
         <canvas class="justify-content-md-center row" id="tempChart"></canvas>
-        <div class="justify-content-md-center row">
-            <div class="switch-button-container col">
-                <button class="btn btn-outline-primary active" id="switch_brew"> Brew Temps </button>
-                <button class="btn btn-outline-primary" id="switch_steam"> Steam Temps </button>
-            </div>
-            <div class="target-button-container col"> 
-                <label class="form-label col" id="target_label"> Target: 100 C</label>
-                <button class="btn btn-outline-danger" id="targetplus"> + </button>
-                <button class="btn btn-outline-secondary" id="targetminus"> - </button>
-            </div>
-            <div class="offset-button-container col"> 
-                <label class="form-label" id="offset_label"> Offset: 8 C</label>
-                <button class="btn btn-outline-danger" id="offsetplus"> + </button>
-                <button class="btn btn-outline-secondary" id="offsetminus"> - </button>
-            </div>
+    </div>
+    <div class="justify-content-md-center row p-2" id="tempContainer">
+        <div class="switch-button-container col">
+            <button class="btn btn-outline-primary active" id="switch_brew"> Brew Temps </button>
+            <button class="btn btn-outline-primary" id="switch_steam"> Steam Temps </button>
+        </div>
+        <div class="target-button-container col"> 
+            <label class="form-label col" id="target_label"> Target: 100 C</label>
+            <button class="btn btn-outline-danger" id="targetplus"> + </button>
+            <button class="btn btn-outline-secondary" id="targetminus"> - </button>
+        </div>
+        <div class="offset-button-container col"> 
+            <label class="form-label" id="offset_label"> Offset: 8 C</label>
+            <button class="btn btn-outline-danger" id="offsetplus"> + </button>
+            <button class="btn btn-outline-secondary" id="offsetminus"> - </button>
         </div>
     </div>
-    <div class="controller-container container" id="tempController">
-        <label for="tunings-form" class="form-label"> Tunings: </label>
-        <form class="row justify-content-md-center" id="tunings-form">
-            <div class="tuning-button input-group col">
-                <span for="kp" class="input-group-text"> Kp: </span>
-                <input class="tuning-input form-control" type="text" id="kp" value="" placeholder="Proportional" min="0">
-                <button class="tuning-button btn btn-outline-secondary" type="button" id="kpplus"> + </button>
-                <button class="tuning-button btn btn-outline-secondary" type="button" id="kpminus"> - </button>
+    <div class="row p-2" id="tunerContainer">
+        <div class="accordion">
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button" type="button">
+                        Set Tunings:
+                    </button>
+                </h2>
+                <div class="accordion-collapse collapse show">
+                    <form class="accordion-body" id="tunings-form">
+                        <div class="row">
+                            <div class="tuning-button input-group col">
+                                <span for="kp" class="input-group-text"> Kp: </span>
+                                <input class="tuning-input form-control" type="text" id="kp" value="" placeholder="Proportional" min="0">
+                                <button class="tuning-button btn btn-outline-secondary" type="button" id="kpplus"> + </button>
+                                <button class="tuning-button btn btn-outline-secondary" type="button" id="kpminus"> - </button>
+                            </div>
+                            <div class="tuning-button input-group col">
+                                <span for="kp" class="input-group-text"> Ki: </span>
+                                <input class="tuning-input form-control" type="text" id="ki" value="" placeholder="Integral" min="0">
+                                <button class="tuning-button btn btn-outline-secondary" type="button" id="kiplus"> + </button>
+                                <button class="tuning-button btn btn-outline-secondary" type="button" id="kiminus"> - </button>
+                            </div>
+                            <div class="tuning-button input-group col">
+                                <span for="kp" class="input-group-text"> Kd: </span>
+                                <input class="tuning-input form-control" type="text" id="kd" value="" placeholder="Derivative" min="0">
+                                <button class="tuning-button btn btn-outline-secondary" type="button" id="kdplus"> + </button>
+                                <button class="tuning-button btn btn-outline-secondary" type="button" id="kdminus"> - </button>
+                            </div>
+                        </div>
+                        <div class="row justify-content-center p-3">
+                            <div class="col-1">
+                                <button class="btn btn-primary" type="button"> Submit </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
             </div>
-            <div class="tuning-button input-group col">
-                <span for="kp" class="input-group-text"> Ki: </span>
-                <input class="tuning-input form-control" type="text" id="ki" value="" placeholder="Integral" min="0">
-                <button class="tuning-button btn btn-outline-secondary" type="button" id="kiplus"> + </button>
-                <button class="tuning-button btn btn-outline-secondary" type="button" id="kiminus"> - </button>
-            </div>
-            <div class="tuning-button input-group col">
-                <span for="kp" class="input-group-text"> Kd: </span>
-                <input class="tuning-input form-control" type="text" id="kd" value="" placeholder="Derivative" min="0">
-                <button class="tuning-button btn btn-outline-secondary" type="button" id="kdplus"> + </button>
-                <button class="tuning-button btn btn-outline-secondary" type="button" id="kdminus"> - </button>
-            </div>
-        </form>
+        </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.3.2"></script>
     <script src="https://cdn.jsdelivr.net/npm/moment@2.29.1"></script>
