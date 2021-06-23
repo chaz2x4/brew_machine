@@ -1,4 +1,4 @@
-#include "oled.h"
+#include "OLED.h"
 
 void OLED::start(){
     display.begin(SSD1306_SWITCHCAPVCC, 0x3C);

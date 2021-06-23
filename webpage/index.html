@@ -105,6 +105,7 @@
                     chart.data.datasets[1].data = brewData.output;
                     mode = 'brew';
                     chart.update();
+                    chart.render();
                     updateElements();
                     callServer.post("/set_mode", mode);
                     refreshTunings();
@@ -121,6 +122,7 @@
                     chart.data.datasets[1].data = steamData.output;
                     mode = 'steam';
                     chart.update();
+                    chart.render();
                     updateElements();
                     callServer.post("/set_mode", mode);
                     refreshTunings();

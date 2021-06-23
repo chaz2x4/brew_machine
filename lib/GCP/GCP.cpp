@@ -1,4 +1,4 @@
-#include "gcp.h"
+#include "GCP.h"
 
 void GCP::init() {
 	init(targetTemp = DEFAULT_BREW_TEMP, targetSteamTemp = DEFAULT_STEAM_TEMP, tempOffset = DEFAULT_OFFSET);
