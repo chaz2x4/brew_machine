@@ -13,8 +13,8 @@ void GCP::init(double targetTemp, double targetSteamTemp, double offset) {
 	this->actualTemp = this->getActualTemp();
 	pinMode(HEATER_PIN, OUTPUT);
 	pinMode(STEAM_PIN, OUTPUT);
-	brewTempManager.tune(65.0, 0.23, 114.0);
-	steamTempManager.tune(65.0, 0.23, 114.0);
+	brewTempManager.tune(35.0, 0.2, 75.0);
+	steamTempManager.tune(35.0, 0.2, 75.0);
 }
 
 mode GCP::getCurrentMode() {
@@ -76,7 +76,7 @@ double GCP::getActualTemp() {
 		if (fault & MAX31865_FAULT_OVUV) Serial.println("Under/Over voltage");
 		tempProbe.clearFault();
 	}
-	temp -= tempOffset;
+	temp += tempOffset;
 	this->actualTemp = temp;
 	return temp;
 }

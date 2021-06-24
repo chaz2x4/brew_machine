@@ -7,7 +7,7 @@
             var currentTemp = 0;
             var brewTarget = 100;
             var steamTarget = 145;
-            var tempOffset = 8;
+            var tempOffset = -8;
             var mode = 'brew';
             var brewData = {target: [], output: []};
             var steamData = {target: [], output: []};
@@ -298,7 +298,7 @@
             <button class="btn btn-outline-secondary" id="targetminus"> - </button>
         </div>
         <div class="offset-button-container col"> 
-            <label class="form-label" id="offset_label"> Offset: 8 C</label>
+            <label class="form-label" id="offset_label"> Offset: -8 C</label>
             <button class="btn btn-outline-danger" id="offsetplus"> + </button>
             <button class="btn btn-outline-secondary" id="offsetminus"> - </button>
         </div>
