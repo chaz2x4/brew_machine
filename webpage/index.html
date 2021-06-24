@@ -168,7 +168,7 @@
             }
 
             function decrementOffset(){
-                if(tempOffset > 0) tempOffset -= 0.5;
+                if(tempOffset > -15) tempOffset -= 0.5;
                 callServer.post("/set_offset", tempOffset);
                 updateElements();
             }
