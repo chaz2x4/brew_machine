@@ -78,7 +78,6 @@ void setup() {
 		String data = server.arg(0);
 		double offset = data.toDouble();
 		brew_machine.setOffset(offset);
-		Serial.println(offset);
 		server.send(200, "text/plain", "Success!");
 	});
 

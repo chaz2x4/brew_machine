@@ -27,7 +27,7 @@
 #define DEFAULT_OFFSET -8.0
 #define EMERGENCY_SHUTOFF_TEMP 165.0
 #define MAX_OFFSET 15
-#define MIN_OFFSET 15
+#define MIN_OFFSET -15
 
 #define CYCLE_TIME 1000
 
