@@ -287,25 +287,25 @@
 </head>
 <body class="container-sm">
     <div class="row" id="chartContainer">
-        <canvas class="row" id="tempChart"></canvas>
+        <canvas id="tempChart"></canvas>
     </div>
-    <div class="row" id="tempContainer">
-        <div class="switch-button-container col-3 col-sm-2 col-lg-1 p-2">
-            <button class="btn btn-outline-primary active" id="switch_brew"> Brew Temps </button>
+    <div class="row row-cols-2 row-cols-sm-5 align-items-center" id="tempContainer">
+        <div class="col order-1">
+            <button class="btn btn-outline-primary active" id="switch_brew"> Water Temp </button>
         </div>
-        <div class="switch-button-container col-3 col-sm-2 col-lg-1 p-2 me-sm-auto">
-            <button class="btn btn-outline-primary" id="switch_steam"> Steam Temps </button>
+        <div class=" col order-3 me-sm-auto">
+            <button class="btn btn-outline-primary" id="switch_steam"> Steam Temp </button>
         </div>
-        <div class="target-button-container col-2 col-sm-3 col-md-2"> 
-            <label class="form-label" id="target_label"> Target: 100 C</label>
-            <div class="col">
+        <div class="col row row-cols-1 row-cols-xl-2 order-2 order-sm-3"> 
+            <label class="form-label col" id="target_label"> Target: 100 C</label>
+            <div class="col-2 btn-group">
                 <button class="btn btn-outline-danger" id="targetplus"> + </button>
                 <button class="btn btn-outline-secondary" id="targetminus"> - </button>
             </div>
         </div>
-        <div class="offset-button-container col-2 col-sm-3 col-md-2"> 
-            <label class="form-label" id="offset_label"> Offset: -8 C</label>
-            <div class="col">
+        <div class="col row row-cols-1 row-cols-xl-2 order-4"> 
+            <label class="form-label col" id="offset_label"> Offset: -8 C</label>
+            <div class="col-2 btn-group">
                 <button class="btn btn-outline-danger" id="offsetplus"> + </button>
                 <button class="btn btn-outline-secondary" id="offsetminus"> - </button>
             </div>
