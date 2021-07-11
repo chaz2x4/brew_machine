@@ -285,27 +285,33 @@
         }
     </script>
 </head>
-<body class="container">
-    <div class="row p-2" id="chartContainer">
+<body class="container-sm">
+    <div class="row" id="chartContainer">
         <canvas class="row" id="tempChart"></canvas>
     </div>
-    <div class="row p-2" id="tempContainer">
-        <div class="switch-button-container col">
+    <div class="row" id="tempContainer">
+        <div class="switch-button-container col-3 col-sm-2 col-lg-1 p-2">
             <button class="btn btn-outline-primary active" id="switch_brew"> Brew Temps </button>
+        </div>
+        <div class="switch-button-container col-3 col-sm-2 col-lg-1 p-2 me-sm-auto">
             <button class="btn btn-outline-primary" id="switch_steam"> Steam Temps </button>
         </div>
-        <div class="target-button-container col"> 
-            <label class="form-label col" id="target_label"> Target: 100 C</label>
-            <button class="btn btn-outline-danger" id="targetplus"> + </button>
-            <button class="btn btn-outline-secondary" id="targetminus"> - </button>
+        <div class="target-button-container col-2 col-sm-3 col-md-2"> 
+            <label class="form-label" id="target_label"> Target: 100 C</label>
+            <div class="col">
+                <button class="btn btn-outline-danger" id="targetplus"> + </button>
+                <button class="btn btn-outline-secondary" id="targetminus"> - </button>
+            </div>
         </div>
-        <div class="offset-button-container col"> 
+        <div class="offset-button-container col-2 col-sm-3 col-md-2"> 
             <label class="form-label" id="offset_label"> Offset: -8 C</label>
-            <button class="btn btn-outline-danger" id="offsetplus"> + </button>
-            <button class="btn btn-outline-secondary" id="offsetminus"> - </button>
+            <div class="col">
+                <button class="btn btn-outline-danger" id="offsetplus"> + </button>
+                <button class="btn btn-outline-secondary" id="offsetminus"> - </button>
+            </div>
         </div>
     </div>
-    <div class="row p-2" id="tunerContainer">
+    <div class="row" id="tunerContainer">
         <p>
             <button class="btn btn-outline-primary" type="button" id="tuning_button" data-bs-toggle="collapse" data-bs-target="#tunings_tab">
                 Set Tunings:
