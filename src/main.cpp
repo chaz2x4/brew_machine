@@ -8,7 +8,8 @@ void setup() {
 	while (!Serial) ; // wait for serial port to connect. Needed for native USB port only
 	//Primary Mission: start coffee machine
 	Serial.begin(115200);
-	Serial.setDebugOutput(true);
+	Serial.setDebugOutput(true);	
+	brew_machine.start();
 
 	WiFi.mode(WIFI_STA);
 	WiFi.begin(SECRET_SSID, SECRET_PASSWORD);
@@ -105,7 +106,6 @@ void setup() {
 
 	ArduinoOTA.begin();
 	server.begin();
-	brew_machine.start();
 }
 
 // the loop function runs over and over again until power down or reset
