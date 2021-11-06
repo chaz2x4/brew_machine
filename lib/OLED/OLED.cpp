@@ -148,7 +148,9 @@ void OLED::setTunings(double kp, double ki, double kd){
 
 String OLED::getOutput(){
     String output;
-    output += "{ \"temperature\": ";
+    output += "{ \"time\": ";
+    output += millis();
+    output += ", \"temperature\": ";
     output += gcp.getActualTemp();
     output += ", \"offset\": ";
     output += gcp.getTempOffset();

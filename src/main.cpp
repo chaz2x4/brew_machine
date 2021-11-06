@@ -30,7 +30,6 @@ void setup() {
 		server.send(200, "text/html", indexHtml);
 	});
 
-
 	server.on("/get_temps", HTTP_GET, [](){
 		server.send(200, "text/json", brew_machine.getOutput());
 	});

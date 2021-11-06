@@ -24,12 +24,12 @@
 #define RREF 430
 #define DEFAULT_BREW_TEMP 96.0
 #define DEFAULT_STEAM_TEMP 145.0
-#define DEFAULT_OFFSET -4.0
+#define DEFAULT_OFFSET -6.0
 #define EMERGENCY_SHUTOFF_TEMP 165.0
 #define MAX_OFFSET 15
 #define MIN_OFFSET -15
 
-#define CYCLE_TIME 1000
+#define CYCLE_TIME 667
 
 enum mode{brew, steam};
 
