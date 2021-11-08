@@ -14,7 +14,7 @@ void GCP::init(double targetTemp, double targetSteamTemp, double offset) {
 	pinMode(HEATER_PIN, OUTPUT);
 	pinMode(STEAM_PIN, OUTPUT);
 	brewTempManager.tune(55.0, 0.2, 70.0);
-	steamTempManager.tune(55.0, 0.2, 70.0);
+	steamTempManager.tune(75.0, 0.2, 70.0);
 }
 
 mode GCP::getCurrentMode() {
