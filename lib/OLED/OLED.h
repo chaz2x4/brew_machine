@@ -15,7 +15,7 @@
 #define BUTTON_B 32 //pin 32; cycle modes; decrement temperature 
 #define BUTTON_C 14 //pin 14; press and hold on brew screen to change temperature
 
-#define SCREEN_TIMEOUT 1200000 //amount of milliseconds before screen goes blank
+#define SCREEN_TIMEOUT 6000000 //amount of milliseconds before screen goes blank
 #define TRIGGER_TIME 1000 //amount of time to hold button for settings change
 
 class OLED {
