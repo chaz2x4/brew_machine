@@ -1,10 +1,10 @@
 // PID.h
-#ifndef _PID_h
-#define _PID_h
+#ifndef _Controller_h
+#define _Controller_h
 
 #include <Arduino.h>
 
-class PID {
+class Controller {
 private:
     double kp;     // Proportional gain
     double ki;   // Integral gain
@@ -22,7 +22,7 @@ private:
 
     double cycleRunTime;
 public:
-    PID(double*, double*, double*, ulong);
+    Controller(double*, double*, double*, ulong);
     void tune(double, double, double);
     void compute();
     void setCycleTime(double);

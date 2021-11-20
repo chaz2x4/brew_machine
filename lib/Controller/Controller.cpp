@@ -2,9 +2,9 @@
 	Setup new PID function that works in the same way that 
 */
 
-#include "PID.h"
+#include "Controller.h"
 
-PID::PID(double* input, double *output, double *setpoint, ulong time){
+Controller::Controller(double* input, double *output, double *setpoint, ulong time){
 	lastTime = millis() - sampleTime;
 	currentTemp = input;
 	onTime = output;
@@ -12,20 +12,20 @@ PID::PID(double* input, double *output, double *setpoint, ulong time){
 	cycleRunTime = time;
 }
 
-void PID::tune(double kp, double ki, double kd){
+void Controller::tune(double kp, double ki, double kd){
 	this->kp = kp;
 	this->ki = ki;
 	this->kd = kd;
 }
 
-double* PID::getTunings(double* tunings){
+double* Controller::getTunings(double* tunings){
 	tunings[0] = this->kp;
 	tunings[1] = this->ki;
 	tunings[2] = this->kd;
 	return tunings;
 }
 
-void PID::compute(){
+void Controller::compute(){
 	ulong now = millis();
 	ulong timeChange = now - lastTime;
 	if(timeChange >= sampleTime) {
@@ -51,6 +51,6 @@ void PID::compute(){
 	}
 }
 
-void PID::setCycleTime(double time){
+void Controller::setCycleTime(double time){
 	this->cycleRunTime = time;
 }
