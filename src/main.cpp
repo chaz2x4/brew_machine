@@ -113,5 +113,4 @@ void loop() {
 	server.handleClient();
 	brew_machine.refresh();
 	brew_machine.eventListener();
-	yield();
 }
