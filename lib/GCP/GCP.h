@@ -13,7 +13,7 @@
 
 #include <Adafruit_MAX31865.h>
 #include <EEPROM.h>
-#include "Controller.h"
+#include <PID_v1.h>
 
 #define ON HIGH
 #define OFF LOW
@@ -55,8 +55,8 @@ private:
     ulong cycleStartTime;
     ulong cycleRunTime = CYCLE_TIME;
 
-    Controller brewTempManager = Controller(&actualTemp, &brew_output, &targetTemp, CYCLE_TIME);
-    Controller steamTempManager = Controller(&actualTemp, &steam_output, &targetSteamTemp, CYCLE_TIME);
+    PID brewTempManager = PID(&actualTemp, &brew_output, &targetTemp, 2, 5, 1, P_ON_M, DIRECT);
+    PID steamTempManager = PID(&actualTemp, &steam_output, &targetSteamTemp, 2, 5, 1, P_ON_M, DIRECT);
 
 public:
     void init();

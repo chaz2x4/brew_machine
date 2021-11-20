@@ -13,8 +13,8 @@ void GCP::init(double targetTemp, double targetSteamTemp, double offset) {
 	this->actualTemp = this->getActualTemp();
 	pinMode(HEATER_PIN, OUTPUT);
 	pinMode(STEAM_PIN, OUTPUT);
-	brewTempManager.tune(30.0, 0.6, 140.0);
-	steamTempManager.tune(90.0, 1.2, 140.0);
+	brewTempManager.SetMode(AUTOMATIC);
+	steamTempManager.SetMode(AUTOMATIC);
 }
 
 mode GCP::getCurrentMode() {
@@ -100,18 +100,23 @@ double GCP::getSteamOutput(){
 }
 
 double* GCP::getTunings(double* tunings){
-	if(this->currentMode == steam) return steamTempManager.getTunings(tunings);
-	else return brewTempManager.getTunings(tunings);
+	PID *tempManager;
+	if(this->currentMode == steam) tempManager = &steamTempManager;
+	else tempManager = &brewTempManager;
+	tunings[0] = tempManager->GetKp();
+	tunings[1] = tempManager->GetKi();
+	tunings[2] = tempManager->GetKd();
+	return tunings;
 }
 
 void GCP::setTunings(double kp, double ki, double kd){
-	if(this->currentMode == steam) steamTempManager.tune(kp, ki, kd);
-	else brewTempManager.tune(kp, ki, kd);
+	if(this->currentMode == steam) steamTempManager.SetTunings(kp, ki, kd, P_ON_M);
+	else brewTempManager.SetTunings(kp, ki, kd, P_ON_M);
 }
 
 void GCP::update() {
-	brewTempManager.compute();
-	steamTempManager.compute();
+	brewTempManager.Compute();
+	steamTempManager.Compute();
 
 	/* 
 		Brew Relay and Steam Relay will always be calculating
