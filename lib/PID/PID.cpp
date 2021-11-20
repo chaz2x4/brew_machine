@@ -42,7 +42,7 @@ void PID::compute(){
 		output += outputSum - kd * dInput;
 
 	    if(output > cycleRunTime) output = cycleRunTime;
-      	else if(output < 33) output = 0;
+      	else if(output < 0) output = 0;
 
 		*onTime = output;
 
