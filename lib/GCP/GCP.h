@@ -20,10 +20,6 @@
 
 #define HEATER_PIN 13
 #define STEAM_PIN 27
-#define HEATER_CHANNEL 1
-#define STEAM_CHANNEL 2
-#define PWM_FREQ 60
-#define PWM_RESOLUTION 8
 
 #define RREF 430
 #define DEFAULT_BREW_TEMP 96.0
@@ -33,7 +29,7 @@
 #define MAX_OFFSET 15
 #define MIN_OFFSET -15
 
-#define CYCLE_TIME 667
+#define CYCLE_TIME 200
 
 enum mode{brew, steam};
 
@@ -57,7 +53,6 @@ private:
     double steam_output;
 
     ulong cycleStartTime;
-    ulong cycleRunTime = CYCLE_TIME;
 
     PID brewTempManager = PID(&actualTemp, &brew_output, &targetTemp, 2, 5, 1, P_ON_M, DIRECT);
     PID steamTempManager = PID(&actualTemp, &steam_output, &targetSteamTemp, 2, 5, 1, P_ON_M, DIRECT);

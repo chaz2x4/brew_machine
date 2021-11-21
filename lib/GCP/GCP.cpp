@@ -12,13 +12,13 @@ void GCP::init(double targetTemp, double targetSteamTemp, double offset) {
 	this->setMode(brew);
 	this->actualTemp = this->getActualTemp();
 
-	ledcAttachPin(HEATER_PIN, HEATER_CHANNEL);
-	ledcAttachPin(STEAM_PIN, STEAM_CHANNEL);
-	ledcSetup(HEATER_CHANNEL, PWM_FREQ, PWM_RESOLUTION);
-	ledcSetup(STEAM_CHANNEL, PWM_FREQ, PWM_RESOLUTION);
+	pinMode(HEATER_PIN, OUTPUT);
+	pinMode(STEAM_PIN, OUTPUT);
 
 	brewTempManager.SetMode(AUTOMATIC);
 	steamTempManager.SetMode(AUTOMATIC);
+	brewTempManager.SetOutputLimits(0, CYCLE_TIME);
+	steamTempManager.SetOutputLimits(0, CYCLE_TIME);
 }
 
 mode GCP::getCurrentMode() {
@@ -136,12 +136,19 @@ void GCP::update() {
 		If temperature rises above maximum safe temperature turn off relay
 	*/
 
-	ledcWrite(HEATER_CHANNEL, brew_output);
-	ledcWrite(STEAM_CHANNEL, steam_output);
+	if(millis() - cycleStartTime > CYCLE_TIME) {
+		cycleStartTime += CYCLE_TIME;
+	}
+	
+	if(brew_output < millis() - cycleStartTime) digitalWrite(HEATER_PIN, ON);
+	else digitalWrite(HEATER_PIN, ON);
+
+	if(steam_output < millis() - cycleStartTime) digitalWrite(STEAM_PIN, ON);
+	else digitalWrite(STEAM_PIN, ON);
 	
 	double actualTemp = this->getActualTemp();
 	if((actualTemp + tempOffset) >= EMERGENCY_SHUTOFF_TEMP) {
-		ledcWrite(HEATER_CHANNEL, 0);
-		ledcWrite(STEAM_CHANNEL, 0);
+		digitalWrite(HEATER_PIN, OFF);
+		digitalWrite(STEAM_PIN, OFF);
 	}
 }
