@@ -110,10 +110,10 @@ void OLED::refresh(){
     }
 
     if((now - lastTime) > wait) {
-        lastTime += wait;
+        lastTime = now;
         flash = !flash;
-        display.display();
     }
+    display.display();
 }
 
 void OLED::changeMode(){
