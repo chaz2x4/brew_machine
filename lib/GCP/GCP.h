@@ -31,7 +31,7 @@
 #define MAX_OFFSET 15
 #define MIN_OFFSET -15
 
-#define CYCLE_TIME 1000
+#define CYCLE_TIME 250
 
 enum mode{brew, steam};
 
@@ -58,8 +58,9 @@ private:
 
     ulong cycleStartTime;
 
-    PID brewTempManager = PID(&actualTemp, &brew_output, &targetTemp, 25, 12, 3, P_ON_M, DIRECT);
-    PID steamTempManager = PID(&actualTemp, &steam_output, &targetSteamTemp, 25, 12, 3, P_ON_M, DIRECT);
+    PID brewTempManager = PID(&actualTemp, &brew_output, &targetTemp, 12.5, 12, 4, P_ON_M, DIRECT);
+    PID steamTempManager = PID(&actualTemp, &steam_output, &targetSteamTemp, 12.5, 12, 4, P_ON_M, DIRECT);
+
 
 public:
     void start();
@@ -71,6 +72,7 @@ public:
     double getTargetSteamTemp();
     double getActualTemp(); //returns current temperature value
     double getTempOffset();
+    double getCycleTime();
     String getOutput();
     String getTunings();
     void setTargetTemp(double); // Sets temperature to control to (setpoint)

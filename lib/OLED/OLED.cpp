@@ -113,7 +113,12 @@ void OLED::refresh(){
         lastTime = now;
         flash = !flash;
     }
-    // display.display();
+
+    double cycleTime = gcp->getCycleTime();
+    if((now - cycleStartTime) > cycleTime) {
+        cycleStartTime += cycleTime;
+        display.display();
+    }
 }
 
 void OLED::changeMode(){
