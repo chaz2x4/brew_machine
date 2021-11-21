@@ -65,13 +65,15 @@
                             unit: 'second',
                         },
                         ticks: {
-                            display:false,
+                            callback: function(value, index) {
+                                if((index % 5 == 0)) return value;
+                            }
                         },
                         title: {
                             display: true,
                             text: "Time",
                         },
-                        stepSize: 30,
+                        spanGaps: 1000 * 60,
                     },
                     y: {
                         suggestedMax: brewTarget,
@@ -254,7 +256,7 @@
                     brewData.output.push(tempData.brew.output);
                     steamData.output.push(tempData.steam.output);
 
-                    if(chart.data.datasets[0].data.length > 120) {
+                    if(chart.data.datasets[0].data.length > 240) {
                         labels.shift();
                         chart.data.datasets[0].data.shift();
                         brewData.output.shift();
