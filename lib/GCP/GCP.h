@@ -13,7 +13,7 @@
 
 #include <Adafruit_MAX31865.h>
 #include <EEPROM.h>
-#include "PID.h"
+#include <PID_v1.h>
 
 #define ON HIGH
 #define OFF LOW
@@ -22,14 +22,14 @@
 #define STEAM_PIN 27
 
 #define RREF 430
-#define DEFAULT_BREW_TEMP 99.0
-#define DEFAULT_STEAM_TEMP 145.0
-#define DEFAULT_OFFSET 6.0
-#define EMERGENCY_SHUTOFF_TEMP 165.0
+#define DEFAULT_BREW_TEMP 96.0
+#define DEFAULT_STEAM_TEMP 135.0
+#define DEFAULT_OFFSET -6.0
+#define EMERGENCY_SHUTOFF_TEMP 150.0
 #define MAX_OFFSET 15
-#define MIN_OFFSET 0
+#define MIN_OFFSET -15
 
-#define CYCLE_TIME 1000
+#define CYCLE_TIME 2000
 
 enum mode{brew, steam};
 
@@ -37,6 +37,8 @@ class GCP {
 private:
     Adafruit_MAX31865 tempProbe = Adafruit_MAX31865(A5);
     mode currentMode;
+
+    void init(double, double, double);
 
     double actualTemp;
     double tempOffset = DEFAULT_OFFSET;
@@ -46,21 +48,20 @@ private:
     double maxBrewTemp = 100.0;
     double minBrewTemp = 85.0;
 
-    double maxSteamTemp = 155.0;
-    double minSteamTemp = 145.0;
+    double maxSteamTemp = 140.0;
+    double minSteamTemp = 120.0;
 
     double brew_output;
     double steam_output;
 
     ulong cycleStartTime;
-    ulong cycleRunTime = CYCLE_TIME;
 
-    PID brewTempManager = PID(&actualTemp, &brew_output, &targetTemp, CYCLE_TIME);
-    PID steamTempManager = PID(&actualTemp, &steam_output, &targetSteamTemp, CYCLE_TIME);
+    PID brewTempManager = PID(&actualTemp, &brew_output, &targetTemp, 125, 150, 50, P_ON_M, DIRECT);
+    PID steamTempManager = PID(&actualTemp, &steam_output, &targetSteamTemp, 125, 150, 50, P_ON_M, DIRECT);
+
 
 public:
-    void init();
-    void init(double, double, double);
+    void start();
     mode getCurrentMode();
     void setMode(mode);
     void incrementTemp();
@@ -69,13 +70,12 @@ public:
     double getTargetSteamTemp();
     double getActualTemp(); //returns current temperature value
     double getTempOffset();
-    double getBrewOutput();
-    double getSteamOutput();
-    double* getTunings(double*);
+    String getOutput();
+    String getTunings();
     void setTargetTemp(double); // Sets temperature to control to (setpoint)
     void setTargetSteamTemp(double);
     void setTempOffset(double);
     void setTunings(double, double, double);
-    void update();
+    void refresh();
 };
 #endif

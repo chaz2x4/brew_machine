@@ -1,14 +1,16 @@
 #include "header.h"
 
 WebServer server(80);
-OLED brew_machine;
+OLED screen;
+GCP brew_machine;
 char *hostname = "gaggia";
 
 void setup() {
 	while (!Serial) ; // wait for serial port to connect. Needed for native USB port only
 	//Primary Mission: start coffee machine
 	Serial.begin(115200);
-	Serial.setDebugOutput(true);
+	brew_machine.start();
+	screen.start(&brew_machine);
 
 	WiFi.mode(WIFI_STA);
 	WiFi.begin(SECRET_SSID, SECRET_PASSWORD);
@@ -28,7 +30,6 @@ void setup() {
 	server.on("/", HTTP_GET, []() {
 		server.send(200, "text/html", indexHtml);
 	});
-
 
 	server.on("/get_temps", HTTP_GET, [](){
 		server.send(200, "text/json", brew_machine.getOutput());
@@ -77,7 +78,7 @@ void setup() {
 	server.on("/set_offset", HTTP_POST, [](){
 		String data = server.arg(0);
 		double offset = data.toDouble();
-		brew_machine.setOffset(offset);
+		brew_machine.setTempOffset(offset);
 		server.send(200, "text/plain", "Success!");
 	});
 
@@ -105,7 +106,6 @@ void setup() {
 
 	ArduinoOTA.begin();
 	server.begin();
-	brew_machine.start();
 }
 
 // the loop function runs over and over again until power down or reset
@@ -113,6 +113,5 @@ void loop() {
 	ArduinoOTA.handle();
 	server.handleClient();
 	brew_machine.refresh();
-	brew_machine.eventListener();
-	yield();
+	screen.refresh();
 }

@@ -1,6 +1,6 @@
-#include "gcp.h"
+#include "GCP.h"
 
-void GCP::init() {
+void GCP::start() {
 	init(targetTemp = DEFAULT_BREW_TEMP, targetSteamTemp = DEFAULT_STEAM_TEMP, tempOffset = DEFAULT_OFFSET);
 }
 
@@ -11,10 +11,14 @@ void GCP::init(double targetTemp, double targetSteamTemp, double offset) {
 	this->setTempOffset(offset);
 	this->setMode(brew);
 	this->actualTemp = this->getActualTemp();
+
 	pinMode(HEATER_PIN, OUTPUT);
 	pinMode(STEAM_PIN, OUTPUT);
-	brewTempManager.tune(65.0, 0.23, 114.0);
-	steamTempManager.tune(65.0, 0.23, 114.0);
+
+	brewTempManager.SetMode(AUTOMATIC);
+	steamTempManager.SetMode(AUTOMATIC);
+	brewTempManager.SetOutputLimits(0, CYCLE_TIME);
+	steamTempManager.SetOutputLimits(0, CYCLE_TIME);
 }
 
 mode GCP::getCurrentMode() {
@@ -76,7 +80,7 @@ double GCP::getActualTemp() {
 		if (fault & MAX31865_FAULT_OVUV) Serial.println("Under/Over voltage");
 		tempProbe.clearFault();
 	}
-	temp -= tempOffset;
+	temp += tempOffset;
 	this->actualTemp = temp;
 	return temp;
 }
@@ -91,28 +95,47 @@ void GCP::setTempOffset(double offset){
 	else this->tempOffset = offset;
 }
 
-double GCP::getBrewOutput(){
-	return this->brew_output;
+String GCP::getOutput(){
+	String output;
+    output += "{ \"time\": ";
+    output += cycleStartTime;
+    output += ", \"temperature\": ";
+    output += this->getActualTemp();
+    output += ", \"offset\": ";
+    output += this->getTempOffset();
+    output += ", \"brew\": { \"target\": ";
+    output += this->targetTemp;
+    output += ", \"output\": ";
+    output += this->brew_output;
+    output += " } , \"steam\": { \"target\": ";
+    output += this->targetSteamTemp;
+    output +=  ", \"output\": ";
+    output += this->steam_output;
+    output += " }}";
+    return output;
 }
 
-double GCP::getSteamOutput(){
-	return this->steam_output;
-}
-
-double* GCP::getTunings(double* tunings){
-	if(this->currentMode == steam) return steamTempManager.getTunings(tunings);
-	else return brewTempManager.getTunings(tunings);
+String GCP::getTunings(){
+	String output;
+	PID *tempManager;
+	if(this->currentMode == steam) tempManager = &steamTempManager;
+	else tempManager = &brewTempManager;
+    output += "{ \"kp\": ";
+    output += tempManager->GetKp();
+    output += ", \"ki\": ";
+    output += tempManager->GetKi();
+    output +=  ", \"kd\": ";
+    output += tempManager->GetKd();
+    output += " }";
+    return output;
 }
 
 void GCP::setTunings(double kp, double ki, double kd){
-	if(this->currentMode == steam) steamTempManager.tune(kp, ki, kd);
-	else brewTempManager.tune(kp, ki, kd);
+	if(this->currentMode == steam) steamTempManager.SetTunings(kp, ki, kd, P_ON_M);
+	else brewTempManager.SetTunings(kp, ki, kd, P_ON_M);
 }
 
-void GCP::update() {
-	brewTempManager.compute();
-	steamTempManager.compute();
-
+void GCP::refresh() {
 	/* 
 		Brew Relay and Steam Relay will always be calculating
 		When power switch is on the heater will heat until it gets to targetBrewtemp
@@ -127,19 +150,22 @@ void GCP::update() {
 		If temperature rises above maximum safe temperature turn off relay
 	*/
 
-	if(millis() - cycleStartTime > cycleRunTime) {
-		cycleStartTime += cycleRunTime;
+	ulong now = millis();
+	if(now - cycleStartTime > CYCLE_TIME) {
+		cycleStartTime += CYCLE_TIME;
+		brewTempManager.Compute();
+		steamTempManager.Compute();
 	}
 	
-	if(brew_output < millis() - cycleStartTime) digitalWrite(HEATER_PIN, OFF);
-	else digitalWrite(HEATER_PIN, ON);
+	if(brew_output > now - cycleStartTime) digitalWrite(HEATER_PIN, ON);
+	else digitalWrite(HEATER_PIN, OFF);
 
-	if(steam_output < millis() - cycleStartTime) digitalWrite(STEAM_PIN, OFF);
-	else digitalWrite(STEAM_PIN, ON);
+	if(steam_output > now- cycleStartTime) digitalWrite(STEAM_PIN, ON);
+	else digitalWrite(STEAM_PIN, OFF);
 	
 	double actualTemp = this->getActualTemp();
 	if((actualTemp + tempOffset) >= EMERGENCY_SHUTOFF_TEMP) {
-		digitalWrite(STEAM_PIN, OFF);
 		digitalWrite(HEATER_PIN, OFF);
+		digitalWrite(STEAM_PIN, OFF);
 	}
 }

@@ -6,7 +6,6 @@
 #include "websites.h"
 
 #include "GCP.h"
-#include "PID.h"
 #include "OLED.h"
 
 #include <WiFi.h>
@@ -16,3 +15,6 @@
 #include <Update.h>
 #include <WiFiUdp.h>
 #include <ArduinoOTA.h>
+
+#include <sstream>
+#include <string>
