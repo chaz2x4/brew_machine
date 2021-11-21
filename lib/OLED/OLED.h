@@ -8,8 +8,6 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 #include "GCP.h"
-#include <sstream>
-#include <string>
 
 #define BUTTON_A 15 //pin 15; cycle modes; increment temeperature
 #define BUTTON_B 32 //pin 32; cycle modes; decrement temperature 
@@ -21,13 +19,11 @@
 class OLED {
 public:
     /* Internal to the OLED */
-    void start(); //Starts the display with the appropriate pins initialize
+    void start(GCP* brew_machine); //Starts the display with the appropriate pins initialize
     void eventListener(); //Listens for button presses
     void refresh(); //refreshes screen every delay cycle
 
     /* Outputed to the WebServer */
-    String getOutput(); //returns JSON output of temperature, offset, and brew & steam targets
-    String getTunings(); //returns JSON output kp ki and kd
     void setMode(mode mode);
     void incrementTemp();
     void decrementTemp();
@@ -47,7 +43,7 @@ private:
     bool timedout(); //turns screen off after a set amount of time
     bool isEditable = false; //is screen on the setTemperature method
 
-    GCP gcp;
+    GCP *gcp;
     void changeMode(); //switches between brew and steam mode
 };
 

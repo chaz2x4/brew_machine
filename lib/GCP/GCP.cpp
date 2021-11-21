@@ -1,6 +1,6 @@
 #include "GCP.h"
 
-void GCP::init() {
+void GCP::start() {
 	init(targetTemp = DEFAULT_BREW_TEMP, targetSteamTemp = DEFAULT_STEAM_TEMP, tempOffset = DEFAULT_OFFSET);
 }
 
@@ -95,22 +95,41 @@ void GCP::setTempOffset(double offset){
 	else this->tempOffset = offset;
 }
 
-double GCP::getBrewOutput(){
-	return this->brew_output;
+String GCP::getOutput(){
+	String output;
+    output += "{ \"time\": ";
+    output += millis();
+    output += ", \"temperature\": ";
+    output += this->getActualTemp();
+    output += ", \"offset\": ";
+    output += this->getTempOffset();
+    output += ", \"brew\": { \"target\": ";
+    output += this->targetTemp;
+    output += ", \"output\": ";
+    output += this->brew_output;
+    output += " } , \"steam\": { \"target\": ";
+    output += this->targetSteamTemp;
+    output +=  ", \"output\": ";
+    output += this->steam_output;
+    output += " }}";
+    Serial.println(output);
+    return output;
 }
 
-double GCP::getSteamOutput(){
-	return this->steam_output;
-}
-
-double* GCP::getTunings(double* tunings){
+String GCP::getTunings(){
+	String output;
 	PID *tempManager;
 	if(this->currentMode == steam) tempManager = &steamTempManager;
 	else tempManager = &brewTempManager;
-	tunings[0] = tempManager->GetKp();
-	tunings[1] = tempManager->GetKi();
-	tunings[2] = tempManager->GetKd();
-	return tunings;
+    output += "{ \"kp\": ";
+    output += tempManager->GetKp();
+    output += ", \"ki\": ";
+    output += tempManager->GetKi();
+    output +=  ", \"kd\": ";
+    output += tempManager->GetKd();
+    output += " }";
+    Serial.println(output);
+    return output;
 }
 
 void GCP::setTunings(double kp, double ki, double kd){
@@ -118,7 +137,7 @@ void GCP::setTunings(double kp, double ki, double kd){
 	else brewTempManager.SetTunings(kp, ki, kd, P_ON_M);
 }
 
-void GCP::update() {
+void GCP::refresh() {
 	brewTempManager.Compute();
 	steamTempManager.Compute();
 
@@ -140,10 +159,10 @@ void GCP::update() {
 		cycleStartTime += CYCLE_TIME;
 	}
 	
-	if(brew_output < millis() - cycleStartTime) digitalWrite(HEATER_PIN, ON);
+	if(brew_output < millis() - cycleStartTime) digitalWrite(HEATER_PIN, OFF);
 	else digitalWrite(HEATER_PIN, ON);
 
-	if(steam_output < millis() - cycleStartTime) digitalWrite(STEAM_PIN, ON);
+	if(steam_output < millis() - cycleStartTime) digitalWrite(STEAM_PIN, OFF);
 	else digitalWrite(STEAM_PIN, ON);
 	
 	double actualTemp = this->getActualTemp();

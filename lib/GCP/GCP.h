@@ -14,6 +14,8 @@
 #include <Adafruit_MAX31865.h>
 #include <EEPROM.h>
 #include <PID_v1.h>
+#include <sstream>
+#include <string>
 
 #define ON HIGH
 #define OFF LOW
@@ -38,6 +40,8 @@ private:
     Adafruit_MAX31865 tempProbe = Adafruit_MAX31865(A5);
     mode currentMode;
 
+    void init(double, double, double);
+
     double actualTemp;
     double tempOffset = DEFAULT_OFFSET;
     double targetTemp = DEFAULT_BREW_TEMP;
@@ -58,8 +62,7 @@ private:
     PID steamTempManager = PID(&actualTemp, &steam_output, &targetSteamTemp, 2, 5, 1, P_ON_M, DIRECT);
 
 public:
-    void init();
-    void init(double, double, double);
+    void start();
     mode getCurrentMode();
     void setMode(mode);
     void incrementTemp();
@@ -68,13 +71,12 @@ public:
     double getTargetSteamTemp();
     double getActualTemp(); //returns current temperature value
     double getTempOffset();
-    double getBrewOutput();
-    double getSteamOutput();
-    double* getTunings(double*);
+    String getOutput();
+    String getTunings();
     void setTargetTemp(double); // Sets temperature to control to (setpoint)
     void setTargetSteamTemp(double);
     void setTempOffset(double);
     void setTunings(double, double, double);
-    void update();
+    void refresh();
 };
 #endif
