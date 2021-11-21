@@ -20,6 +20,10 @@
 
 #define HEATER_PIN 13
 #define STEAM_PIN 27
+#define HEATER_CHANNEL 1
+#define STEAM_CHANNEL 2
+#define PWM_FREQ 60
+#define PWM_RESOLUTION 8
 
 #define RREF 430
 #define DEFAULT_BREW_TEMP 96.0
