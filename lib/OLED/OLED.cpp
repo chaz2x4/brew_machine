@@ -5,7 +5,6 @@ void OLED::start(GCP *brew_machine){
     display.clearDisplay();
     display.dim(true);
     display.display();
-    delay(1000);
 
     pinMode(BUTTON_A, INPUT_PULLUP);
     pinMode(BUTTON_B, INPUT_PULLUP);
