@@ -72,7 +72,6 @@ public:
     double getTargetSteamTemp();
     double getActualTemp(); //returns current temperature value
     double getTempOffset();
-    double getCycleTime();
     String getOutput();
     String getTunings();
     void setTargetTemp(double); // Sets temperature to control to (setpoint)

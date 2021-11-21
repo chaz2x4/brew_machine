@@ -89,10 +89,6 @@ double GCP::getTempOffset(){
 	return this->tempOffset;
 }
 
-double GCP::getCycleTime() {
-	return CYCLE_TIME;
-}
-
 void GCP::setTempOffset(double offset){
 	if(offset > MAX_OFFSET) this->tempOffset = MAX_OFFSET;
 	else if(offset < MIN_OFFSET) this->tempOffset = MIN_OFFSET;

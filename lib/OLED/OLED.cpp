@@ -109,14 +109,9 @@ void OLED::refresh(){
         wait = 2000;
     }
 
-    if((now - lastTime) >= wait) {
-        lastTime = now;
+    if((now - lastTime) > wait) {
+        lastTime += wait;
         flash = !flash;
-    }
-
-    double cycleTime = gcp->getCycleTime();
-    if((now - cycleStartTime) > cycleTime) {
-        cycleStartTime += cycleTime;
         display.display();
     }
 }

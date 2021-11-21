@@ -36,7 +36,6 @@ private:
     ulong timeLastButton = -1; //records the last time a button was pressed
     ulong lastTime = -1;
     ulong downTime = -1; //records when button was pressed and held for hold functionality
-    ulong cycleStartTime = -1;
 
     int buttonState[3] = {HIGH, HIGH, HIGH};
     int lastButtonState[3] = {HIGH, HIGH, HIGH};
