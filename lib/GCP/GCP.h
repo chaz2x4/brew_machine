@@ -58,8 +58,8 @@ private:
 
     ulong cycleStartTime;
 
-    PID brewTempManager = PID(&actualTemp, &brew_output, &targetTemp, 2, 5, 1, P_ON_M, DIRECT);
-    PID steamTempManager = PID(&actualTemp, &steam_output, &targetSteamTemp, 2, 5, 1, P_ON_M, DIRECT);
+    PID brewTempManager = PID(&actualTemp, &brew_output, &targetTemp, 20, 12, 3, P_ON_M, DIRECT);
+    PID steamTempManager = PID(&actualTemp, &steam_output, &targetSteamTemp, 20, 12, 3, P_ON_M, DIRECT);
 
 public:
     void start();

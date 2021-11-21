@@ -138,9 +138,6 @@ void GCP::setTunings(double kp, double ki, double kd){
 }
 
 void GCP::refresh() {
-	brewTempManager.Compute();
-	steamTempManager.Compute();
-
 	/* 
 		Brew Relay and Steam Relay will always be calculating
 		When power switch is on the heater will heat until it gets to targetBrewtemp
@@ -155,15 +152,19 @@ void GCP::refresh() {
 		If temperature rises above maximum safe temperature turn off relay
 	*/
 
-	if(millis() - cycleStartTime > CYCLE_TIME) {
+	brewTempManager.Compute();
+	steamTempManager.Compute();
+
+	unsigned long now = millis();
+	if(now - cycleStartTime > CYCLE_TIME) {
 		cycleStartTime += CYCLE_TIME;
 	}
 	
-	if(brew_output < millis() - cycleStartTime) digitalWrite(HEATER_PIN, OFF);
-	else digitalWrite(HEATER_PIN, ON);
+	if(brew_output > now - cycleStartTime) digitalWrite(HEATER_PIN, ON);
+	else digitalWrite(HEATER_PIN, OFF);
 
-	if(steam_output < millis() - cycleStartTime) digitalWrite(STEAM_PIN, OFF);
-	else digitalWrite(STEAM_PIN, ON);
+	if(steam_output > now- cycleStartTime) digitalWrite(STEAM_PIN, ON);
+	else digitalWrite(STEAM_PIN, OFF);
 	
 	double actualTemp = this->getActualTemp();
 	if((actualTemp + tempOffset) >= EMERGENCY_SHUTOFF_TEMP) {
