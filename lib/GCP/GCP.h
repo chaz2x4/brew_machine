@@ -27,11 +27,11 @@
 #define DEFAULT_BREW_TEMP 96.0
 #define DEFAULT_STEAM_TEMP 135.0
 #define DEFAULT_OFFSET -6.0
-#define EMERGENCY_SHUTOFF_TEMP 165.0
+#define EMERGENCY_SHUTOFF_TEMP 150.0
 #define MAX_OFFSET 15
 #define MIN_OFFSET -15
 
-#define CYCLE_TIME 300
+#define CYCLE_TIME 500
 
 enum mode{brew, steam};
 
@@ -58,8 +58,8 @@ private:
 
     ulong cycleStartTime;
 
-    PID brewTempManager = PID(&actualTemp, &brew_output, &targetTemp, 15, 12, 3, P_ON_M, DIRECT);
-    PID steamTempManager = PID(&actualTemp, &steam_output, &targetSteamTemp, 15, 12, 3, P_ON_M, DIRECT);
+    PID brewTempManager = PID(&actualTemp, &brew_output, &targetTemp, 25, 12, 3, P_ON_M, DIRECT);
+    PID steamTempManager = PID(&actualTemp, &steam_output, &targetSteamTemp, 25, 12, 3, P_ON_M, DIRECT);
 
 public:
     void start();
