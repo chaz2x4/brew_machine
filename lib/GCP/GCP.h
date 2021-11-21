@@ -31,7 +31,7 @@
 #define MAX_OFFSET 15
 #define MIN_OFFSET -15
 
-#define CYCLE_TIME 250
+#define CYCLE_TIME 500
 
 enum mode{brew, steam};
 
@@ -58,8 +58,8 @@ private:
 
     ulong cycleStartTime;
 
-    PID brewTempManager = PID(&actualTemp, &brew_output, &targetTemp, 12.5, 12, 4, P_ON_M, DIRECT);
-    PID steamTempManager = PID(&actualTemp, &steam_output, &targetSteamTemp, 12.5, 12, 4, P_ON_M, DIRECT);
+    PID brewTempManager = PID(&actualTemp, &brew_output, &targetTemp, 20, 15, 40, P_ON_M, DIRECT);
+    PID steamTempManager = PID(&actualTemp, &steam_output, &targetSteamTemp, 20, 15, 40, P_ON_M, DIRECT);
 
 
 public:

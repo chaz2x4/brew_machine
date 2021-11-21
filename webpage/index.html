@@ -10,7 +10,7 @@
             var brewTarget = 100;
             var steamTarget = 145;
             var tempOffset = -8;
-            var cycleTime = 250;
+            var cycleTime = 500;
             var mode = 'brew';
             var brewData = {target: [], output: []};
             var steamData = {target: [], output: []};
@@ -24,8 +24,8 @@
                     backgroundColor: function (context) {
                         var pointTemp = context.dataset.data[context.dataIndex];
                         var targetTemp = (mode == 'brew') ? brewTarget : steamTarget;
-                        if(pointTemp > (targetTemp + 1)) return '#331F2E';
-                        if(pointTemp < (targetTemp - 1)) return '#FF6384';
+                        if(pointTemp > (targetTemp + 0.5)) return '#FF6384';
+                        if(pointTemp < (targetTemp - 0.5)) return '#331F2E';
                         else return '#63FF8F';
                     },
                     yAxisID: 'y',
