@@ -98,7 +98,7 @@ void GCP::setTempOffset(double offset){
 String GCP::getOutput(){
 	String output;
     output += "{ \"time\": ";
-    output += millis();
+    output += cycleStartTime;
     output += ", \"temperature\": ";
     output += this->getActualTemp();
     output += ", \"offset\": ";
@@ -112,7 +112,6 @@ String GCP::getOutput(){
     output +=  ", \"output\": ";
     output += this->steam_output;
     output += " }}";
-    Serial.println(output);
     return output;
 }
 
@@ -128,7 +127,6 @@ String GCP::getTunings(){
     output +=  ", \"kd\": ";
     output += tempManager->GetKd();
     output += " }";
-    Serial.println(output);
     return output;
 }
 
@@ -155,7 +153,7 @@ void GCP::refresh() {
 	brewTempManager.Compute();
 	steamTempManager.Compute();
 
-	unsigned long now = millis();
+	ulong now = millis();
 	if(now - cycleStartTime > CYCLE_TIME) {
 		cycleStartTime += CYCLE_TIME;
 	}

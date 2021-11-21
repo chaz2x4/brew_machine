@@ -121,26 +121,21 @@ void OLED::changeMode(){
 }
 
 void OLED::setMode(mode mode){
-    Serial.printf("Set Mode %i\n", mode);
     gcp->setMode(mode);
 }
 
 void OLED::incrementTemp(){
-    Serial.printf("Increment Temp %i\n", gcp->getCurrentMode());
     gcp->incrementTemp();
 }
 
 void OLED::decrementTemp(){
-    Serial.printf("Decrement Temp %i\n", gcp->getCurrentMode());
     gcp->decrementTemp();
 }
 
 void OLED::setOffset(double offset) {
-    Serial.printf("Set Offset: %f\n", offset);
     gcp->setTempOffset(offset);
 }
 
 void OLED::setTunings(double kp, double ki, double kd){
-    Serial.printf("Set Tuning: %f %f %f\n", kp, ki, kd);
     gcp->setTunings(kp, ki, kd);
 }
