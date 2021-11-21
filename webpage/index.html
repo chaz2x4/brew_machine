@@ -10,6 +10,7 @@
             var brewTarget = 100;
             var steamTarget = 145;
             var tempOffset = -8;
+            var cycleTime = 1000;
             var mode = 'brew';
             var brewData = {target: [], output: []};
             var steamData = {target: [], output: []};
@@ -85,7 +86,7 @@
                         },
                     },
                     y1: {
-                        suggestedMax: 200,
+                        suggestedMax: cycleTime,
                         title: {
                             display: true,
                             text: "Output",

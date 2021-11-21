@@ -31,7 +31,7 @@
 #define MAX_OFFSET 15
 #define MIN_OFFSET -15
 
-#define CYCLE_TIME 500
+#define CYCLE_TIME 1000
 
 enum mode{brew, steam};
 

@@ -150,12 +150,11 @@ void GCP::refresh() {
 		If temperature rises above maximum safe temperature turn off relay
 	*/
 
-	brewTempManager.Compute();
-	steamTempManager.Compute();
-
 	ulong now = millis();
 	if(now - cycleStartTime > CYCLE_TIME) {
 		cycleStartTime += CYCLE_TIME;
+		brewTempManager.Compute();
+		steamTempManager.Compute();
 	}
 	
 	if(brew_output > now - cycleStartTime) digitalWrite(HEATER_PIN, ON);
