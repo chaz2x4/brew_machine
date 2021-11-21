@@ -14,8 +14,6 @@
 #include <Adafruit_MAX31865.h>
 #include <EEPROM.h>
 #include <PID_v1.h>
-#include <sstream>
-#include <string>
 
 #define ON HIGH
 #define OFF LOW
@@ -31,7 +29,7 @@
 #define MAX_OFFSET 15
 #define MIN_OFFSET -15
 
-#define CYCLE_TIME 500
+#define CYCLE_TIME 2000
 
 enum mode{brew, steam};
 
@@ -58,8 +56,8 @@ private:
 
     ulong cycleStartTime;
 
-    PID brewTempManager = PID(&actualTemp, &brew_output, &targetTemp, 20, 15, 10, P_ON_M, DIRECT);
-    PID steamTempManager = PID(&actualTemp, &steam_output, &targetSteamTemp, 20, 15, 10, P_ON_M, DIRECT);
+    PID brewTempManager = PID(&actualTemp, &brew_output, &targetTemp, 125, 150, 50, P_ON_M, DIRECT);
+    PID steamTempManager = PID(&actualTemp, &steam_output, &targetSteamTemp, 125, 150, 50, P_ON_M, DIRECT);
 
 
 public:

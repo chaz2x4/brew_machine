@@ -15,3 +15,6 @@
 #include <Update.h>
 #include <WiFiUdp.h>
 #include <ArduinoOTA.h>
+
+#include <sstream>
+#include <string>
