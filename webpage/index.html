@@ -253,7 +253,7 @@
                     var sortedOutputs = requestedData.outputs.sort((a, b) => a.time - b.time);
 
                     sortedOutputs.forEach(output => {
-                        requestedLabels.push(output.time);
+                        requestedLabels.push(output.time * 1000);
                         requestedTempData.push(output.temperature);
                         requestedBrewData.push(output.outputs.brew);
                         requestedSteamData.push(output.outputs.steam);

@@ -32,7 +32,7 @@ using namespace std;
 #define MIN_OFFSET -15
 
 #define CYCLE_TIME 2000
-#define MAX_QUEUE_SIZE 60
+#define MAX_QUEUE_SIZE 120
 
 enum mode{brew, steam};
 
