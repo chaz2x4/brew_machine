@@ -164,11 +164,13 @@ void GCP::refresh(ulong time) {
 	*/
 
 	ulong now = millis();
+	if(now - cycleStartTime > CYCLE_TIME / 8) {
+		parseQueue(time);
+	}
 	if(now - cycleStartTime > CYCLE_TIME) {
 		cycleStartTime += CYCLE_TIME;
 		brewTempManager.Compute();
 		steamTempManager.Compute();
-		parseQueue(time);
 	}
 	
 	if(brew_output > now - cycleStartTime) digitalWrite(HEATER_PIN, ON);
