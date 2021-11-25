@@ -244,19 +244,28 @@
             (function refreshTemps(){
                 return callServer.get("/get_temps", function(request){
                     var requestedData = JSON.parse(request.response);
-                    tempData = [];
-                    brewData = [];
-                    steamData = [];
-                    labels = [];
+                    var requestedLabels = [];
+                    var requestedTempData = [];
+                    var requestedBrewData = [];
+                    var requestedSteamData = [];
+
                     [brewTarget, steamTarget, tempOffset] = [requestedData.targets.brew, requestedData.targets.steam, requestedData.targets.offset]
-                    requestedData.outputs.forEach(output => {
-                        labels.push(output.time);
-                        tempData.push(output.temperature);
-                        brewData.push(output.outputs.brew);
-                        steamData.push(output.outputs.steam);
+                    var sortedOutputs = requestedData.outputs.sort((a, b) => { a.time - b.time; });
+                    
+                    sortedOutputs.forEach(output => {
+                        requestedLabels.push(output.time);
+                        requestedTempData.push(output.temperature);
+                        requestedBrewData.push(output.outputs.brew);
+                        requestedSteamData.push(output.outputs.steam);
                     })
+
+                    labels = requestedLabels;
+                    chart.data.datasets[0].data = tempData = requestedTempData;
+                    if(mode == 'brew') { chart.data.datasets[1].data = brewData = requestedBrewData }
+                    else { chart.data.datasets[1].data = steamData = requestedSteamData }        
+
                     console.log(chart.data);
-                    chart.data.datasets[0].data = tempData;                    
+
                     chart.update();
                     updateElements();
                     refreshTemps();
