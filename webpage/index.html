@@ -250,8 +250,8 @@
                     var requestedSteamData = [];
 
                     [brewTarget, steamTarget, tempOffset] = [requestedData.targets.brew, requestedData.targets.steam, requestedData.targets.offset]
-                    var sortedOutputs = requestedData.outputs.sort((a, b) => { a.time - b.time; });
-                    
+                    var sortedOutputs = requestedData.outputs.sort((a, b) => a.time - b.time);
+
                     sortedOutputs.forEach(output => {
                         requestedLabels.push(output.time);
                         requestedTempData.push(output.temperature);
