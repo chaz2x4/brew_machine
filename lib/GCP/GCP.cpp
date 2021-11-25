@@ -164,7 +164,7 @@ void GCP::refresh(ulong time) {
 	*/
 
 	ulong now = millis();
-	if(now - cycleStartTime > CYCLE_TIME / 8) {
+	if(now - cycleStartTime > CYCLE_TIME / 2) {
 		parseQueue(time);
 	}
 	if(now - cycleStartTime > CYCLE_TIME) {
