@@ -259,13 +259,10 @@
                         requestedSteamData.push(output.outputs.steam);
                     })
 
-                    labels = requestedLabels;
+                    chart.data.labels = requestedLabels;
                     chart.data.datasets[0].data = tempData = requestedTempData;
                     if(mode == 'brew') { chart.data.datasets[1].data = brewData = requestedBrewData }
                     else { chart.data.datasets[1].data = steamData = requestedSteamData }        
-
-                    console.log(chart.data);
-
                     chart.update();
                     updateElements();
                     refreshTemps();
