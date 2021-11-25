@@ -96,23 +96,7 @@ void GCP::setTempOffset(double offset){
 }
 
 String GCP::getOutput(){
-	String output;
-    output += "{ \"time\": ";
-    output += cycleStartTime;
-    output += ", \"temperature\": ";
-    output += this->getActualTemp();
-    output += ", \"offset\": ";
-    output += this->getTempOffset();
-    output += ", \"brew\": { \"target\": ";
-    output += this->targetTemp;
-    output += ", \"output\": ";
-    output += this->brew_output;
-    output += " } , \"steam\": { \"target\": ";
-    output += this->targetSteamTemp;
-    output +=  ", \"output\": ";
-    output += this->steam_output;
-    output += " }}";
-    return output;
+	return this->outputString;
 }
 
 String GCP::getTunings(){
@@ -135,7 +119,36 @@ void GCP::setTunings(double kp, double ki, double kd){
 	else brewTempManager.SetTunings(kp, ki, kd, P_ON_M);
 }
 
-void GCP::refresh() {
+void GCP::parseQueue(ulong time){
+	String outputs;
+    outputs += "{ \"time\": ";
+    outputs += time;
+    outputs += ", \"temperature\": ";
+    outputs += this->getActualTemp();
+    outputs += ", \"outputs\": { \"brew\": ";
+    outputs += this->brew_output;
+    outputs += ", \"steam\": ";
+    outputs += this->steam_output;
+    outputs += " }}";
+	outputQueue.push(outputs);
+
+	outputString = "{ \"targets\": { \"brew\": ";
+	outputString += this->targetTemp;
+	outputString += ", \"steam\": ";
+	outputString += this->targetSteamTemp;
+	outputString += ", \"offset\": ";
+	outputString += this->tempOffset;
+	outputString += " }, \"outputs\":[";
+
+	for(unsigned i = 0; i < outputQueue.size(); i++){
+		if(i > 0 ) outputString += ",";
+		outputString += outputQueue.at(i);
+	}
+
+	outputString += "]}";
+}
+
+void GCP::refresh(ulong time) {
 	/* 
 		Brew Relay and Steam Relay will always be calculating
 		When power switch is on the heater will heat until it gets to targetBrewtemp
@@ -155,6 +168,7 @@ void GCP::refresh() {
 		cycleStartTime += CYCLE_TIME;
 		brewTempManager.Compute();
 		steamTempManager.Compute();
+		parseQueue(time);
 	}
 	
 	if(brew_output > now - cycleStartTime) digitalWrite(HEATER_PIN, ON);

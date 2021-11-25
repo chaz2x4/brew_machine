@@ -1,6 +1,8 @@
 #include "header.h"
 
 WebServer server(80);
+WiFiUDP ntpUDP;
+NTPClient timeClient(ntpUDP);
 OLED screen;
 GCP brew_machine;
 char *hostname = "gaggia";
@@ -103,6 +105,7 @@ void setup() {
 
 	ArduinoOTA.begin();
 	server.begin();
+	timeClient.begin();
 
 	brew_machine.start();
 	screen.start(&brew_machine);
@@ -112,6 +115,8 @@ void setup() {
 void loop() {
 	ArduinoOTA.handle();
 	server.handleClient();
-	brew_machine.refresh();
+	timeClient.update();
+
+	brew_machine.refresh(timeClient.getEpochTime());
 	screen.refresh();
 }

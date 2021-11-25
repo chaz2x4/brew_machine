@@ -15,6 +15,8 @@
 #include <EEPROM.h>
 #include <PID_v1.h>
 
+using namespace std;
+
 #define ON HIGH
 #define OFF LOW
 
@@ -30,8 +32,44 @@
 #define MIN_OFFSET -15
 
 #define CYCLE_TIME 2000
+#define MAX_QUEUE_SIZE 60
 
 enum mode{brew, steam};
+
+struct Queue {
+    int front, rear, capacity, count;
+    String *queue;
+
+    Queue(int c) {
+        front = rear = 0;
+        capacity = c;
+        queue = new String[capacity];
+    }
+
+    ~Queue() { delete[] queue; }
+
+    void push(String data){
+        if(count == capacity) pop();
+        if(rear == capacity - 1) rear = -1;
+        if(count == 0) queue[0] = data;
+        else queue[++rear] = data;
+        count++;
+    }
+
+    void pop() {
+        front++;
+        if(front == capacity) front = 0;
+        count--;
+    }
+
+    int size() {
+        return count;
+    }
+
+    String at(int i){
+        return queue[i];
+    }
+};
 
 class GCP {
 private:
@@ -39,6 +77,7 @@ private:
     mode currentMode;
 
     void init(double, double, double);
+    void parseQueue(ulong);
 
     double actualTemp;
     double tempOffset = DEFAULT_OFFSET;
@@ -59,6 +98,8 @@ private:
     PID brewTempManager = PID(&actualTemp, &brew_output, &targetTemp, 125, 150, 50, P_ON_M, DIRECT);
     PID steamTempManager = PID(&actualTemp, &steam_output, &targetSteamTemp, 125, 150, 50, P_ON_M, DIRECT);
 
+    String outputString;
+    Queue outputQueue = Queue(MAX_QUEUE_SIZE);
 
 public:
     void start();
@@ -76,6 +117,6 @@ public:
     void setTargetSteamTemp(double);
     void setTempOffset(double);
     void setTunings(double, double, double);
-    void refresh();
+    void refresh(ulong);
 };
 #endif
