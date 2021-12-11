@@ -154,7 +154,7 @@
             function incrementTarget(){
                 var maxTemp = (mode == "brew") ? 105 : 155;
                 if(mode == "brew") brewTarget = (brewTarget < maxTemp) ? brewTarget + 0.5 : maxTemp;
-                else steamTarget = (steamTarget < maxTemp) ? steamTarget + 0.5 : maxTemp;
+                else steamTarget = (steamTarget < maxTemp) ? steamTarget + 1 : maxTemp;
                 callServer.post("/increment_target");
                 updateElements();
             }
@@ -162,7 +162,7 @@
             function decrementTarget(){
                 var minTemp = (mode == "brew") ? 85 : 145;
                 if(mode == "brew") brewTarget = (brewTarget > minTemp) ? brewTarget - 0.5 : minTemp;
-                else steamTarget = (steamTarget > minTemp) ? steamTarget - 0.5 : minTemp;
+                else steamTarget = (steamTarget > minTemp) ? steamTarget - 1 : minTemp;
                 callServer.post("/decrement_target");
                 updateElements();
             }
