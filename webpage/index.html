@@ -168,13 +168,13 @@
 
             function incrementOffset(){
                 if(tempOffset < 15) tempOffset += 0.5;
-                callServer.post("/set_offset", tempOffset);
+                callServer.put("/set_offset", tempOffset);
                 updateElements();
             }
 
             function decrementOffset(){
                 if(tempOffset > -15) tempOffset -= 0.5;
-                callServer.post("/set_offset", tempOffset);
+                callServer.put("/set_offset", tempOffset);
                 updateElements();
             }
 
@@ -190,7 +190,7 @@
                     var ki = document.getElementById("ki");
                     var kd = document.getElementById("kd");
                     var tunings = [mode, kp.value, ki.value, kd.value];
-                    callServer.post("/set_tunings", tunings , function(request){
+                    callServer.put("/set_tunings", tunings , function(request){
                         if(request) {
                             if(request.status == 200){
                                 button.disabled = false;
@@ -236,6 +236,9 @@
                     },
                     post: function(url, data, callback){
                         request(url, "POST", data, callback);
+                    },
+                    put: function(url, data, callback) {
+                        request(url, "PUT", data, callback);
                     }
                 }
             })();
