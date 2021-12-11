@@ -89,6 +89,7 @@
                         },
                     },
                     y1: {
+                        suggestedMin: cycleTime,
                         suggestedMax: cycleTime,
                         title: {
                             display: true,
@@ -113,7 +114,6 @@
                     chart.update();
                     chart.render();
                     updateElements();
-                    callServer.post("/set_mode", mode);
                     refreshTunings();
                 },
             }, {
@@ -130,7 +130,6 @@
                     chart.update();
                     chart.render();
                     updateElements();
-                    callServer.post("/set_mode", mode);
                     refreshTunings();
                 }
             }];
@@ -155,7 +154,7 @@
                 var maxTemp = (mode == "brew") ? 105 : 155;
                 if(mode == "brew") brewTarget = (brewTarget < maxTemp) ? brewTarget + 0.5 : maxTemp;
                 else steamTarget = (steamTarget < maxTemp) ? steamTarget + 1 : maxTemp;
-                callServer.post("/increment_target");
+                callServer.post("/increment_target", mode);
                 updateElements();
             }
 
@@ -163,7 +162,7 @@
                 var minTemp = (mode == "brew") ? 85 : 145;
                 if(mode == "brew") brewTarget = (brewTarget > minTemp) ? brewTarget - 0.5 : minTemp;
                 else steamTarget = (steamTarget > minTemp) ? steamTarget - 1 : minTemp;
-                callServer.post("/decrement_target");
+                callServer.post("/decrement_target", mode);
                 updateElements();
             }
 
@@ -190,7 +189,7 @@
                     var kp = document.getElementById("kp");
                     var ki = document.getElementById("ki");
                     var kd = document.getElementById("kd");
-                    var tunings = [kp.value, ki.value, kd.value];
+                    var tunings = [mode, kp.value, ki.value, kd.value];
                     callServer.post("/set_tunings", tunings , function(request){
                         if(request) {
                             if(request.status == 200){

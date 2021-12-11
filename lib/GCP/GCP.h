@@ -25,7 +25,7 @@ using namespace std;
 
 #define RREF 430
 #define DEFAULT_BREW_TEMP 98.0
-#define DEFAULT_STEAM_TEMP 155.0
+#define DEFAULT_STEAM_TEMP 150.0
 #define DEFAULT_OFFSET -6.0
 #define EMERGENCY_SHUTOFF_TEMP 165.0
 #define MAX_OFFSET 15
@@ -33,8 +33,6 @@ using namespace std;
 
 #define CYCLE_TIME 2000
 #define MAX_QUEUE_SIZE 120
-
-enum mode{brew, steam};
 
 struct Queue {
     int front, rear, capacity, count;
@@ -74,7 +72,6 @@ struct Queue {
 class GCP {
 private:
     Adafruit_MAX31865 tempProbe = Adafruit_MAX31865(A5);
-    mode currentMode;
 
     void init(double, double, double);
     void parseQueue(ulong);
@@ -100,23 +97,20 @@ private:
 
     String outputString;
     Queue outputQueue = Queue(MAX_QUEUE_SIZE);
-
 public:
     void start();
-    mode getCurrentMode();
-    void setMode(mode);
-    void incrementTemp();
-    void decrementTemp();
+    void incrementTemp(String);
+    void decrementTemp(String);
     double getTargetTemp();
     double getTargetSteamTemp();
     double getActualTemp(); //returns current temperature value
     double getTempOffset();
     String getOutput();
-    String getTunings();
+    String getTunings(String);
     void setTargetTemp(double); // Sets temperature to control to (setpoint)
     void setTargetSteamTemp(double);
     void setTempOffset(double);
-    void setTunings(double, double, double);
+    void setTunings(String, double, double, double);
     void refresh(ulong);
 };
 #endif

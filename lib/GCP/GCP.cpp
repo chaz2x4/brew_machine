@@ -9,7 +9,6 @@ void GCP::init(double targetTemp, double targetSteamTemp, double offset) {
 	this->setTargetTemp(targetTemp);
 	this->setTargetSteamTemp(targetSteamTemp);
 	this->setTempOffset(offset);
-	this->setMode(brew);
 	this->actualTemp = this->getActualTemp();
 
 	pinMode(HEATER_PIN, OUTPUT);
@@ -19,14 +18,6 @@ void GCP::init(double targetTemp, double targetSteamTemp, double offset) {
 	steamTempManager.SetMode(AUTOMATIC);
 	brewTempManager.SetOutputLimits(0, CYCLE_TIME);
 	steamTempManager.SetOutputLimits(0, CYCLE_TIME);
-}
-
-mode GCP::getCurrentMode() {
-	return this->currentMode;
-}
-
-void GCP::setMode(mode currentMode){
-	this->currentMode = currentMode;
 }
 
 void GCP::setTargetTemp(double temp) {
@@ -41,25 +32,29 @@ void GCP::setTargetSteamTemp(double temp) {
 	this->targetSteamTemp = temp;
 }
 
-void GCP::incrementTemp() {
+void GCP::incrementTemp(String currentMode) {
 	double temp;
 	double i = 0.5;
-	if(this->currentMode == steam) { 
+	if(currentMode == "steam") { 
 		temp = targetSteamTemp;
 		i = 1;
 	}
 	else temp = targetTemp;
 	temp += i;
-	if(this->currentMode == steam) this->setTargetSteamTemp(temp);
+	if(currentMode == "steam") this->setTargetSteamTemp(temp);
 	else this->setTargetTemp(temp);
 }
 
-void GCP::decrementTemp() {
+void GCP::decrementTemp(String currentMode) {
 	double temp;
-	if(this->currentMode == steam) temp = targetSteamTemp;
+	double i = 0.5;
+	if(currentMode == "steam") {
+		temp = targetSteamTemp;
+		i = 1;
+	}
 	else temp = targetTemp;
-	temp -= 0.5;
-	if(this->currentMode == steam) this->setTargetSteamTemp(temp);
+	temp -= i;
+	if(currentMode == "steam") this->setTargetSteamTemp(temp);
 	else this->setTargetTemp(temp);
 }
 
@@ -103,10 +98,10 @@ String GCP::getOutput(){
 	return this->outputString;
 }
 
-String GCP::getTunings(){
+String GCP::getTunings(String currentMode){
 	String output;
 	PID *tempManager;
-	if(this->currentMode == steam) tempManager = &steamTempManager;
+	if(currentMode == "steam") tempManager = &steamTempManager;
 	else tempManager = &brewTempManager;
     output += "{ \"kp\": ";
     output += tempManager->GetKp();
@@ -118,8 +113,8 @@ String GCP::getTunings(){
     return output;
 }
 
-void GCP::setTunings(double kp, double ki, double kd){
-	if(this->currentMode == steam) steamTempManager.SetTunings(kp, ki, kd, P_ON_M);
+void GCP::setTunings(String currentMode, double kp, double ki, double kd){
+	if(currentMode == "steam") steamTempManager.SetTunings(kp, ki, kd, P_ON_M);
 	else brewTempManager.SetTunings(kp, ki, kd, P_ON_M);
 }
 

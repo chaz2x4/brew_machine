@@ -35,42 +35,40 @@ void setup() {
 	});
 
 	server.on("/get_tunings", HTTP_GET, [](){
-		server.send(200, "text/json", brew_machine.getTunings());
-	});
-
-	server.on("/set_mode", HTTP_POST, [](){
-		String mode = server.arg(0);
-		if(mode.equals("brew")) brew_machine.setMode(brew);
-		else if(mode.equals("steam")) brew_machine.setMode(steam);
-		else return server.send(400, "text/plain", "Invalid Data");
-		server.send(200, "text/plain", "Success!");
+		server.send(200, "text/json", brew_machine.getTunings(server.arg(0)));
 	});
 
 	server.on("/set_tunings", HTTP_POST, [](){
 		double tunings[3];
 		String params = server.arg(0);
+		String mode = "";
 		int stringIndex = params.indexOf(",");
-		int arrayIndex = 0;
+		int arrayIndex = -1;
 		while(stringIndex > 0) {
-			String num = params.substring(0, stringIndex);
+			String substr = params.substring(0, stringIndex);
 			params = params.substring(stringIndex + 1);
 			stringIndex = params.indexOf(",");
-			double result = num.toDouble();
-			tunings[arrayIndex] = result;
+			if(arrayIndex == -1) {
+				mode = substr;
+			}
+			else {
+				double result = substr.toDouble();
+				tunings[arrayIndex] = result;
+			}
 			arrayIndex++;
 		}
 		tunings[arrayIndex] = params.toDouble();
-		brew_machine.setTunings(tunings[0], tunings[1], tunings[2]);
+		brew_machine.setTunings(mode, tunings[0], tunings[1], tunings[2]);
 		server.send(200, "text/plain", "Success!");
 	});
 
 	server.on("/increment_target", HTTP_POST, [](){
-		brew_machine.incrementTemp();
+		brew_machine.incrementTemp(server.arg(0));
 		server.send(200, "text/plain", "Success!");
 	});
 
 	server.on("/decrement_target", HTTP_POST, [](){
-		brew_machine.decrementTemp();
+		brew_machine.decrementTemp(server.arg(0));
 		server.send(200, "text/plain", "Success!");
 	});
 
