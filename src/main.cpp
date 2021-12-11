@@ -34,8 +34,12 @@ void setup() {
 		server.send(200, "text/json", brew_machine.getOutput());
 	});
 
-	server.on("/get_tunings", HTTP_GET, [](){
-		server.send(200, "text/json", brew_machine.getTunings(server.arg(0)));
+	server.on("/get_tunings/brew", HTTP_GET, [](){
+		server.send(200, "text/json", brew_machine.getTunings("brew"));
+	});
+
+	server.on("/get_tunings/steam", HTTP_GET, [](){
+		server.send(200, "text/json", brew_machine.getTunings("steam"));
 	});
 
 	server.on("/set_tunings", HTTP_POST, [](){

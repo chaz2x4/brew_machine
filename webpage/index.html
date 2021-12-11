@@ -269,7 +269,7 @@
             })();
 
             function refreshTunings() {
-                callServer.get("/get_tunings", function(request){
+                callServer.get("/get_tunings/" + mode, function(request){
                     var requestedData = JSON.parse(request.response);
                     Object.entries(requestedData).forEach(entry => {
                         const [name, value] = entry;
