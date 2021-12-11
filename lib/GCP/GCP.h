@@ -24,10 +24,10 @@ using namespace std;
 #define STEAM_PIN 27
 
 #define RREF 430
-#define DEFAULT_BREW_TEMP 96.0
-#define DEFAULT_STEAM_TEMP 135.0
+#define DEFAULT_BREW_TEMP 98.0
+#define DEFAULT_STEAM_TEMP 155.0
 #define DEFAULT_OFFSET -6.0
-#define EMERGENCY_SHUTOFF_TEMP 150.0
+#define EMERGENCY_SHUTOFF_TEMP 165.0
 #define MAX_OFFSET 15
 #define MIN_OFFSET -15
 
@@ -87,8 +87,8 @@ private:
     double maxBrewTemp = 100.0;
     double minBrewTemp = 85.0;
 
-    double maxSteamTemp = 140.0;
-    double minSteamTemp = 120.0;
+    double maxSteamTemp = 160.0;
+    double minSteamTemp = 140.0;
 
     double brew_output;
     double steam_output;
