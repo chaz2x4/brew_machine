@@ -42,7 +42,7 @@ void setup() {
 		server.send(200, "text/json", brew_machine.getTunings("steam"));
 	});
 
-	server.on("/set_tunings", HTTP_POST, [](){
+	server.on("/set_tunings", HTTP_PUT, [](){
 		double tunings[3];
 		String params = server.arg(0);
 		String mode = "";
@@ -76,7 +76,7 @@ void setup() {
 		server.send(200, "text/plain", "Success!");
 	});
 
-	server.on("/set_offset", HTTP_POST, [](){
+	server.on("/set_offset", HTTP_PUT, [](){
 		String data = server.arg(0);
 		double offset = data.toDouble();
 		brew_machine.setTempOffset(offset);
