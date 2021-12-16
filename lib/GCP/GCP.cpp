@@ -1,7 +1,7 @@
 #include "GCP.h"
 
 void GCP::start() {
-	init(targetTemp = DEFAULT_BREW_TEMP, targetSteamTemp = DEFAULT_STEAM_TEMP, tempOffset = DEFAULT_OFFSET);
+	init(targetTemp, targetSteamTemp, tempOffset);
 }
 
 void GCP::init(double targetTemp, double targetSteamTemp, double offset) {
@@ -16,8 +16,8 @@ void GCP::init(double targetTemp, double targetSteamTemp, double offset) {
 
 	brewTempManager.SetMode(AUTOMATIC);
 	steamTempManager.SetMode(AUTOMATIC);
-	brewTempManager.SetOutputLimits(0, CYCLE_TIME);
-	steamTempManager.SetOutputLimits(0, CYCLE_TIME);
+	brewTempManager.SetOutputLimits(0, cycleTime);
+	steamTempManager.SetOutputLimits(0, cycleTime);
 }
 
 void GCP::setTargetTemp(double temp) {
@@ -89,8 +89,8 @@ double GCP::getTempOffset(){
 }
 
 void GCP::setTempOffset(double offset){
-	if(offset > MAX_OFFSET) this->tempOffset = MAX_OFFSET;
-	else if(offset < MIN_OFFSET) this->tempOffset = MIN_OFFSET;
+	if(offset > maxOffset) this->tempOffset = maxOffset;
+	else if(offset < minOffset) this->tempOffset = minOffset;
 	else this->tempOffset = offset;
 }
 
@@ -163,22 +163,22 @@ void GCP::refresh(ulong realTime) {
 	*/
 
 	ulong runTime = millis();
-	if(runTime - cycleStartTime > CYCLE_TIME) {
+	if(runTime - cycleStartTime > cycleTime) {
 		parseQueue(realTime);
-		cycleStartTime += CYCLE_TIME;
+		cycleStartTime += cycleTime;
 		brewTempManager.Compute();
 		steamTempManager.Compute();
 	}
 	
-	if(brew_output > runTime - cycleStartTime) digitalWrite(HEATER_PIN, ON);
-	else digitalWrite(HEATER_PIN, OFF);
+	if(brew_output > runTime - cycleStartTime) digitalWrite(HEATER_PIN, HIGH);
+	else digitalWrite(HEATER_PIN, LOW);
 
-	if(steam_output > runTime - cycleStartTime) digitalWrite(STEAM_PIN, ON);
-	else digitalWrite(STEAM_PIN, OFF);
+	if(steam_output > runTime - cycleStartTime) digitalWrite(STEAM_PIN, HIGH);
+	else digitalWrite(STEAM_PIN, LOW);
 	
 	double actualTemp = this->getActualTemp();
-	if((actualTemp + tempOffset) >= EMERGENCY_SHUTOFF_TEMP) {
-		digitalWrite(HEATER_PIN, OFF);
-		digitalWrite(STEAM_PIN, OFF);
+	if((actualTemp + tempOffset) >= emergencyShutoffTemp) {
+		digitalWrite(HEATER_PIN, LOW);
+		digitalWrite(STEAM_PIN, LOW);
 	}
 }

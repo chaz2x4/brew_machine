@@ -17,22 +17,9 @@
 
 using namespace std;
 
-#define ON HIGH
-#define OFF LOW
-
 #define HEATER_PIN 13
 #define STEAM_PIN 27
-
 #define RREF 430
-#define DEFAULT_BREW_TEMP 98.0
-#define DEFAULT_STEAM_TEMP 150.0
-#define DEFAULT_OFFSET -6.0
-#define EMERGENCY_SHUTOFF_TEMP 165.0
-#define MAX_OFFSET 15
-#define MIN_OFFSET -15
-
-#define CYCLE_TIME 2000
-#define MAX_QUEUE_SIZE 120
 
 struct Queue {
     int front, rear, capacity, count;
@@ -77,26 +64,30 @@ private:
     void parseQueue(ulong);
 
     double actualTemp;
-    double tempOffset = DEFAULT_OFFSET;
-    double targetTemp = DEFAULT_BREW_TEMP;
-    double targetSteamTemp = DEFAULT_STEAM_TEMP;
-    
-    double maxBrewTemp = 100.0;
-    double minBrewTemp = 85.0;
+    double tempOffset = -6.0;
+    double targetTemp = 98.0;
+    double targetSteamTemp = 150.0;
 
-    double maxSteamTemp = 160.0;
-    double minSteamTemp = 140.0;
+    const double emergencyShutoffTemp = 165.0;
+    const double maxBrewTemp = 100.0;
+    const double minBrewTemp = 85.0;
+    const double maxSteamTemp = 160.0;
+    const double minSteamTemp = 140.0;
+    const double maxOffset = 15;
+    const double minOffset = -15;
+    const int websiteQueueSize = 120;
 
     double brew_output;
     double steam_output;
 
     ulong cycleStartTime;
-
+    const ulong cycleTime = 2000;
+   
     PID brewTempManager = PID(&actualTemp, &brew_output, &targetTemp, 125, 150, 50, P_ON_M, DIRECT);
     PID steamTempManager = PID(&actualTemp, &steam_output, &targetSteamTemp, 125, 150, 50, P_ON_M, DIRECT);
 
     String outputString;
-    Queue outputQueue = Queue(MAX_QUEUE_SIZE);
+    Queue outputQueue = Queue(websiteQueueSize);
 public:
     void start();
     void incrementTemp(String);
