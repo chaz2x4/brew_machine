@@ -24,14 +24,12 @@ public:
     void refresh(); //refreshes screen every delay cycle
 
     /* Outputed to the WebServer */
-    void setMode(mode mode);
     void incrementTemp();
     void decrementTemp();
-    void setTunings(double, double, double);
-    void setOffset(double);
 private:
     Adafruit_SSD1306 display = Adafruit_SSD1306(128, 32, &Wire); //OLED screen
     bool flash = false; //controls which version of the OLED screen to display
+    String currentMode = "brew";
 
     ulong timeLastButton = -1; //records the last time a button was pressed
     ulong lastTime = -1;

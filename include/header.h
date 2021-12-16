@@ -15,6 +15,9 @@
 #include <Update.h>
 #include <WiFiUdp.h>
 #include <ArduinoOTA.h>
+#include <NTPClient.h>
 
 #include <sstream>
 #include <string>
+
+using namespace std;

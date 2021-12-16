@@ -5,7 +5,6 @@ void OLED::start(GCP *brew_machine){
     display.clearDisplay();
     display.dim(true);
     display.display();
-    delay(1000);
 
     pinMode(BUTTON_A, INPUT_PULLUP);
     pinMode(BUTTON_B, INPUT_PULLUP);
@@ -37,7 +36,7 @@ void OLED::eventListener(){
         if(buttonState[0] == LOW && lastButtonState[0] == HIGH) {
             downTime = now;
             timeLastButton = now;
-            if(this->isEditable) gcp->incrementTemp();
+            if(this->isEditable) this->incrementTemp();
             else this->changeMode();
         }
         else if(buttonState[0] == HIGH && lastButtonState[0] == LOW) downTime = -1 ;
@@ -47,7 +46,7 @@ void OLED::eventListener(){
         if(buttonState[1] == LOW && lastButtonState[1] == HIGH) {
             downTime = now;
             timeLastButton = now;
-            if(this->isEditable) gcp->decrementTemp();
+            if(this->isEditable) this->decrementTemp();
             else this->changeMode();
         }
         else if(buttonState[1] == HIGH && lastButtonState[1] == LOW) downTime = -1 ;
@@ -91,20 +90,20 @@ void OLED::refresh(){
 
     ulong wait;
     ulong now = millis();
-    char* currentMode = "Brew";
+    char* modeTitle = "Brew";
     double targetTemp = gcp->getTargetTemp();
-    double currentTemp = gcp->getActualTemp();
-    if(gcp->getCurrentMode() == steam) {
-        currentMode = "Steam";
+    double currentTemp = gcp->getCurrentTemp();
+    if(this->currentMode == "steam") {
+        modeTitle = "Steam";
         targetTemp = gcp->getTargetSteamTemp();
     }
     if(this->isEditable) {
-        if(flash) display.printf("Set %s\n %#.1f C", currentMode, targetTemp);
-        else display.printf("Set %s", currentMode);
+        if(flash) display.printf("Set %s\n %#.1f C", modeTitle, targetTemp);
+        else display.printf("Set %s", modeTitle);
         wait = 500;
     }
     else {
-        if(flash) display.printf("%sing\n %#0.1f C", currentMode, targetTemp);
+        if(flash) display.printf("%sing\n %#0.1f C", modeTitle, targetTemp);
         else display.printf("Temp:\n %#.1f C", currentTemp);
         wait = 2000;
     }
@@ -120,26 +119,13 @@ void OLED::changeMode(){
     display.clearDisplay();
     lastTime = millis();
     flash = true;
-    if(gcp->getCurrentMode() == brew) gcp->setMode(steam);
-    else gcp->setMode(brew);
-}
-
-void OLED::setMode(mode mode){
-    gcp->setMode(mode);
+    this->currentMode = this->currentMode == "brew" ? "steam" : "brew";
 }
 
 void OLED::incrementTemp(){
-    gcp->incrementTemp();
+    gcp->incrementTemp(this->currentMode);
 }
 
 void OLED::decrementTemp(){
-    gcp->decrementTemp();
-}
-
-void OLED::setOffset(double offset) {
-    gcp->setTempOffset(offset);
-}
-
-void OLED::setTunings(double kp, double ki, double kd){
-    gcp->setTunings(kp, ki, kd);
+    gcp->decrementTemp(this->currentMode);
 }
