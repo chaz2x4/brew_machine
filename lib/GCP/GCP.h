@@ -75,7 +75,7 @@ private:
     const double minSteamTemp = 140.0;
     const double maxOffset = 15;
     const double minOffset = -15;
-    const int websiteQueueSize = 120;
+    const int websiteQueueSize = 60;
 
     double brew_output;
     double steam_output;
