@@ -41,18 +41,12 @@
             const options = {
                 spanGaps: 1000,
                 responsive: true,
-                animations: true,
                 interaction: {
                     mode: 'nearest',
                     axis: 'x',
                     intersect: false
                 },
                 plugins: {
-                    decimation: {
-                        enabled: 'true',
-                        algorithm: 'lttb',
-                        samples: 10,
-                    },
                     title: {
                         display: true,
                         text: "Brew Temperature",
@@ -89,8 +83,6 @@
                         },
                     },
                     y1: {
-                        suggestedMin: cycleTime,
-                        suggestedMax: cycleTime,
                         title: {
                             display: true,
                             text: "Output",
