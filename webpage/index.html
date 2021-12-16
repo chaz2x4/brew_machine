@@ -28,6 +28,7 @@
                         if(pointTemp < (targetTemp - 0.5)) return '#331F2E';
                         else return '#63FF8F';
                     },
+                    tension: 0.4,
                     yAxisID: 'y',
                 }, {
                     type: 'bar',
@@ -54,14 +55,9 @@
                 },
                 scales: {
                     x: {
-                        type: 'timeseries',
+                        type: 'time',
                         time: {
                             unit: 'second',
-                        },
-                        ticks: {
-                            callback: function(value, index) {
-                                if((index % 5 == 0)) return value;
-                            }
                         },
                         title: {
                             display: true,
@@ -70,8 +66,6 @@
                         spanGaps: 1000 * 60,
                     },
                     y: {
-                        suggestedMin: brewTarget - 1,
-                        suggestedMax: brewTarget + 1,
                         title: {
                             display: true,
                             text: "Temperature",
@@ -106,9 +100,8 @@
                     };
                     chart.data.datasets[1].data = brewData;
                     mode = 'brew';
-                    chart.update();
-                    chart.render();
                     updateElements();
+                    chart.render();
                     refreshTunings();
                 },
             }, {
@@ -123,9 +116,8 @@
                     };
                     chart.data.datasets[1].data = steamData;
                     mode = 'steam';
-                    chart.update();
-                    chart.render();
                     updateElements();
+                    chart.render();
                     refreshTunings();
                 }
             }];
@@ -144,6 +136,11 @@
 
                 var offsetLabel = document.getElementById("offset_label");
                 offsetLabel.innerHTML = "Offset: " + tempOffset + " C";
+
+                chart.options.scales.y.suggestedMin = targetTemp - 1;
+                chart.options.scales.y.suggestedMax = targetTemp + 1;
+
+                chart.update();
             }
 
             function incrementTarget(){
@@ -247,7 +244,8 @@
                     var requestedBrewData = [];
                     var requestedSteamData = [];
 
-                    if(brewTarget == null) [brewTarget, steamTarget, tempOffset] = [requestedData.targets.brew, requestedData.targets.steam, requestedData.targets.offset]
+                    if(brewTarget == null) [brewTarget, steamTarget, tempOffset] = [requestedData.targets.brew, requestedData.targets.steam, requestedData.targets.offset];
+
                     var sortedOutputs = requestedData.outputs.sort((a, b) => a.time - b.time);
 
                     sortedOutputs.forEach(output => {
@@ -261,7 +259,7 @@
                     chart.data.datasets[0].data = tempData = requestedTempData;
                     if(mode == 'brew') { chart.data.datasets[1].data = brewData = requestedBrewData }
                     else { chart.data.datasets[1].data = steamData = requestedSteamData }        
-                    chart.update();
+
                     updateElements();
                     refreshTemps();
                 });
