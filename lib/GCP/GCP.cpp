@@ -147,7 +147,7 @@ void GCP::parseQueue(ulong time){
 	outputString += "]}";
 }
 
-void GCP::refresh(ulong time) {
+void GCP::refresh(ulong realTime) {
 	/* 
 		Brew Relay and Steam Relay will always be calculating
 		When power switch is on the heater will heat until it gets to targetBrewtemp
@@ -162,18 +162,18 @@ void GCP::refresh(ulong time) {
 		If temperature rises above maximum safe temperature turn off relay
 	*/
 
-	ulong now = millis();
-	if(now - cycleStartTime > CYCLE_TIME) {
-		parseQueue(time);
+	ulong runTime = millis();
+	if(runTime - cycleStartTime > CYCLE_TIME) {
+		parseQueue(realTime);
 		cycleStartTime += CYCLE_TIME;
 		brewTempManager.Compute();
 		steamTempManager.Compute();
 	}
 	
-	if(brew_output > now - cycleStartTime) digitalWrite(HEATER_PIN, ON);
+	if(brew_output > runTime - cycleStartTime) digitalWrite(HEATER_PIN, ON);
 	else digitalWrite(HEATER_PIN, OFF);
 
-	if(steam_output > now- cycleStartTime) digitalWrite(STEAM_PIN, ON);
+	if(steam_output > runTime - cycleStartTime) digitalWrite(STEAM_PIN, ON);
 	else digitalWrite(STEAM_PIN, OFF);
 	
 	double actualTemp = this->getActualTemp();
