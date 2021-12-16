@@ -91,8 +91,6 @@
                 name: "Brew Temps",
                 id: "brew",
                 handler() {
-                    chart.options.scales.y.suggestedMin = brewTarget - 1;
-                    chart.options.scales.y.suggestedMax = brewTarget + 1;
                     chart.options.plugins.title.text = "Brew Temperature";
                     chart.options.scales.y.grid.color = function(context) {
                         if(context.tick.value == brewTarget) return "#FF6384";
@@ -107,8 +105,6 @@
                 name: "Steam Temps",
                 id: "steam",
                 handler() {
-                    chart.options.scales.y.suggestedMin = steamTarget - 1;
-                    chart.options.scales.y.suggestedMax = steamTarget + 1;
                     chart.options.plugins.title.text = "Steam Temperature";
                     chart.options.scales.y.grid.color = function(context) {
                         if(context.tick.value == steamTarget) return "#FF6384";
@@ -136,8 +132,8 @@
                 var offsetLabel = document.getElementById("offset_label");
                 offsetLabel.innerHTML = "Offset: " + tempOffset + " C";
 
-                chart.options.scales.y.suggestedMin = targetTemp - 1;
-                chart.options.scales.y.suggestedMax = targetTemp + 1;
+                chart.options.scales.y.suggestedMin = targetTemp - 0.5;
+                chart.options.scales.y.suggestedMax = targetTemp + 0.5;
 
                 chart.update();
             }
