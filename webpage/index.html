@@ -70,7 +70,8 @@
                         spanGaps: 1000 * 60,
                     },
                     y: {
-                        suggestedMax: brewTarget,
+                        suggestedMin: brewTarget - 1,
+                        suggestedMax: brewTarget + 1,
                         title: {
                             display: true,
                             text: "Temperature",
@@ -97,7 +98,8 @@
                 name: "Brew Temps",
                 id: "brew",
                 handler() {
-                    chart.options.scales.y.suggestedMax = brewTarget;
+                    chart.options.scales.y.suggestedMin = brewTarget - 1;
+                    chart.options.scales.y.suggestedMax = brewTarget + 1;
                     chart.options.plugins.title.text = "Brew Temperature";
                     chart.options.scales.y.grid.color = function(context) {
                         if(context.tick.value == brewTarget) return "#FF6384";
@@ -113,7 +115,8 @@
                 name: "Steam Temps",
                 id: "steam",
                 handler() {
-                    chart.options.scales.y.suggestedMax = steamTarget;
+                    chart.options.scales.y.suggestedMin = steamTarget - 1;
+                    chart.options.scales.y.suggestedMax = steamTarget + 1;
                     chart.options.plugins.title.text = "Steam Temperature";
                     chart.options.scales.y.grid.color = function(context) {
                         if(context.tick.value == steamTarget) return "#FF6384";
