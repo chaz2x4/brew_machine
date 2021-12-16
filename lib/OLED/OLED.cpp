@@ -92,7 +92,7 @@ void OLED::refresh(){
     ulong now = millis();
     char* modeTitle = "Brew";
     double targetTemp = gcp->getTargetTemp();
-    double currentTemp = gcp->getActualTemp();
+    double currentTemp = gcp->getCurrentTemp();
     if(this->currentMode == "steam") {
         modeTitle = "Steam";
         targetTemp = gcp->getTargetSteamTemp();

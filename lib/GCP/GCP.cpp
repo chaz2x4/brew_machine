@@ -9,7 +9,7 @@ void GCP::init(double targetTemp, double targetSteamTemp, double offset) {
 	this->setTargetTemp(targetTemp);
 	this->setTargetSteamTemp(targetSteamTemp);
 	this->setTempOffset(offset);
-	this->actualTemp = this->getActualTemp();
+	this->currentTemp = this->getCurrentTemp();
 
 	pinMode(HEATER_PIN, OUTPUT);
 	pinMode(STEAM_PIN, OUTPUT);
@@ -80,7 +80,13 @@ double GCP::getActualTemp() {
 		tempProbe.clearFault();
 	}
 	temp += tempOffset;
-	this->actualTemp = temp;
+	return temp;
+}
+
+double GCP::getCurrentTemp() {
+	double temp = this->getActualTemp();
+	temp += tempOffset;
+	this->currentTemp = temp;
 	return temp;
 }
 
@@ -123,7 +129,7 @@ void GCP::parseQueue(ulong time){
     outputs += "{ \"time\": ";
     outputs += time;
     outputs += ", \"temperature\": ";
-    outputs += this->getActualTemp();
+    outputs += this->getCurrentTemp();
     outputs += ", \"outputs\": { \"brew\": ";
     outputs += this->brew_output;
     outputs += ", \"steam\": ";

@@ -63,7 +63,7 @@ private:
     void init(double, double, double);
     void parseQueue(ulong);
 
-    double actualTemp;
+    double currentTemp;
     double tempOffset = -6.0;
     double targetTemp = 98.0;
     double targetSteamTemp = 150.0;
@@ -83,8 +83,8 @@ private:
     ulong cycleStartTime;
     const ulong cycleTime = 2000;
    
-    PID brewTempManager = PID(&actualTemp, &brew_output, &targetTemp, 125, 150, 50, P_ON_M, DIRECT);
-    PID steamTempManager = PID(&actualTemp, &steam_output, &targetSteamTemp, 125, 150, 50, P_ON_M, DIRECT);
+    PID brewTempManager = PID(&currentTemp, &brew_output, &targetTemp, 125, 150, 50, P_ON_M, DIRECT);
+    PID steamTempManager = PID(&currentTemp, &steam_output, &targetSteamTemp, 125, 150, 50, P_ON_M, DIRECT);
 
     String outputString;
     Queue outputQueue = Queue(websiteQueueSize);
@@ -94,7 +94,8 @@ public:
     void decrementTemp(String);
     double getTargetTemp();
     double getTargetSteamTemp();
-    double getActualTemp(); //returns current temperature value
+    double getActualTemp(); //returns real temperature value
+    double getCurrentTemp(); //returns temp value plus offset
     double getTempOffset();
     String getOutput();
     String getTunings(String);
