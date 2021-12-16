@@ -76,7 +76,7 @@ void setup() {
 		server.send(200, "text/plain", "Success!");
 	});
 
-	server.on("/set_offset", HTTP_PUT, [](){
+	server.on("/set_offset", HTTP_POST, [](){
 		String data = server.arg(0);
 		double offset = data.toDouble();
 		brew_machine.setTempOffset(offset);

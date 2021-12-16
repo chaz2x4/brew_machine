@@ -156,13 +156,13 @@
 
             function incrementOffset(){
                 if(tempOffset < 15) tempOffset += 0.5;
-                callServer.put("/set_offset", tempOffset);
+                callServer.post("/set_offset", tempOffset);
                 updateElements();
             }
 
             function decrementOffset(){
                 if(tempOffset > -15) tempOffset -= 0.5;
-                callServer.put("/set_offset", tempOffset);
+                callServer.post("/set_offset", tempOffset);
                 updateElements();
             }
 
@@ -178,13 +178,9 @@
                     var ki = document.getElementById("ki");
                     var kd = document.getElementById("kd");
                     var tunings = [mode, kp.value, ki.value, kd.value];
-                    callServer.put("/set_tunings", tunings , function(request){
-                        if(request) {
-                            if(request.status == 200){
-                                button.disabled = false;
-                                button.innerHTML = "Set Tunings:";
-                            }
-                        }
+                    callServer.put("/set_tunings", tunings , function(){
+                        button.disabled = false;
+                        button.innerHTML = "Set Tunings:";
                     })
                 }
                 else {
@@ -207,42 +203,40 @@
             });
 
             var callServer = (function() {
-                function request(url, method, data, callback){
-                    var xhttp = new XMLHttpRequest();
-                    xhttp.onreadystatechange = function(){
-                        if (this.readyState == 4 && this.status == 200) {
-                            if(callback) callback(this);
-                        }
-                    }
-                    xhttp.open(method, url, true);
-                    xhttp.send(data);
+                async function request(url, method, data){
+                    const response = await fetch(url, {
+                        method: method,
+                        body: data
+                    });
+                    return response;
                 }
 
                 return {
                     get: function(url, callback){
-                        request(url, "GET", null, callback);
+                        request(url, "GET", null)
+                            .then(response => response.json())
+                            .then(responseData => callback(responseData));
                     },
                     post: function(url, data, callback){
-                        request(url, "POST", data, callback);
+                        request(url, "POST", data);
                     },
                     put: function(url, data, callback) {
-                        request(url, "PUT", data, callback);
+                        request(url, "PUT", data)
+                            .then(response => callback(response));
                     }
                 }
             })();
 
             (function refreshTemps(){
-                return callServer.get("/get_temps", function(request){
-                    var requestedData = JSON.parse(request.response);
+                return callServer.get("/get_temps", function(response){
                     var requestedLabels = [];
                     var requestedTempData = [];
                     var requestedBrewData = [];
                     var requestedSteamData = [];
 
-                    if(brewTarget == null) [brewTarget, steamTarget, tempOffset] = [requestedData.targets.brew, requestedData.targets.steam, requestedData.targets.offset];
+                    if(brewTarget == null) [brewTarget, steamTarget, tempOffset] = [response.targets.brew, response.targets.steam, response.targets.offset];
 
-                    var sortedOutputs = requestedData.outputs.sort((a, b) => a.time - b.time);
-
+                    var sortedOutputs = response.outputs.sort((a, b) => a.time - b.time);
                     sortedOutputs.forEach(output => {
                         requestedLabels.push(output.time * 1000);
                         requestedTempData.push(output.temperature);
@@ -261,9 +255,8 @@
             })();
 
             function refreshTunings() {
-                callServer.get("/get_tunings/" + mode, function(request){
-                    var requestedData = JSON.parse(request.response);
-                    Object.entries(requestedData).forEach(entry => {
+                callServer.get("/get_tunings/" + mode, function(response){
+                    Object.entries(response).forEach(entry => {
                         const [name, value] = entry;
                         var input = document.getElementById(name);
                         input.value = value;
