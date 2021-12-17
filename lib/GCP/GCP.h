@@ -81,7 +81,7 @@ private:
     double steam_output;
 
     ulong cycleStartTime;
-    const ulong cycleTime = 2000;
+    const ulong cycleTime = 1000;
    
     PID brewTempManager = PID(&currentTemp, &brew_output, &targetTemp, 125, 150, 50, P_ON_M, DIRECT);
     PID steamTempManager = PID(&currentTemp, &steam_output, &targetSteamTemp, 125, 150, 50, P_ON_M, DIRECT);
