@@ -83,7 +83,7 @@ private:
     ulong cycleStartTime;
     const ulong cycleTime = 2000;
    
-    PID brewTempManager = PID(&currentTemp, &brew_output, &targetTemp, 68.4, 22.17, 2.5, P_ON_M, DIRECT);
+    PID brewTempManager = PID(&currentTemp, &brew_output, &targetTemp, 68.4, 22.17, 1.5, P_ON_M, DIRECT);
     PID steamTempManager = PID(&currentTemp, &steam_output, &targetSteamTemp, 68.4, 33.6, 1, P_ON_M, DIRECT);
 
     String outputString;
