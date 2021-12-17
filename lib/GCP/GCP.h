@@ -75,7 +75,7 @@ private:
     const double minSteamTemp = 140.0;
     const double maxOffset = 15;
     const double minOffset = -15;
-    const int websiteQueueSize = 90;
+    const int websiteQueueSize = 60;
 
     double brew_output;
     double steam_output;
@@ -83,8 +83,8 @@ private:
     ulong cycleStartTime;
     const ulong cycleTime = 1000;
    
-    PID brewTempManager = PID(&currentTemp, &brew_output, &targetTemp, 125, 150, 50, P_ON_M, DIRECT);
-    PID steamTempManager = PID(&currentTemp, &steam_output, &targetSteamTemp, 125, 150, 50, P_ON_M, DIRECT);
+    PID brewTempManager = PID(&currentTemp, &brew_output, &targetTemp, 11.4, 15, 5, P_ON_M, DIRECT);
+    PID steamTempManager = PID(&currentTemp, &steam_output, &targetSteamTemp, 34.2, 15, 5, P_ON_M, DIRECT);
 
     String outputString;
     Queue outputQueue = Queue(websiteQueueSize);
