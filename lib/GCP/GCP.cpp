@@ -1,7 +1,7 @@
 #include "GCP.h"
 
-void GCP::init() {
-	init(targetTemp = DEFAULT_BREW_TEMP, targetSteamTemp = DEFAULT_STEAM_TEMP, tempOffset = DEFAULT_OFFSET);
+void GCP::start() {
+	init(targetTemp, targetSteamTemp, tempOffset);
 }
 
 void GCP::init(double targetTemp, double targetSteamTemp, double offset) {
@@ -9,20 +9,15 @@ void GCP::init(double targetTemp, double targetSteamTemp, double offset) {
 	this->setTargetTemp(targetTemp);
 	this->setTargetSteamTemp(targetSteamTemp);
 	this->setTempOffset(offset);
-	this->setMode(brew);
-	this->actualTemp = this->getActualTemp();
+	this->currentTemp = this->getCurrentTemp();
+
 	pinMode(HEATER_PIN, OUTPUT);
 	pinMode(STEAM_PIN, OUTPUT);
-	brewTempManager.tune(55.0, 0.2, 70.0);
-	steamTempManager.tune(55.0, 0.2, 70.0);
-}
 
-mode GCP::getCurrentMode() {
-	return this->currentMode;
-}
-
-void GCP::setMode(mode currentMode){
-	this->currentMode = currentMode;
+	brewTempManager.SetMode(AUTOMATIC);
+	steamTempManager.SetMode(AUTOMATIC);
+	brewTempManager.SetOutputLimits(0, cycleTime);
+	steamTempManager.SetOutputLimits(0, cycleTime);
 }
 
 void GCP::setTargetTemp(double temp) {
@@ -37,21 +32,29 @@ void GCP::setTargetSteamTemp(double temp) {
 	this->targetSteamTemp = temp;
 }
 
-void GCP::incrementTemp() {
+void GCP::incrementTemp(String currentMode) {
 	double temp;
-	if(this->currentMode == steam) temp = targetSteamTemp;
+	double i = 0.5;
+	if(currentMode == "steam") { 
+		temp = targetSteamTemp;
+		i = 1;
+	}
 	else temp = targetTemp;
-	temp += 0.5;
-	if(this->currentMode == steam) this->setTargetSteamTemp(temp);
+	temp += i;
+	if(currentMode == "steam") this->setTargetSteamTemp(temp);
 	else this->setTargetTemp(temp);
 }
 
-void GCP::decrementTemp() {
+void GCP::decrementTemp(String currentMode) {
 	double temp;
-	if(this->currentMode == steam) temp = targetSteamTemp;
+	double i = 0.5;
+	if(currentMode == "steam") {
+		temp = targetSteamTemp;
+		i = 1;
+	}
 	else temp = targetTemp;
-	temp -= 0.5;
-	if(this->currentMode == steam) this->setTargetSteamTemp(temp);
+	temp -= i;
+	if(currentMode == "steam") this->setTargetSteamTemp(temp);
 	else this->setTargetTemp(temp);
 }
 
@@ -77,7 +80,13 @@ double GCP::getActualTemp() {
 		tempProbe.clearFault();
 	}
 	temp += tempOffset;
-	this->actualTemp = temp;
+	return temp;
+}
+
+double GCP::getCurrentTemp() {
+	double temp = this->getActualTemp();
+	temp += tempOffset;
+	this->currentTemp = temp;
 	return temp;
 }
 
@@ -86,33 +95,65 @@ double GCP::getTempOffset(){
 }
 
 void GCP::setTempOffset(double offset){
-	if(offset > MAX_OFFSET) this->tempOffset = MAX_OFFSET;
-	else if(offset < MIN_OFFSET) this->tempOffset = MIN_OFFSET;
+	if(offset > maxOffset) this->tempOffset = maxOffset;
+	else if(offset < minOffset) this->tempOffset = minOffset;
 	else this->tempOffset = offset;
 }
 
-double GCP::getBrewOutput(){
-	return this->brew_output;
+String GCP::getOutput(){
+	return this->outputString;
 }
 
-double GCP::getSteamOutput(){
-	return this->steam_output;
+String GCP::getTunings(String currentMode){
+	String output;
+	PID *tempManager;
+	if(currentMode == "steam") tempManager = &steamTempManager;
+	else tempManager = &brewTempManager;
+    output += "{ \"kp\": ";
+    output += tempManager->GetKp();
+    output += ", \"ki\": ";
+    output += tempManager->GetKi();
+    output +=  ", \"kd\": ";
+    output += tempManager->GetKd();
+    output += " }";
+    return output;
 }
 
-double* GCP::getTunings(double* tunings){
-	if(this->currentMode == steam) return steamTempManager.getTunings(tunings);
-	else return brewTempManager.getTunings(tunings);
+void GCP::setTunings(String currentMode, double kp, double ki, double kd){
+	if(currentMode == "steam") steamTempManager.SetTunings(kp, ki, kd, P_ON_M);
+	else brewTempManager.SetTunings(kp, ki, kd, P_ON_M);
 }
 
-void GCP::setTunings(double kp, double ki, double kd){
-	if(this->currentMode == steam) steamTempManager.tune(kp, ki, kd);
-	else brewTempManager.tune(kp, ki, kd);
+void GCP::parseQueue(ulong time){
+	String outputs;
+    outputs += "{ \"time\": ";
+    outputs += time;
+    outputs += ", \"temperature\": ";
+    outputs += this->getCurrentTemp();
+    outputs += ", \"outputs\": { \"brew\": ";
+    outputs += this->brew_output;
+    outputs += ", \"steam\": ";
+    outputs += this->steam_output;
+    outputs += " }}";
+	outputQueue.push(outputs);
+
+	outputString = "{ \"targets\": { \"brew\": ";
+	outputString += this->targetTemp;
+	outputString += ", \"steam\": ";
+	outputString += this->targetSteamTemp;
+	outputString += ", \"offset\": ";
+	outputString += this->tempOffset;
+	outputString += " }, \"outputs\":[";
+
+	for(unsigned i = 0; i < outputQueue.size(); i++){
+		if(i > 0 ) outputString += ",";
+		outputString += outputQueue.at(i);
+	}
+
+	outputString += "]}";
 }
 
-void GCP::update() {
-	brewTempManager.compute();
-	steamTempManager.compute();
-
+void GCP::refresh(ulong realTime) {
 	/* 
 		Brew Relay and Steam Relay will always be calculating
 		When power switch is on the heater will heat until it gets to targetBrewtemp
@@ -127,19 +168,23 @@ void GCP::update() {
 		If temperature rises above maximum safe temperature turn off relay
 	*/
 
-	if(millis() - cycleStartTime > cycleRunTime) {
-		cycleStartTime += cycleRunTime;
+	ulong runTime = millis();
+	if(runTime - cycleStartTime > cycleTime) {
+		parseQueue(realTime);
+		cycleStartTime += cycleTime;
+		brewTempManager.Compute();
+		steamTempManager.Compute();
 	}
 	
-	if(brew_output < millis() - cycleStartTime) digitalWrite(HEATER_PIN, OFF);
-	else digitalWrite(HEATER_PIN, ON);
+	if(brew_output > runTime - cycleStartTime) digitalWrite(HEATER_PIN, HIGH);
+	else digitalWrite(HEATER_PIN, LOW);
 
-	if(steam_output < millis() - cycleStartTime) digitalWrite(STEAM_PIN, OFF);
-	else digitalWrite(STEAM_PIN, ON);
+	if(steam_output > runTime - cycleStartTime) digitalWrite(STEAM_PIN, HIGH);
+	else digitalWrite(STEAM_PIN, LOW);
 	
 	double actualTemp = this->getActualTemp();
-	if((actualTemp + tempOffset) >= EMERGENCY_SHUTOFF_TEMP) {
-		digitalWrite(STEAM_PIN, OFF);
-		digitalWrite(HEATER_PIN, OFF);
+	if((actualTemp + tempOffset) >= emergencyShutoffTemp) {
+		digitalWrite(HEATER_PIN, LOW);
+		digitalWrite(STEAM_PIN, LOW);
 	}
 }
