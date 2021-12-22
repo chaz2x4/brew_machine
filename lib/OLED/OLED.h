@@ -26,6 +26,7 @@ private:
     Adafruit_SSD1306 display;
     GCP *gcp;
     String currentMode;
+    
     ulong timeLastButton;   //records the last time a button was pressed
     ulong lastTime;         // records time of event
     ulong downTime;         // records when button was pressed and held for hold functionality

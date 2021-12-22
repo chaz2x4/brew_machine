@@ -1,21 +1,11 @@
-// gcp.h
+// GCP.h
+
 #ifndef _GCP_h
 #define _GCP_h
-/*
-    Heat Theory:
-        1) Turn on machine
-        2) Heat water to brew temperature, or steam temperature if that switch is on
-        3) Turn on lights when at specific temperatures
-    Only input should be steam switch, which moves PID temp to 155 C
-    For now leave pump switch manually on the coffee switch
-
-*/
 
 #include <Adafruit_MAX31865.h>
 #include <EEPROM.h>
 #include <PID_v1.h>
-
-using namespace std;
 
 #define HEATER_PIN 13
 #define STEAM_PIN 27
@@ -65,12 +55,12 @@ public:
     void decrementTemp(String);
     double getTargetTemp();
     double getTargetSteamTemp();
-    double getActualTemp(); //returns real temperature value
-    double getCurrentTemp(); //returns temp value plus offset
+    double getActualTemp();
+    double getCurrentTemp();
     double getTempOffset();
     String getOutput();
     String getTunings(String);
-    void setTargetTemp(double); // Sets temperature to control to (setpoint)
+    void setTargetTemp(double);
     void setTargetSteamTemp(double);
     void setTempOffset(double);
     void setTunings(String, double, double, double);
