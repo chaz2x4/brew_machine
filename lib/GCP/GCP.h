@@ -57,38 +57,9 @@ struct Queue {
 };
 
 class GCP {
-private:
-    Adafruit_MAX31865 tempProbe = Adafruit_MAX31865(A5);
-
-    void init(double, double, double);
-    void parseQueue(ulong);
-
-    double currentTemp;
-    double tempOffset = -8;
-    double targetTemp = 92.0;
-    double targetSteamTemp = 150.0;
-
-    const double emergencyShutoffTemp = 165.0;
-    const double maxBrewTemp = 100.0;
-    const double minBrewTemp = 85.0;
-    const double maxSteamTemp = 160.0;
-    const double minSteamTemp = 140.0;
-    const double maxOffset = 15;
-    const double minOffset = -15;
-    const int websiteQueueSize = 60;
-
-    double brew_output;
-    double steam_output;
-
-    ulong cycleStartTime;
-    const ulong cycleTime = 2000;
-   
-    PID brewTempManager = PID(&currentTemp, &brew_output, &targetTemp, 68.4, 22.17, 1.5, P_ON_M, DIRECT);
-    PID steamTempManager = PID(&currentTemp, &steam_output, &targetSteamTemp, 68.4, 33.6, 1, P_ON_M, DIRECT);
-
-    String outputString;
-    Queue outputQueue = Queue(websiteQueueSize);
 public:
+    GCP();
+    ~GCP();
     void start();
     void incrementTemp(String);
     void decrementTemp(String);
@@ -104,5 +75,32 @@ public:
     void setTempOffset(double);
     void setTunings(String, double, double, double);
     void refresh(ulong);
+private:
+    Adafruit_MAX31865 tempProbe;
+    const double emergencyShutoffTemp;
+    const double maxBrewTemp;
+    const double minBrewTemp;
+    const double maxSteamTemp;
+    const double minSteamTemp;
+    const double maxOffset;
+    const double minOffset;
+    const int websiteQueueSize;
+    const ulong cycleTime;
+
+    double currentTemp;
+    double tempOffset;
+    double targetTemp;
+    double targetSteamTemp;
+
+    double brew_output;
+    double steam_output;
+    ulong cycleStartTime;
+
+    String outputString;
+    Queue outputQueue;
+    PID brewTempManager;
+    PID steamTempManager;
+
+    void parseQueue(ulong);
 };
 #endif
