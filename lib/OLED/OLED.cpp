@@ -15,7 +15,6 @@ OLED::OLED()
 {}
 
 OLED::~OLED(){
-    delete gcp;
 }
 
 void OLED::start(GCP *brew_machine){
