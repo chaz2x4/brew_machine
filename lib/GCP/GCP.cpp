@@ -1,14 +1,29 @@
 #include "GCP.h"
 
-void GCP::start() {
-	init(targetTemp, targetSteamTemp, tempOffset);
+GCP::GCP()
+: tempProbe(Adafruit_MAX31865(A5))
+, emergencyShutoffTemp(165.0)
+, maxBrewTemp(100.0)
+, minBrewTemp(85.0)
+, maxSteamTemp(160.0)
+, minSteamTemp(40.0)
+, maxOffset(15)
+, minOffset(-15)
+, websiteQueueSize(60)
+, cycleTime(2000)
+, tempOffset(-8)
+, targetTemp(92)
+, targetSteamTemp(150)
+, outputQueue(Queue(websiteQueueSize))
+, brewTempManager(PID(&currentTemp, &brew_output, &targetTemp, 68.4, 44.34, 1.5, P_ON_M, DIRECT))
+, steamTempManager(PID(&currentTemp, &steam_output, &targetSteamTemp, 68.4, 44.34, 1, P_ON_M, DIRECT))    
+{}
+
+GCP::~GCP(){
 }
 
-void GCP::init(double targetTemp, double targetSteamTemp, double offset) {
+void GCP::start() {
 	this->tempProbe.begin(MAX31865_3WIRE);
-	this->setTargetTemp(targetTemp);
-	this->setTargetSteamTemp(targetSteamTemp);
-	this->setTempOffset(offset);
 	this->currentTemp = this->getCurrentTemp();
 
 	pinMode(HEATER_PIN, OUTPUT);

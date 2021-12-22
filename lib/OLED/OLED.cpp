@@ -1,6 +1,24 @@
 #include "OLED.h"
 
-void OLED::start(GCP *brew_machine){
+OLED::OLED()
+: display(Adafruit_SSD1306(128, 32, &Wire))
+, currentMode("brew")
+, timeLastButton(-1)
+, lastTime(-1)
+, downTime(-1)
+, isEditable(false)
+, flash(false)
+, buttonState{HIGH, HIGH, HIGH}
+, lastButtonState{HIGH, HIGH, HIGH}
+, screenTimeout(90000)
+, triggerTime(1000)
+{}
+
+OLED::~OLED(){
+    delete gcp;
+}
+
+void OLED::start(GCP* brew_machine){
     display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
     display.clearDisplay();
     display.dim(true);
@@ -21,7 +39,7 @@ void OLED::eventListener(){
 
     ulong now = millis();
 
-    if(timedout()) { //on any button press immediately turn screen on, but dont do anything else
+    if(checkedIfTimedout()) { //on any button press immediately turn screen on, but dont do anything else
         if((buttonState[0] == LOW && lastButtonState[0] == HIGH) ||
             (buttonState[1] == LOW && lastButtonState[1] == HIGH) ||
             (buttonState[2] == LOW && lastButtonState[2] == HIGH)) {
@@ -63,15 +81,15 @@ void OLED::eventListener(){
             }
         }
         else if(buttonState[2] == HIGH && lastButtonState[2] == LOW) downTime = -1; 
-        if(buttonState[2] == LOW && (now - downTime) >= TRIGGER_TIME) this->isEditable = true;
+        if(buttonState[2] == LOW && (now - downTime) >= triggerTime) this->isEditable = true;
         lastButtonState[2] = buttonState[2];
         display.clearDisplay();
     }
 }
 
-bool OLED::timedout(){
+bool OLED::checkedIfTimedout(){
     ulong now = millis();
-    if((now - timeLastButton) >= SCREEN_TIMEOUT) {
+    if((now - timeLastButton) >= screenTimeout) {
         this->isEditable = false;
         display.clearDisplay();
         display.display();
@@ -82,7 +100,7 @@ bool OLED::timedout(){
 
 void OLED::refresh(){
     this->eventListener();
-    if(timedout()) return;
+    if(checkedIfTimedout()) return;
     display.setTextSize(2);
     display.setTextColor(SSD1306_WHITE);
     display.setCursor(13, 0);

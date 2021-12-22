@@ -1,21 +1,11 @@
-// gcp.h
+// GCP.h
+
 #ifndef _GCP_h
 #define _GCP_h
-/*
-    Heat Theory:
-        1) Turn on machine
-        2) Heat water to brew temperature, or steam temperature if that switch is on
-        3) Turn on lights when at specific temperatures
-    Only input should be steam switch, which moves PID temp to 155 C
-    For now leave pump switch manually on the coffee switch
-
-*/
 
 #include <Adafruit_MAX31865.h>
 #include <EEPROM.h>
 #include <PID_v1.h>
-
-using namespace std;
 
 #define HEATER_PIN 13
 #define STEAM_PIN 27
@@ -57,52 +47,50 @@ struct Queue {
 };
 
 class GCP {
-private:
-    Adafruit_MAX31865 tempProbe = Adafruit_MAX31865(A5);
-
-    void init(double, double, double);
-    void parseQueue(ulong);
-
-    double currentTemp;
-    double tempOffset = -6.0;
-    double targetTemp = 98.0;
-    double targetSteamTemp = 150.0;
-
-    const double emergencyShutoffTemp = 165.0;
-    const double maxBrewTemp = 100.0;
-    const double minBrewTemp = 85.0;
-    const double maxSteamTemp = 160.0;
-    const double minSteamTemp = 140.0;
-    const double maxOffset = 15;
-    const double minOffset = -15;
-    const int websiteQueueSize = 60;
-
-    double brew_output;
-    double steam_output;
-
-    ulong cycleStartTime;
-    const ulong cycleTime = 2000;
-   
-    PID brewTempManager = PID(&currentTemp, &brew_output, &targetTemp, 125, 150, 50, P_ON_M, DIRECT);
-    PID steamTempManager = PID(&currentTemp, &steam_output, &targetSteamTemp, 125, 150, 50, P_ON_M, DIRECT);
-
-    String outputString;
-    Queue outputQueue = Queue(websiteQueueSize);
 public:
+    GCP();
+    ~GCP();
     void start();
     void incrementTemp(String);
     void decrementTemp(String);
     double getTargetTemp();
     double getTargetSteamTemp();
-    double getActualTemp(); //returns real temperature value
-    double getCurrentTemp(); //returns temp value plus offset
+    double getActualTemp();
+    double getCurrentTemp();
     double getTempOffset();
     String getOutput();
     String getTunings(String);
-    void setTargetTemp(double); // Sets temperature to control to (setpoint)
+    void setTargetTemp(double);
     void setTargetSteamTemp(double);
     void setTempOffset(double);
     void setTunings(String, double, double, double);
     void refresh(ulong);
+private:
+    Adafruit_MAX31865 tempProbe;
+    const double emergencyShutoffTemp;
+    const double maxBrewTemp;
+    const double minBrewTemp;
+    const double maxSteamTemp;
+    const double minSteamTemp;
+    const double maxOffset;
+    const double minOffset;
+    const int websiteQueueSize;
+    const ulong cycleTime;
+
+    double currentTemp;
+    double tempOffset;
+    double targetTemp;
+    double targetSteamTemp;
+
+    double brew_output;
+    double steam_output;
+    ulong cycleStartTime;
+
+    String outputString;
+    Queue outputQueue;
+    PID brewTempManager;
+    PID steamTempManager;
+
+    void parseQueue(ulong);
 };
 #endif
