@@ -131,6 +131,7 @@ String GCP::getTunings(String currentMode){
     output +=  ", \"kd\": ";
     output += tempManager->GetKd();
     output += " }";
+	delete tempManager;
     return output;
 }
 

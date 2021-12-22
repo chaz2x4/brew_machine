@@ -15,9 +15,10 @@ OLED::OLED()
 {}
 
 OLED::~OLED(){
+    delete gcp;
 }
 
-void OLED::start(GCP *brew_machine){
+void OLED::start(GCP* brew_machine){
     display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
     display.clearDisplay();
     display.dim(true);
@@ -107,7 +108,7 @@ void OLED::refresh(){
 
     ulong wait;
     ulong now = millis();
-    String modeTitle = "Brew";
+    char* modeTitle = "Brew";
     double targetTemp = gcp->getTargetTemp();
     double currentTemp = gcp->getCurrentTemp();
     if(this->currentMode == "steam") {
