@@ -23,6 +23,8 @@ GCP::~GCP(){
 }
 
 void GCP::start() {
+	loadParameters();
+
 	this->tempProbe.begin(MAX31865_3WIRE);
 	this->currentTemp = this->getCurrentTemp();
 
@@ -39,12 +41,16 @@ void GCP::setTargetTemp(double temp) {
 	if (temp < minBrewTemp) temp = minBrewTemp;
 	else if (temp > maxBrewTemp) temp = maxBrewTemp;
 	this->targetTemp = temp;
+	EEPROM.put(BREW_TEMP_ADDRESS, targetTemp);
+	EEPROM.commit();
 }
 
 void GCP::setTargetSteamTemp(double temp) {
 	if (temp < minSteamTemp) temp = minSteamTemp;
 	else if (temp > maxSteamTemp) temp = maxSteamTemp;
 	this->targetSteamTemp = temp;
+	EEPROM.put(STEAM_TEMP_ADDRESS, targetTemp);
+	EEPROM.commit();
 }
 
 void GCP::incrementTemp(String currentMode) {
@@ -113,6 +119,8 @@ void GCP::setTempOffset(double offset){
 	if(offset > maxOffset) this->tempOffset = maxOffset;
 	else if(offset < minOffset) this->tempOffset = minOffset;
 	else this->tempOffset = offset;
+	EEPROM.put(OFFSET_ADDRESS, tempOffset);
+	EEPROM.commit();
 }
 
 String GCP::getOutput(){
@@ -135,8 +143,21 @@ String GCP::getTunings(String currentMode){
 }
 
 void GCP::setTunings(String currentMode, double kp, double ki, double kd){
-	if(currentMode == "steam") steamTempManager.SetTunings(kp, ki, kd, P_ON_M);
-	else brewTempManager.SetTunings(kp, ki, kd, P_ON_M);
+	PID* tempManager;
+	int tuningAddress;
+	if(currentMode == "steam") {
+		tempManager = &steamTempManager;
+		tuningAddress = STEAM_TUNING_ADDRESS;
+	}
+	else {
+		tempManager = &brewTempManager;
+		tuningAddress = BREW_TUNING_ADDRESS;
+	}
+	tempManager->SetTunings(kp, ki, kd, P_ON_M);
+	EEPROM.put(tuningAddress, kp);
+	EEPROM.put(tuningAddress + 8, ki);
+	EEPROM.put(tuningAddress + 16, kd);
+	EEPROM.commit();
 }
 
 void GCP::parseQueue(ulong time){
@@ -202,4 +223,37 @@ void GCP::refresh(ulong realTime) {
 		digitalWrite(HEATER_PIN, LOW);
 		digitalWrite(STEAM_PIN, LOW);
 	}
+}
+
+void GCP::loadParameters(){
+	double brewTemp, steamTemp, offset;
+	EEPROM.get(BREW_TEMP_ADDRESS, brewTemp);
+	EEPROM.get(STEAM_TEMP_ADDRESS, steamTemp);
+	EEPROM.get(OFFSET_ADDRESS, offset);
+
+	if(brewTemp && !isnan(brewTemp)) targetTemp = brewTemp;
+	if(steamTemp && !isnan(steamTemp)) targetSteamTemp = steamTemp;
+	if(offset && !isnan(offset)) tempOffset = offset;
+
+	double brewTunings[3];
+	bool brewTuningsValid = true;
+	for(int i=0; i<3; i++) {
+		EEPROM.get(BREW_TUNING_ADDRESS + i*8, brewTunings[i]);
+		if(!brewTunings[i] || isnan(brewTunings[i])) {
+			brewTuningsValid = false;
+			break;
+		}
+	}
+	if(brewTuningsValid) brewTempManager.SetTunings(brewTunings[0], brewTunings[1], brewTunings[2]);
+
+	double steamTunings[3];
+	bool steamTuningsValid = true;
+	for(int i=0; i<3; i++) {
+		EEPROM.get(STEAM_TUNING_ADDRESS + i*8, steamTunings[i]);
+		if(!steamTunings[i] || isnan(steamTunings[i])) {
+			steamTuningsValid = false;
+			break;
+		}
+	}
+	if(steamTuningsValid) steamTempManager.SetTunings(steamTunings[0], steamTunings[1], steamTunings[2]);
 }
