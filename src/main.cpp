@@ -109,6 +109,7 @@ void setup() {
 	server.begin();
 	timeClient.begin();
 
+	EEPROM.begin(512);
 	brew_machine.start();
 	screen.start(&brew_machine);
 }

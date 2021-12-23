@@ -11,6 +11,12 @@
 #define STEAM_PIN 27
 #define RREF 430
 
+#define BREW_TEMP_ADDRESS 0
+#define STEAM_TEMP_ADDRESS 8
+#define OFFSET_ADDRESS 16
+#define BREW_TUNING_ADDRESS 24
+#define STEAM_TUNING_ADDRESS 48
+
 struct Queue {
     int front, rear, capacity, count;
     String *queue;
@@ -92,5 +98,6 @@ private:
     PID steamTempManager;
 
     void parseQueue(ulong);
+    void loadParameters();
 };
 #endif
