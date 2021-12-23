@@ -10,7 +10,7 @@ OLED::OLED()
 , flash(false)
 , buttonState{HIGH, HIGH, HIGH}
 , lastButtonState{HIGH, HIGH, HIGH}
-, screenTimeout(90000)
+, screenTimeout(900000)
 , triggerTime(1000)
 {}
 
