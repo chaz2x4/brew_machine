@@ -76,6 +76,16 @@ void setup() {
 		server.send(200, "text/plain", "Success!");
 	});
 
+	server.on("/autotune/brew/cancel", HTTP_GET, []() {
+		brew_machine.cancelAutoTune("brew");
+		server.send(200, "text/plain", "Success!");
+	});
+
+	server.on("/autotune/steam/cancel", HTTP_GET, []() {
+		brew_machine.cancelAutoTune("steam");
+		server.send(200, "text/plain", "Success!");
+	});
+
 	server.on("/increment_target", HTTP_POST, [](){
 		brew_machine.incrementTemp(server.arg(0));
 		server.send(200, "text/plain", "Success!");

@@ -296,3 +296,19 @@ void GCP::autoTune(String mode) {
 	isTuning = true;
 	tuningMode = mode;
 }
+
+void GCP::cancelAutoTune(String mode) {
+	PID_ATune* autoTuner;
+	PID* tempManager;
+	if(mode == "steam") {
+		autoTuner = &steamAutoTuner;
+		tempManager = &steamTempManager;
+	}
+	else {
+		autoTuner = &brewAutoTuner;
+		tempManager = &brewTempManager;
+	}
+	autoTuner->Cancel();
+	isTuning = false;
+	tempManager->SetMode(AUTOMATIC);
+}

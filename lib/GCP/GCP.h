@@ -73,6 +73,7 @@ public:
     void setTunings(String, double, double, double);
     void refresh(ulong);
     void autoTune(String);
+    void cancelAutoTune(String);
 private:
     Adafruit_MAX31865 tempProbe;
     const double emergencyShutoffTemp;
