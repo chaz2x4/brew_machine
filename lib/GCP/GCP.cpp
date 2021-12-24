@@ -6,7 +6,7 @@ GCP::GCP()
 , maxBrewTemp(100.0)
 , minBrewTemp(85.0)
 , maxSteamTemp(160.0)
-, minSteamTemp(40.0)
+, minSteamTemp(140.0)
 , maxOffset(15)
 , minOffset(-15)
 , websiteQueueSize(150)
@@ -28,7 +28,7 @@ GCP::~GCP(){
 }
 
 void GCP::start() {
-	loadParameters();
+	//loadParameters();
 
 	this->tempProbe.begin(MAX31865_3WIRE);
 	this->currentTemp = this->getCurrentTemp();
@@ -107,7 +107,6 @@ double GCP::getActualTemp() {
 		if (fault & MAX31865_FAULT_OVUV) Serial.println("Under/Over voltage");
 		tempProbe.clearFault();
 	}
-	temp += tempOffset;
 	return temp;
 }
 
@@ -235,7 +234,7 @@ void GCP::refresh(ulong realTime) {
 	else digitalWrite(STEAM_PIN, LOW);
 	
 	double actualTemp = this->getActualTemp();
-	if((actualTemp + tempOffset) >= emergencyShutoffTemp) {
+	if(actualTemp >= emergencyShutoffTemp) {
 		digitalWrite(HEATER_PIN, LOW);
 		digitalWrite(STEAM_PIN, LOW);
 	}
