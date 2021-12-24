@@ -130,6 +130,9 @@ void loop() {
 	server.handleClient();
 	timeClient.update();
 
-	brew_machine.refresh(timeClient.getEpochTime());
-	screen.refresh();
+	ulong currentTime = timeClient.getEpochTime();
+	if(currentTime) {
+		brew_machine.refresh(timeClient.getEpochTime());
+		screen.refresh();
+	}
 }
