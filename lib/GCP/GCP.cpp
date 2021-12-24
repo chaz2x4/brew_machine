@@ -9,8 +9,8 @@ GCP::GCP()
 , minSteamTemp(40.0)
 , maxOffset(15)
 , minOffset(-15)
-, websiteQueueSize(120)
-, windowSize(2000)
+, websiteQueueSize(150)
+, windowSize(7500)
 , logInterval(1000)
 , tempOffset(-8)
 , targetTemp(92)
@@ -40,8 +40,8 @@ void GCP::start() {
 	steamTempManager.SetMode(AUTOMATIC);
 	brewTempManager.SetOutputLimits(0, windowSize);
 	steamTempManager.SetOutputLimits(0, windowSize);
-	brewTempManager.SetSampleTime(1000);
-	steamTempManager.SetSampleTime(1000);
+	brewTempManager.SetSampleTime(windowSize);
+	steamTempManager.SetSampleTime(windowSize);
 }
 
 void GCP::setTargetTemp(double temp) {
@@ -283,16 +283,16 @@ void GCP::autoTune(String mode) {
 	PID_ATune* autoTuner;
 	if(mode == "steam") {
 		autoTuner = &steamAutoTuner;
-		steam_output = 100;
+		steam_output = 600;
 	}
 	else {
 		autoTuner = &brewAutoTuner;
-		brew_output = 100;
+		brew_output = 300;
 	}
 	autoTuner->SetControlType(1);
 	autoTuner->SetNoiseBand(1);
-	autoTuner->SetOutputStep(100);
-	autoTuner->SetLookbackSec(20);
+	autoTuner->SetOutputStep(300);
+	autoTuner->SetLookbackSec(30);
 	isTuning = true;
 	tuningMode = mode;
 }
