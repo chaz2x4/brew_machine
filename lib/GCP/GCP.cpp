@@ -213,18 +213,13 @@ void GCP::refresh(ulong realTime) {
 	*/
 
 	ulong now = millis();
-	if(now - logStartTime > logInterval) {
-		parseQueue(realTime);
-		logStartTime += logInterval;
-	}
-
 	if(isTuning) {
-		bool brewTuningComplete = brewAutoTuner.Runtime();
-		bool steamTuningComplete = steamAutoTuner.Runtime();
-		if(brewTuningComplete && steamTuningComplete ){
+		PID_ATune* autoTuner;
+		if(tuningMode == "steam") autoTuner = &steamAutoTuner;
+		else autoTuner = &brewAutoTuner;
+		if(autoTuner->Runtime()){
 			isTuning = false;
-			setTunings("brew", brewAutoTuner.GetKp(), brewAutoTuner.GetKi(), brewAutoTuner.GetKd());
-			setTunings("steam", steamAutoTuner.GetKp(), steamAutoTuner.GetKi(), steamAutoTuner.GetKd());
+			setTunings(tuningMode, autoTuner->GetKp(), autoTuner->GetKi(), autoTuner->GetKd());
 		}
 	}
 	else {
@@ -243,6 +238,11 @@ void GCP::refresh(ulong realTime) {
 	if((actualTemp + tempOffset) >= emergencyShutoffTemp) {
 		digitalWrite(HEATER_PIN, LOW);
 		digitalWrite(STEAM_PIN, LOW);
+	}
+
+	if(now - logStartTime > logInterval) {
+		parseQueue(realTime);
+		logStartTime += logInterval;
 	}
 }
 
@@ -283,10 +283,6 @@ void GCP::autoTune(String mode) {
 	PID_ATune* autoTuner;
 	if(mode == "steam") autoTuner = &steamAutoTuner;
 	else autoTuner = &brewAutoTuner;
-
-	autoTuner->SetNoiseBand(0);
-	autoTuner->SetOutputStep(100);
-	autoTuner->SetLookbackSec(20);
 	isTuning = true;
 	tuningMode = mode;
 }
