@@ -16,8 +16,8 @@ GCP::GCP()
 , targetTemp(92)
 , targetSteamTemp(150)
 , outputQueue(Queue(websiteQueueSize))
-, brewTempManager(PID(&currentTemp, &brew_output, &targetTemp, 68.4, 44.34, 1.5, P_ON_M, DIRECT))
-, steamTempManager(PID(&currentTemp, &steam_output, &targetSteamTemp, 68.4, 44.34, 1, P_ON_M, DIRECT))
+, brewTempManager(PID(&currentTemp, &brew_output, &targetTemp, 200, 10, 1200, P_ON_M, DIRECT))
+, steamTempManager(PID(&currentTemp, &steam_output, &targetSteamTemp, 200, 10, 1200, P_ON_M, DIRECT))
 , brewAutoTuner(PID_ATune(&currentTemp, &brew_output))
 , steamAutoTuner(PID_ATune(&currentTemp, &steam_output))
 , tuningMode("brew")
@@ -283,16 +283,17 @@ void GCP::autoTune(String mode) {
 	PID_ATune* autoTuner;
 	if(mode == "steam") {
 		autoTuner = &steamAutoTuner;
-		steam_output = 600;
+		steam_output = 1200;
+		autoTuner->SetOutputStep(1200);
 	}
 	else {
 		autoTuner = &brewAutoTuner;
-		brew_output = 300;
+		brew_output = 600;
+		autoTuner->SetOutputStep(600);
 	}
 	autoTuner->SetControlType(1);
 	autoTuner->SetNoiseBand(1);
-	autoTuner->SetOutputStep(300);
-	autoTuner->SetLookbackSec(60);
+	autoTuner->SetLookbackSec(45);
 	isTuning = true;
 	tuningMode = mode;
 }
