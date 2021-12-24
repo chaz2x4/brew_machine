@@ -6,6 +6,7 @@
 #include <Adafruit_MAX31865.h>
 #include <EEPROM.h>
 #include <PID_v1.h>
+#include <PID_AutoTune_v0.h>
 
 #define HEATER_PIN 13
 #define STEAM_PIN 27
@@ -71,6 +72,7 @@ public:
     void setTempOffset(double);
     void setTunings(String, double, double, double);
     void refresh(ulong);
+    void autoTune(String);
 private:
     Adafruit_MAX31865 tempProbe;
     const double emergencyShutoffTemp;
@@ -96,6 +98,11 @@ private:
     Queue outputQueue;
     PID brewTempManager;
     PID steamTempManager;
+
+    PID_ATune brewAutoTuner;
+    PID_ATune steamAutoTuner;
+    String tuningMode;
+    bool isTuning;
 
     void parseQueue(ulong);
     void loadParameters();

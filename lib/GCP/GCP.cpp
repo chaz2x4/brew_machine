@@ -16,7 +16,11 @@ GCP::GCP()
 , targetSteamTemp(150)
 , outputQueue(Queue(websiteQueueSize))
 , brewTempManager(PID(&currentTemp, &brew_output, &targetTemp, 68.4, 44.34, 1.5, P_ON_M, DIRECT))
-, steamTempManager(PID(&currentTemp, &steam_output, &targetSteamTemp, 68.4, 44.34, 1, P_ON_M, DIRECT))    
+, steamTempManager(PID(&currentTemp, &steam_output, &targetSteamTemp, 68.4, 44.34, 1, P_ON_M, DIRECT))
+, brewAutoTuner(PID_ATune(&currentTemp, &brew_output))
+, steamAutoTuner(PID_ATune(&currentTemp, &steam_output))
+, tuningMode("brew")
+, isTuning(false)
 {}
 
 GCP::~GCP(){
@@ -35,6 +39,8 @@ void GCP::start() {
 	steamTempManager.SetMode(AUTOMATIC);
 	brewTempManager.SetOutputLimits(0, cycleTime);
 	steamTempManager.SetOutputLimits(0, cycleTime);
+	brewTempManager.SetSampleTime(1000);
+	steamTempManager.SetSampleTime(1000);
 }
 
 void GCP::setTargetTemp(double temp) {
@@ -154,6 +160,7 @@ void GCP::setTunings(String currentMode, double kp, double ki, double kd){
 		tuningAddress = BREW_TUNING_ADDRESS;
 	}
 	tempManager->SetTunings(kp, ki, kd, P_ON_M);
+	tempManager->SetMode(AUTOMATIC);
 	EEPROM.put(tuningAddress, kp);
 	EEPROM.put(tuningAddress + 8, ki);
 	EEPROM.put(tuningAddress + 16, kd);
@@ -208,6 +215,18 @@ void GCP::refresh(ulong realTime) {
 	if(runTime - cycleStartTime > cycleTime) {
 		parseQueue(realTime);
 		cycleStartTime += cycleTime;
+	}
+
+	if(isTuning) {
+		bool brewTuningComplete = brewAutoTuner.Runtime();
+		bool steamTuningComplete = steamAutoTuner.Runtime();
+		if(brewTuningComplete && steamTuningComplete ){
+			isTuning = false;
+			setTunings("brew", brewAutoTuner.GetKp(), brewAutoTuner.GetKi(), brewAutoTuner.GetKd());
+			setTunings("steam", steamAutoTuner.GetKp(), steamAutoTuner.GetKi(), steamAutoTuner.GetKd());
+		}
+	}
+	else {
 		brewTempManager.Compute();
 		steamTempManager.Compute();
 	}
@@ -256,4 +275,16 @@ void GCP::loadParameters(){
 		}
 	}
 	if(steamTuningsValid) steamTempManager.SetTunings(steamTunings[0], steamTunings[1], steamTunings[2]);
+}
+
+void GCP::autoTune(String mode) {
+	PID_ATune* autoTuner;
+	if(mode == "steam") autoTuner = &steamAutoTuner;
+	else autoTuner = &brewAutoTuner;
+
+	autoTuner->SetNoiseBand(0);
+	autoTuner->SetOutputStep(100);
+	autoTuner->SetLookbackSec(20);
+	isTuning = true;
+	tuningMode = mode;
 }
