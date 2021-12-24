@@ -9,8 +9,9 @@ GCP::GCP()
 , minSteamTemp(40.0)
 , maxOffset(15)
 , minOffset(-15)
-, websiteQueueSize(60)
-, cycleTime(2000)
+, websiteQueueSize(120)
+, windowSize(2000)
+, logInterval(1000)
 , tempOffset(-8)
 , targetTemp(92)
 , targetSteamTemp(150)
@@ -37,8 +38,8 @@ void GCP::start() {
 
 	brewTempManager.SetMode(AUTOMATIC);
 	steamTempManager.SetMode(AUTOMATIC);
-	brewTempManager.SetOutputLimits(0, cycleTime);
-	steamTempManager.SetOutputLimits(0, cycleTime);
+	brewTempManager.SetOutputLimits(0, windowSize);
+	steamTempManager.SetOutputLimits(0, windowSize);
 	brewTempManager.SetSampleTime(1000);
 	steamTempManager.SetSampleTime(1000);
 }
@@ -211,10 +212,10 @@ void GCP::refresh(ulong realTime) {
 		If temperature rises above maximum safe temperature turn off relay
 	*/
 
-	ulong runTime = millis();
-	if(runTime - cycleStartTime > cycleTime) {
+	ulong now = millis();
+	if(now - logStartTime > logInterval) {
 		parseQueue(realTime);
-		cycleStartTime += cycleTime;
+		logStartTime += logInterval;
 	}
 
 	if(isTuning) {
@@ -230,11 +231,12 @@ void GCP::refresh(ulong realTime) {
 		brewTempManager.Compute();
 		steamTempManager.Compute();
 	}
-	
-	if(brew_output > runTime - cycleStartTime) digitalWrite(HEATER_PIN, HIGH);
+
+	if(now - windowStartTime > windowSize) windowStartTime += windowSize;
+	if(brew_output > now - windowStartTime) digitalWrite(HEATER_PIN, HIGH);
 	else digitalWrite(HEATER_PIN, LOW);
 
-	if(steam_output > runTime - cycleStartTime) digitalWrite(STEAM_PIN, HIGH);
+	if(steam_output > now - windowStartTime) digitalWrite(STEAM_PIN, HIGH);
 	else digitalWrite(STEAM_PIN, LOW);
 	
 	double actualTemp = this->getActualTemp();

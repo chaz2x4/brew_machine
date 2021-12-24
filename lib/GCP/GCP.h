@@ -83,7 +83,8 @@ private:
     const double maxOffset;
     const double minOffset;
     const int websiteQueueSize;
-    const ulong cycleTime;
+    const ulong windowSize;
+    const ulong logInterval;
 
     double currentTemp;
     double tempOffset;
@@ -92,7 +93,8 @@ private:
 
     double brew_output;
     double steam_output;
-    ulong cycleStartTime;
+    ulong windowStartTime;
+    ulong logStartTime;
 
     String outputString;
     Queue outputQueue;
