@@ -10,7 +10,7 @@ GCP::GCP()
 , maxOffset(15)
 , minOffset(-15)
 , websiteQueueSize(150)
-, windowSize(3000)
+, windowSize(6250)
 , logInterval(1000)
 , tempOffset(-8)
 , targetTemp(92)
@@ -290,7 +290,7 @@ void GCP::autoTune(String mode) {
 		brew_output = 120;
 	}
 	autoTuner->SetControlType(1);
-	autoTuner->SetNoiseBand(0.5);
+	autoTuner->SetNoiseBand(1);
 	autoTuner->SetOutputStep(120);
 	autoTuner->SetLookbackSec(60);
 	isTuning = true;
