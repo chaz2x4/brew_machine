@@ -10,7 +10,7 @@ GCP::GCP()
 , maxOffset(15)
 , minOffset(-15)
 , websiteQueueSize(150)
-, windowSize(6250)
+, windowSize(8000)
 , logInterval(1000)
 , tempOffset(-8)
 , targetTemp(92)
@@ -28,7 +28,7 @@ GCP::~GCP(){
 }
 
 void GCP::start() {
-	//loadParameters();
+	loadParameters();
 
 	this->tempProbe.begin(MAX31865_3WIRE);
 	this->currentTemp = this->getCurrentTemp();
