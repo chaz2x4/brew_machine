@@ -46,7 +46,7 @@ void GCP::setTargetTemp(double temp) {
 	if (temp < minBrewTemp) temp = minBrewTemp;
 	else if (temp > maxBrewTemp) temp = maxBrewTemp;
 	this->targetTemp = temp;
-	EEPROM.put(BREW_TEMP_ADDRESS, targetTemp);
+	EEPROM.put(BREW_TEMP_ADDRESS, temp);
 	EEPROM.commit();
 }
 
@@ -54,7 +54,7 @@ void GCP::setTargetSteamTemp(double temp) {
 	if (temp < minSteamTemp) temp = minSteamTemp;
 	else if (temp > maxSteamTemp) temp = maxSteamTemp;
 	this->targetSteamTemp = temp;
-	EEPROM.put(STEAM_TEMP_ADDRESS, targetTemp);
+	EEPROM.put(STEAM_TEMP_ADDRESS, temp);
 	EEPROM.commit();
 }
 
@@ -229,6 +229,7 @@ void GCP::refresh(ulong realTime) {
 		lastBrewOutput = brew_output;
 		lastSteamOutput = steam_output;
 	}
+
 	if(brew_output > now - windowStartTime) digitalWrite(HEATER_PIN, HIGH);
 	else digitalWrite(HEATER_PIN, LOW);
 
