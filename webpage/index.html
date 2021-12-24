@@ -24,8 +24,9 @@
                     backgroundColor: function (context) {
                         var pointTemp = context.dataset.data[context.dataIndex];
                         var targetTemp = (mode == 'brew') ? brewTarget : steamTarget;
-                        if(pointTemp > (targetTemp + 0.5)) return '#FF6384';
-                        if(pointTemp < (targetTemp - 0.5)) return '#331F2E';
+                        var acceptableError = (mode == 'brew') ? 0.5 : 1.0;
+                        if(pointTemp > (targetTemp + acceptableError)) return '#FF6384';
+                        if(pointTemp < (targetTemp - acceptableError)) return '#331F2E';
                         else return '#63FF8F';
                     },
                     tension: 0.4,
