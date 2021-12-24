@@ -40,8 +40,8 @@ void GCP::start() {
 	steamTempManager.SetMode(AUTOMATIC);
 	brewTempManager.SetOutputLimits(0, windowSize);
 	steamTempManager.SetOutputLimits(0, windowSize);
-	brewTempManager.SetSampleTime(windowSize);
-	steamTempManager.SetSampleTime(windowSize);
+	brewTempManager.SetSampleTime(windowSize / 4);
+	steamTempManager.SetSampleTime(windowSize / 4);
 }
 
 void GCP::setTargetTemp(double temp) {
@@ -174,9 +174,9 @@ void GCP::parseQueue(ulong time){
     outputs += ", \"temperature\": ";
     outputs += this->getCurrentTemp();
     outputs += ", \"outputs\": { \"brew\": ";
-    outputs += this->brew_output;
+    outputs += this->lastBrewOutput;
     outputs += ", \"steam\": ";
-    outputs += this->steam_output;
+    outputs += this->lastSteamOutput;
     outputs += " }}";
 	outputQueue.push(outputs);
 
@@ -224,6 +224,8 @@ void GCP::refresh(ulong realTime) {
 	else {
 		brewTempManager.Compute();
 		steamTempManager.Compute();
+		lastBrewOutput = brew_output;
+		lastSteamOutput = steam_output;
 	}
 
 	if(now - windowStartTime > windowSize) windowStartTime += windowSize;

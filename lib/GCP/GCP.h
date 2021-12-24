@@ -94,6 +94,9 @@ private:
 
     double brew_output;
     double steam_output;
+
+    double lastBrewOutput;
+    double lastSteamOutput;
     ulong windowStartTime;
     ulong logStartTime;
 
