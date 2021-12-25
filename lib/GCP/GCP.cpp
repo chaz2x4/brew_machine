@@ -232,10 +232,10 @@ void GCP::refresh(ulong realTime) {
 		lastSteamOutput = steam_output;
 	}
 
-	if(brew_output > now - windowStartTime) digitalWrite(HEATER_PIN, HIGH);
+	if(round(brew_output) > now - windowStartTime) digitalWrite(HEATER_PIN, HIGH);
 	else digitalWrite(HEATER_PIN, LOW);
 
-	if(steam_output > now - windowStartTime) digitalWrite(STEAM_PIN, HIGH);
+	if(round(steam_output) > now - windowStartTime) digitalWrite(STEAM_PIN, HIGH);
 	else digitalWrite(STEAM_PIN, LOW);
 	
 	double actualTemp = this->getActualTemp();
