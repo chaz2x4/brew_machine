@@ -294,7 +294,7 @@ void GCP::autoTune(String mode) {
 		autoTuner->SetOutputStep(600);
 	}
 	autoTuner->SetControlType(1);
-	autoTuner->SetNoiseBand(1);
+	autoTuner->SetNoiseBand(0.5);
 	autoTuner->SetLookbackSec(45);
 	isTuning = true;
 	tuningMode = mode;
