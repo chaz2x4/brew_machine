@@ -222,6 +222,7 @@ void GCP::refresh(ulong realTime) {
 		}
 	}
 	else {
+		this->getCurrentTemp();
 		brewTempManager.Compute();
 		steamTempManager.Compute();
 	}
