@@ -227,7 +227,7 @@ void GCP::loadParameters(){
 	if(steamTuningsValid) steamTempManager.SetTunings(steamTunings[0], steamTunings[1], steamTunings[2]);
 }
 
-void GCP::autoTune(String mode, WebServer* server) {
+void GCP::autoTune(String mode) {
 	PID_ATune* autoTuner;
 	if(mode == "steam") {
 		autoTuner = &steamAutoTuner;
@@ -244,7 +244,6 @@ void GCP::autoTune(String mode, WebServer* server) {
 	autoTuner->SetLookbackSec(50);
 	isTuning = true;
 	tuningMode = mode;
-	this->server = server;
 }
 
 void GCP::cancelAutoTune(String mode) {
@@ -288,7 +287,6 @@ void GCP::refresh(ulong realTime) {
 			isTuning = false;
 			setTunings(tuningMode, autoTuner->GetKp(), autoTuner->GetKi(), autoTuner->GetKd());
 			String tunings = this->getTunings(tuningMode);
-			server->send(200, "text/json", tunings);
 		}
 	}
 	else {

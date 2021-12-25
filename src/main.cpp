@@ -67,11 +67,12 @@ void setup() {
 	});
 
 	server.on("/autotune/brew", HTTP_GET, []() {
-		brew_machine.autoTune("brew", &server);
+		brew_machine.autoTune("brew");
+		server.send(200, "text/plain", "Success!");
 	});
 
 	server.on("/autotune/steam", HTTP_GET, []() {
-		brew_machine.autoTune("steam", &server);
+		brew_machine.autoTune("steam");
 		server.send(200, "text/plain", "Success!");
 	});
 
