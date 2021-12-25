@@ -31,7 +31,7 @@ void GCP::start() {
 	loadParameters();
 
 	this->tempProbe.begin(MAX31865_3WIRE);
-	this->currentTemp = this->getCurrentTemp();
+	this->getCurrentTemp();
 
 	pinMode(HEATER_PIN, OUTPUT);
 	pinMode(STEAM_PIN, OUTPUT);
@@ -170,7 +170,7 @@ void GCP::parseQueue(ulong time){
     outputs += "{ \"time\": ";
     outputs += time;
     outputs += ", \"temperature\": ";
-    outputs += this->getCurrentTemp();
+    outputs += this->currentTemp;
     outputs += ", \"outputs\": { \"brew\": ";
     outputs += this->lastBrewOutput;
     outputs += ", \"steam\": ";
