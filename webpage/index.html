@@ -24,8 +24,9 @@
                     backgroundColor: function (context) {
                         var pointTemp = context.dataset.data[context.dataIndex];
                         var targetTemp = (mode == 'brew') ? brewTarget : steamTarget;
-                        if(pointTemp > (targetTemp + 0.5)) return '#FF6384';
-                        if(pointTemp < (targetTemp - 0.5)) return '#331F2E';
+                        var acceptableError = (mode == 'brew') ? 0.5 : 1.0;
+                        if(pointTemp > (targetTemp + acceptableError)) return '#FF6384';
+                        if(pointTemp < (targetTemp - acceptableError)) return '#331F2E';
                         else return '#63FF8F';
                     },
                     tension: 0.4,
@@ -178,15 +179,41 @@
                     var ki = document.getElementById("ki");
                     var kd = document.getElementById("kd");
                     var tunings = [mode, kp.value, ki.value, kd.value];
+                    autoTuningButton.classList.add("d-none");
                     callServer.put("/set_tunings", tunings , function(){
                         button.disabled = false;
                         button.innerHTML = "Set Tunings:";
                     })
                 }
-                else {
+                else{
                     button.classList.add('active');
                     button.innerHTML = "Submit";
+                    autoTuningButton = document.getElementById('autotuning_button');
+                    autoTuningButton.classList.remove("d-none");
                     tunings_open = true;
+                }
+            }
+
+            var isAutoTuning = false;
+            function runAutoTune(){
+                var button = this;
+                if(isAutoTuning) {
+                    isAutoTuning = false;
+                    button.innerHTML = "Auto Tune";
+                    tuningButton.innerHTML = "Submit";
+                    tuningButton.disabled = false;
+                    callServer.post("/autotune/" + mode + "/cancel");
+                    refreshTunings();
+                }
+                else {
+                    isAutoTuning = true;
+                    tuningButton.innerHTML = "Tuning...";
+                    tuningButton.disabled = true;
+                    button.innerHTML = "Cancel";
+                    callServer.get("/autotune/" + mode, function(response){
+                        isAutoTuning = false;
+                        refreshTunings();
+                    });
                 }
             }
 
@@ -269,7 +296,10 @@
             document.getElementById("targetminus").onclick = decrementTarget;
             document.getElementById("offsetplus").onclick = incrementOffset;
             document.getElementById("offsetminus").onclick = decrementOffset;
-            document.getElementById("tuning_button").onclick = changeTunings;
+            tuningButton = document.getElementById("tuning_button");
+            autoTuningButton = document.getElementById("autotuning_button");
+            tuningButton.onclick = changeTunings;
+            autoTuningButton.onclick= runAutoTune;
         }
     </script>
 </head>
@@ -277,7 +307,7 @@
     <div class="row p-2" id="chartContainer">
         <canvas id="tempChart"></canvas>
     </div>
-    <div class="row p-2 row-cols-2 row-cols-sm-5 align-items-center" id="tempContainer">
+    <div class="row p-2 row-cols-2 row-cols-sm-4 align-items-center" id="tempContainer">
         <div class="col order-1">
             <button class="btn btn-outline-primary active" id="switch_brew"> Water Temp </button>
         </div>
@@ -301,8 +331,11 @@
     </div>
     <div class="row p-2" id="tunerContainer">
         <p>
-            <button class="btn btn-outline-primary" type="button" id="tuning_button" data-bs-toggle="collapse" data-bs-target="#tunings_tab">
+            <button class="btn btn-outline-secondary" type="button" id="tuning_button" data-bs-toggle="collapse" data-bs-target="#tunings_tab">
                 Set Tunings:
+            </button>
+            <button class="btn btn-outline-secondary d-none" type="button" data-bs-toggle="collapse" data-bs-target="#tunings_tab" id="autotuning_button">
+                Auto Tune
             </button>
         </p>
         <div class="collapse" id="tunings_tab">
@@ -331,8 +364,8 @@
         </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/moment@2.29.1/moment.js" integrity="sha256-8AdWdyRXkrETyAGla9NmgkYVlqw4MOHR6sJJmtFGAYQ=" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.4.1/dist/chart.min.js" integrity="sha256-GMN9UIJeUeOsn/Uq4xDheGItEeSpI5Hcfp/63GclDZk=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js" integrity="sha256-Y26AMvaIfrZ1EQU49pf6H4QzVTrOI8m9wQYKkftBt4s=" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment@1.0.0/dist/chartjs-adapter-moment.min.js" integrity="sha256-sFB24K2xU2EOgWAtb3ySAGjhMqcUvUJGmwjDcTQa04k=" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.min.js" integrity="sha256-XDbijJp72GS2c+Ij234ZNJIyJ1Nv+9+HH1i28JuayMk=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js" integrity="sha256-cMPWkL3FzjuaFSfEYESYmjF25hCIL6mfRSPnW8OVvM4=" crossorigin="anonymous"></script>
 </body>
 </html>

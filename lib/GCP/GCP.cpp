@@ -6,17 +6,22 @@ GCP::GCP()
 , maxBrewTemp(100.0)
 , minBrewTemp(85.0)
 , maxSteamTemp(160.0)
-, minSteamTemp(40.0)
+, minSteamTemp(140.0)
 , maxOffset(15)
 , minOffset(-15)
-, websiteQueueSize(60)
-, cycleTime(2000)
+, websiteQueueSize(150)
+, windowSize(2000)
+, logInterval(1000)
 , tempOffset(-8)
 , targetTemp(92)
 , targetSteamTemp(150)
 , outputQueue(Queue(websiteQueueSize))
-, brewTempManager(PID(&currentTemp, &brew_output, &targetTemp, 68.4, 44.34, 1.5, P_ON_M, DIRECT))
-, steamTempManager(PID(&currentTemp, &steam_output, &targetSteamTemp, 68.4, 44.34, 1, P_ON_M, DIRECT))    
+, brewTempManager(PID(&currentTemp, &brew_output, &targetTemp, 125, 10, 50, P_ON_E, DIRECT))
+, steamTempManager(PID(&currentTemp, &steam_output, &targetSteamTemp, 125, 10, 50, P_ON_E, DIRECT))
+, brewAutoTuner(PID_ATune(&currentTemp, &brew_output))
+, steamAutoTuner(PID_ATune(&currentTemp, &steam_output))
+, tuningMode("brew")
+, isTuning(false)
 {}
 
 GCP::~GCP(){
@@ -26,22 +31,22 @@ void GCP::start() {
 	loadParameters();
 
 	this->tempProbe.begin(MAX31865_3WIRE);
-	this->currentTemp = this->getCurrentTemp();
+	this->getCurrentTemp();
 
 	pinMode(HEATER_PIN, OUTPUT);
 	pinMode(STEAM_PIN, OUTPUT);
 
 	brewTempManager.SetMode(AUTOMATIC);
 	steamTempManager.SetMode(AUTOMATIC);
-	brewTempManager.SetOutputLimits(0, cycleTime);
-	steamTempManager.SetOutputLimits(0, cycleTime);
+	brewTempManager.SetOutputLimits(0, windowSize);
+	steamTempManager.SetOutputLimits(0, windowSize);
 }
 
 void GCP::setTargetTemp(double temp) {
 	if (temp < minBrewTemp) temp = minBrewTemp;
 	else if (temp > maxBrewTemp) temp = maxBrewTemp;
 	this->targetTemp = temp;
-	EEPROM.put(BREW_TEMP_ADDRESS, targetTemp);
+	EEPROM.put(BREW_TEMP_ADDRESS, temp);
 	EEPROM.commit();
 }
 
@@ -49,7 +54,7 @@ void GCP::setTargetSteamTemp(double temp) {
 	if (temp < minSteamTemp) temp = minSteamTemp;
 	else if (temp > maxSteamTemp) temp = maxSteamTemp;
 	this->targetSteamTemp = temp;
-	EEPROM.put(STEAM_TEMP_ADDRESS, targetTemp);
+	EEPROM.put(STEAM_TEMP_ADDRESS, temp);
 	EEPROM.commit();
 }
 
@@ -100,7 +105,6 @@ double GCP::getActualTemp() {
 		if (fault & MAX31865_FAULT_OVUV) Serial.println("Under/Over voltage");
 		tempProbe.clearFault();
 	}
-	temp += tempOffset;
 	return temp;
 }
 
@@ -153,7 +157,8 @@ void GCP::setTunings(String currentMode, double kp, double ki, double kd){
 		tempManager = &brewTempManager;
 		tuningAddress = BREW_TUNING_ADDRESS;
 	}
-	tempManager->SetTunings(kp, ki, kd, P_ON_M);
+	tempManager->SetTunings(kp, ki, kd);
+	tempManager->SetMode(AUTOMATIC);
 	EEPROM.put(tuningAddress, kp);
 	EEPROM.put(tuningAddress + 8, ki);
 	EEPROM.put(tuningAddress + 16, kd);
@@ -165,11 +170,11 @@ void GCP::parseQueue(ulong time){
     outputs += "{ \"time\": ";
     outputs += time;
     outputs += ", \"temperature\": ";
-    outputs += this->getCurrentTemp();
+    outputs += this->currentTemp;
     outputs += ", \"outputs\": { \"brew\": ";
-    outputs += this->brew_output;
+    outputs += this->lastBrewOutput;
     outputs += ", \"steam\": ";
-    outputs += this->steam_output;
+    outputs += this->lastSteamOutput;
     outputs += " }}";
 	outputQueue.push(outputs);
 
@@ -187,42 +192,6 @@ void GCP::parseQueue(ulong time){
 	}
 
 	outputString += "]}";
-}
-
-void GCP::refresh(ulong realTime) {
-	/* 
-		Brew Relay and Steam Relay will always be calculating
-		When power switch is on the heater will heat until it gets to targetBrewtemp
-		Brew Lamp will turn on once the brew relay is off (once target temp is reached)
-
-		If steam switch is pushed then the brew lamp is turned off
-		Power defaults to steam relay, brew relay is off
-		Steam lamp turn on when steam relay is off
-
-		This is all handled on the hardware side.
-
-		If temperature rises above maximum safe temperature turn off relay
-	*/
-
-	ulong runTime = millis();
-	if(runTime - cycleStartTime > cycleTime) {
-		parseQueue(realTime);
-		cycleStartTime += cycleTime;
-		brewTempManager.Compute();
-		steamTempManager.Compute();
-	}
-	
-	if(brew_output > runTime - cycleStartTime) digitalWrite(HEATER_PIN, HIGH);
-	else digitalWrite(HEATER_PIN, LOW);
-
-	if(steam_output > runTime - cycleStartTime) digitalWrite(STEAM_PIN, HIGH);
-	else digitalWrite(STEAM_PIN, LOW);
-	
-	double actualTemp = this->getActualTemp();
-	if((actualTemp + tempOffset) >= emergencyShutoffTemp) {
-		digitalWrite(HEATER_PIN, LOW);
-		digitalWrite(STEAM_PIN, LOW);
-	}
 }
 
 void GCP::loadParameters(){
@@ -256,4 +225,97 @@ void GCP::loadParameters(){
 		}
 	}
 	if(steamTuningsValid) steamTempManager.SetTunings(steamTunings[0], steamTunings[1], steamTunings[2]);
+}
+
+void GCP::autoTune(String mode, WebServer* server) {
+	PID_ATune* autoTuner;
+	if(mode == "steam") {
+		autoTuner = &steamAutoTuner;
+		steam_output = 	300;
+		autoTuner->SetOutputStep(300);
+	}
+	else {
+		autoTuner = &brewAutoTuner;
+		brew_output = 150;
+		autoTuner->SetOutputStep(150);
+	}
+	autoTuner->SetControlType(1);
+	autoTuner->SetNoiseBand(0.5);
+	autoTuner->SetLookbackSec(50);
+	isTuning = true;
+	tuningMode = mode;
+	this->server = server;
+}
+
+void GCP::cancelAutoTune(String mode) {
+	PID_ATune* autoTuner;
+	PID* tempManager;
+	if(mode == "steam") {
+		autoTuner = &steamAutoTuner;
+		tempManager = &steamTempManager;
+	}
+	else {
+		autoTuner = &brewAutoTuner;
+		tempManager = &brewTempManager;
+	}
+	autoTuner->Cancel();
+	isTuning = false;
+	tempManager->SetMode(AUTOMATIC);
+}
+
+void GCP::refresh(ulong realTime) {
+	/* 
+		Brew Relay and Steam Relay will always be calculating
+		When power switch is on the heater will heat until it gets to targetBrewtemp
+		Brew Lamp will turn on once the brew relay is off (once target temp is reached)
+
+		If steam switch is pushed then the brew lamp is turned off
+		Power defaults to steam relay, brew relay is off
+		Steam lamp turn on when steam relay is off
+
+		This is all handled on the hardware side.
+
+		If temperature rises above maximum safe temperature turn off relay
+	*/
+
+	ulong now = millis();
+	this->getCurrentTemp();
+	if(isTuning) {
+		PID_ATune* autoTuner;
+		if(tuningMode == "steam") autoTuner = &steamAutoTuner;
+		else autoTuner = &brewAutoTuner;
+		if(autoTuner->Runtime()){
+			isTuning = false;
+			setTunings(tuningMode, autoTuner->GetKp(), autoTuner->GetKi(), autoTuner->GetKd());
+			String tunings = this->getTunings(tuningMode);
+			server->send(200, "text/json", tunings);
+		}
+	}
+	else {
+		brewTempManager.Compute();
+		steamTempManager.Compute();
+	}
+
+	if(now - windowStartTime > windowSize) {
+		windowStartTime += windowSize;
+		lastBrewOutput = brew_output;
+		lastSteamOutput = steam_output;
+	}
+
+	if(lastBrewOutput > now - windowStartTime) digitalWrite(HEATER_PIN, HIGH);
+	else digitalWrite(HEATER_PIN, LOW);
+
+	if(lastSteamOutput > now - windowStartTime) digitalWrite(STEAM_PIN, HIGH);
+	else digitalWrite(STEAM_PIN, LOW);
+	
+	double actualTemp = this->getActualTemp();
+	if(actualTemp >= emergencyShutoffTemp) {
+		digitalWrite(HEATER_PIN, LOW);
+		digitalWrite(STEAM_PIN, LOW);
+	}
+
+	if(now - logStartTime > logInterval) {
+		parseQueue(realTime);
+		logStartTime += logInterval;
+	}
 }

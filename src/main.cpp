@@ -66,6 +66,25 @@ void setup() {
 		server.send(200, "text/plain", "Success!");
 	});
 
+	server.on("/autotune/brew", HTTP_GET, []() {
+		brew_machine.autoTune("brew", &server);
+	});
+
+	server.on("/autotune/steam", HTTP_GET, []() {
+		brew_machine.autoTune("steam", &server);
+		server.send(200, "text/plain", "Success!");
+	});
+
+	server.on("/autotune/brew/cancel", HTTP_POST, []() {
+		brew_machine.cancelAutoTune("brew");
+		server.send(200, "text/plain", "Success!");
+	});
+
+	server.on("/autotune/steam/cancel", HTTP_POST, []() {
+		brew_machine.cancelAutoTune("steam");
+		server.send(200, "text/plain", "Success!");
+	});
+
 	server.on("/increment_target", HTTP_POST, [](){
 		brew_machine.incrementTemp(server.arg(0));
 		server.send(200, "text/plain", "Success!");
@@ -120,6 +139,9 @@ void loop() {
 	server.handleClient();
 	timeClient.update();
 
-	brew_machine.refresh(timeClient.getEpochTime());
-	screen.refresh();
+	ulong currentTime = timeClient.getEpochTime();
+	if(currentTime) {
+		brew_machine.refresh(timeClient.getEpochTime());
+		screen.refresh();
+	}
 }
