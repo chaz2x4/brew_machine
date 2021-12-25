@@ -40,6 +40,8 @@ void GCP::start() {
 	steamTempManager.SetMode(AUTOMATIC);
 	brewTempManager.SetOutputLimits(0, windowSize);
 	steamTempManager.SetOutputLimits(0, windowSize);
+	brewTempManager.SetSampleTime(windowSize);
+	steamTempManager.SetSampleTime(windowSize);
 }
 
 void GCP::setTargetTemp(double temp) {
