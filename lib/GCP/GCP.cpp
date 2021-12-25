@@ -40,8 +40,6 @@ void GCP::start() {
 	steamTempManager.SetMode(AUTOMATIC);
 	brewTempManager.SetOutputLimits(0, windowSize);
 	steamTempManager.SetOutputLimits(0, windowSize);
-	brewTempManager.SetSampleTime(windowSize);
-	steamTempManager.SetSampleTime(windowSize);
 }
 
 void GCP::setTargetTemp(double temp) {
@@ -232,10 +230,10 @@ void GCP::refresh(ulong realTime) {
 		lastSteamOutput = steam_output;
 	}
 
-	if(round(brew_output) > now - windowStartTime) digitalWrite(HEATER_PIN, HIGH);
+	if(lastBrewOutput > now - windowStartTime) digitalWrite(HEATER_PIN, HIGH);
 	else digitalWrite(HEATER_PIN, LOW);
 
-	if(round(steam_output) > now - windowStartTime) digitalWrite(STEAM_PIN, HIGH);
+	if(lastSteamOutput > now - windowStartTime) digitalWrite(STEAM_PIN, HIGH);
 	else digitalWrite(STEAM_PIN, LOW);
 	
 	double actualTemp = this->getActualTemp();
