@@ -75,12 +75,12 @@ void setup() {
 		server.send(200, "text/plain", "Success!");
 	});
 
-	server.on("/autotune/brew/cancel", HTTP_GET, []() {
+	server.on("/autotune/brew/cancel", HTTP_POST, []() {
 		brew_machine.cancelAutoTune("brew");
 		server.send(200, "text/plain", "Success!");
 	});
 
-	server.on("/autotune/steam/cancel", HTTP_GET, []() {
+	server.on("/autotune/steam/cancel", HTTP_POST, []() {
 		brew_machine.cancelAutoTune("steam");
 		server.send(200, "text/plain", "Success!");
 	});

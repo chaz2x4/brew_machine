@@ -198,10 +198,10 @@
             function runAutoTune(){
                 var button = this;
                 if(isAutoTuning) {
+                    isAutoTuning = false;
                     button.innerHTML = "Auto Tune";
                     tuningButton.innerHTML = "Submit";
                     tuningButton.disabled = false;
-                    isAutoTuning = false;
                     callServer.post("/autotune/" + mode + "/cancel");
                     refreshTunings();
                 }
