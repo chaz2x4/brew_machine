@@ -210,6 +210,7 @@ void GCP::refresh(ulong realTime) {
 	*/
 
 	ulong now = millis();
+	this->getCurrentTemp();
 	if(isTuning) {
 		PID_ATune* autoTuner;
 		if(tuningMode == "steam") autoTuner = &steamAutoTuner;
@@ -222,7 +223,6 @@ void GCP::refresh(ulong realTime) {
 		}
 	}
 	else {
-		this->getCurrentTemp();
 		brewTempManager.Compute();
 		steamTempManager.Compute();
 	}
