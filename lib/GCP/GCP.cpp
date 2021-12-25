@@ -285,13 +285,13 @@ void GCP::autoTune(String mode) {
 	PID_ATune* autoTuner;
 	if(mode == "steam") {
 		autoTuner = &steamAutoTuner;
-		steam_output = 1200;
-		autoTuner->SetOutputStep(1200);
+		steam_output = 800;
+		autoTuner->SetOutputStep(800);
 	}
 	else {
 		autoTuner = &brewAutoTuner;
-		brew_output = 600;
-		autoTuner->SetOutputStep(600);
+		brew_output = 400;
+		autoTuner->SetOutputStep(400);
 	}
 	autoTuner->SetControlType(1);
 	autoTuner->SetNoiseBand(0.5);
