@@ -10,7 +10,7 @@ GCP::GCP()
 , maxOffset(15)
 , minOffset(-15)
 , websiteQueueSize(150)
-, windowSize(8000)
+, windowSize(2000)
 , logInterval(1000)
 , tempOffset(-8)
 , targetTemp(92)
@@ -194,6 +194,75 @@ void GCP::parseQueue(ulong time){
 	outputString += "]}";
 }
 
+void GCP::loadParameters(){
+	double brewTemp, steamTemp, offset;
+	EEPROM.get(BREW_TEMP_ADDRESS, brewTemp);
+	EEPROM.get(STEAM_TEMP_ADDRESS, steamTemp);
+	EEPROM.get(OFFSET_ADDRESS, offset);
+
+	if(brewTemp && !isnan(brewTemp)) targetTemp = brewTemp;
+	if(steamTemp && !isnan(steamTemp)) targetSteamTemp = steamTemp;
+	if(offset && !isnan(offset)) tempOffset = offset;
+
+	double brewTunings[3];
+	bool brewTuningsValid = true;
+	for(int i=0; i<3; i++) {
+		EEPROM.get(BREW_TUNING_ADDRESS + i*8, brewTunings[i]);
+		if(!brewTunings[i] || isnan(brewTunings[i])) {
+			brewTuningsValid = false;
+			break;
+		}
+	}
+	if(brewTuningsValid) brewTempManager.SetTunings(brewTunings[0], brewTunings[1], brewTunings[2]);
+
+	double steamTunings[3];
+	bool steamTuningsValid = true;
+	for(int i=0; i<3; i++) {
+		EEPROM.get(STEAM_TUNING_ADDRESS + i*8, steamTunings[i]);
+		if(!steamTunings[i] || isnan(steamTunings[i])) {
+			steamTuningsValid = false;
+			break;
+		}
+	}
+	if(steamTuningsValid) steamTempManager.SetTunings(steamTunings[0], steamTunings[1], steamTunings[2]);
+}
+
+void GCP::autoTune(String mode, WebServer* server) {
+	PID_ATune* autoTuner;
+	if(mode == "steam") {
+		autoTuner = &steamAutoTuner;
+		steam_output = 	300;
+		autoTuner->SetOutputStep(300);
+	}
+	else {
+		autoTuner = &brewAutoTuner;
+		brew_output = 150;
+		autoTuner->SetOutputStep(150);
+	}
+	autoTuner->SetControlType(1);
+	autoTuner->SetNoiseBand(0.5);
+	autoTuner->SetLookbackSec(50);
+	isTuning = true;
+	tuningMode = mode;
+	this->server = server;
+}
+
+void GCP::cancelAutoTune(String mode) {
+	PID_ATune* autoTuner;
+	PID* tempManager;
+	if(mode == "steam") {
+		autoTuner = &steamAutoTuner;
+		tempManager = &steamTempManager;
+	}
+	else {
+		autoTuner = &brewAutoTuner;
+		tempManager = &brewTempManager;
+	}
+	autoTuner->Cancel();
+	isTuning = false;
+	tempManager->SetMode(AUTOMATIC);
+}
+
 void GCP::refresh(ulong realTime) {
 	/* 
 		Brew Relay and Steam Relay will always be calculating
@@ -249,73 +318,4 @@ void GCP::refresh(ulong realTime) {
 		parseQueue(realTime);
 		logStartTime += logInterval;
 	}
-}
-
-void GCP::loadParameters(){
-	double brewTemp, steamTemp, offset;
-	EEPROM.get(BREW_TEMP_ADDRESS, brewTemp);
-	EEPROM.get(STEAM_TEMP_ADDRESS, steamTemp);
-	EEPROM.get(OFFSET_ADDRESS, offset);
-
-	if(brewTemp && !isnan(brewTemp)) targetTemp = brewTemp;
-	if(steamTemp && !isnan(steamTemp)) targetSteamTemp = steamTemp;
-	if(offset && !isnan(offset)) tempOffset = offset;
-
-	double brewTunings[3];
-	bool brewTuningsValid = true;
-	for(int i=0; i<3; i++) {
-		EEPROM.get(BREW_TUNING_ADDRESS + i*8, brewTunings[i]);
-		if(!brewTunings[i] || isnan(brewTunings[i])) {
-			brewTuningsValid = false;
-			break;
-		}
-	}
-	if(brewTuningsValid) brewTempManager.SetTunings(brewTunings[0], brewTunings[1], brewTunings[2]);
-
-	double steamTunings[3];
-	bool steamTuningsValid = true;
-	for(int i=0; i<3; i++) {
-		EEPROM.get(STEAM_TUNING_ADDRESS + i*8, steamTunings[i]);
-		if(!steamTunings[i] || isnan(steamTunings[i])) {
-			steamTuningsValid = false;
-			break;
-		}
-	}
-	if(steamTuningsValid) steamTempManager.SetTunings(steamTunings[0], steamTunings[1], steamTunings[2]);
-}
-
-void GCP::autoTune(String mode, WebServer* server) {
-	PID_ATune* autoTuner;
-	if(mode == "steam") {
-		autoTuner = &steamAutoTuner;
-		steam_output = 	1600;
-		autoTuner->SetOutputStep(1600);
-	}
-	else {
-		autoTuner = &brewAutoTuner;
-		brew_output = 800;
-		autoTuner->SetOutputStep(800);
-	}
-	autoTuner->SetControlType(1);
-	autoTuner->SetNoiseBand(0.5);
-	autoTuner->SetLookbackSec(50);
-	isTuning = true;
-	tuningMode = mode;
-	this->server = server;
-}
-
-void GCP::cancelAutoTune(String mode) {
-	PID_ATune* autoTuner;
-	PID* tempManager;
-	if(mode == "steam") {
-		autoTuner = &steamAutoTuner;
-		tempManager = &steamTempManager;
-	}
-	else {
-		autoTuner = &brewAutoTuner;
-		tempManager = &brewTempManager;
-	}
-	autoTuner->Cancel();
-	isTuning = false;
-	tempManager->SetMode(AUTOMATIC);
 }
