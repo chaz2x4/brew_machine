@@ -16,8 +16,8 @@ GCP::GCP()
 , targetTemp(92)
 , targetSteamTemp(150)
 , outputQueue(Queue(websiteQueueSize))
-, brewTempManager(PID(&currentTemp, &brew_output, &targetTemp, 200, 10, 1200, P_ON_M, DIRECT))
-, steamTempManager(PID(&currentTemp, &steam_output, &targetSteamTemp, 200, 10, 1200, P_ON_M, DIRECT))
+, brewTempManager(PID(&currentTemp, &brew_output, &targetTemp, 200, 10, 1200, P_ON_E, DIRECT))
+, steamTempManager(PID(&currentTemp, &steam_output, &targetSteamTemp, 200, 10, 1200, P_ON_E, DIRECT))
 , brewAutoTuner(PID_ATune(&currentTemp, &brew_output))
 , steamAutoTuner(PID_ATune(&currentTemp, &steam_output))
 , tuningMode("brew")
@@ -157,7 +157,7 @@ void GCP::setTunings(String currentMode, double kp, double ki, double kd){
 		tempManager = &brewTempManager;
 		tuningAddress = BREW_TUNING_ADDRESS;
 	}
-	tempManager->SetTunings(kp, ki, kd, P_ON_M);
+	tempManager->SetTunings(kp, ki, kd);
 	tempManager->SetMode(AUTOMATIC);
 	EEPROM.put(tuningAddress, kp);
 	EEPROM.put(tuningAddress + 8, ki);
