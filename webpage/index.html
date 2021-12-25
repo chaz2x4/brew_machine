@@ -179,15 +179,41 @@
                     var ki = document.getElementById("ki");
                     var kd = document.getElementById("kd");
                     var tunings = [mode, kp.value, ki.value, kd.value];
+                    autoTuningButton.classList.add("d-none");
                     callServer.put("/set_tunings", tunings , function(){
                         button.disabled = false;
                         button.innerHTML = "Set Tunings:";
                     })
                 }
-                else {
+                else{
                     button.classList.add('active');
                     button.innerHTML = "Submit";
+                    autoTuningButton = document.getElementById('autotuning_button');
+                    autoTuningButton.classList.remove("d-none");
                     tunings_open = true;
+                }
+            }
+
+            var isAutoTuning = false;
+            function runAutoTune(){
+                var button = this;
+                if(isAutoTuning) {
+                    button.innerHTML = "Auto Tune";
+                    tuningButton.innerHTML = "Submit";
+                    tuningButton.disabled = false;
+                    isAutoTuning = false;
+                    callServer.post("/autotune/" + mode + "/cancel");
+                    refreshTunings();
+                }
+                else {
+                    isAutoTuning = true;
+                    tuningButton.innerHTML = "Tuning...";
+                    tuningButton.disabled = true;
+                    button.innerHTML = "Cancel";
+                    callServer.get("/autotune/" + mode, function(response){
+                        isAutoTuning = false;
+                        refreshTunings();
+                    });
                 }
             }
 
@@ -270,7 +296,10 @@
             document.getElementById("targetminus").onclick = decrementTarget;
             document.getElementById("offsetplus").onclick = incrementOffset;
             document.getElementById("offsetminus").onclick = decrementOffset;
-            document.getElementById("tuning_button").onclick = changeTunings;
+            tuningButton = document.getElementById("tuning_button");
+            autoTuningButton = document.getElementById("autotuning_button");
+            tuningButton.onclick = changeTunings;
+            autoTuningButton.onclick= runAutoTune;
         }
     </script>
 </head>
@@ -304,6 +333,9 @@
         <p>
             <button class="btn btn-outline-primary" type="button" id="tuning_button" data-bs-toggle="collapse" data-bs-target="#tunings_tab">
                 Set Tunings:
+            </button>
+            <button class="btn btn-outline-secondary d-none" type="button" data-bs-toggle="collapse" data-bs-target="#tunings_tab" id="autotuning_button">
+                Auto Tune
             </button>
         </p>
         <div class="collapse" id="tunings_tab">

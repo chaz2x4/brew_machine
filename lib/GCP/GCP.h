@@ -5,6 +5,7 @@
 
 #include <Adafruit_MAX31865.h>
 #include <EEPROM.h>
+#include <WebServer.h>
 #include <PID_v1.h>
 #include <PID_AutoTune_v0.h>
 
@@ -72,7 +73,7 @@ public:
     void setTempOffset(double);
     void setTunings(String, double, double, double);
     void refresh(ulong);
-    void autoTune(String);
+    void autoTune(String, WebServer*);
     void cancelAutoTune(String);
 private:
     Adafruit_MAX31865 tempProbe;
@@ -109,6 +110,7 @@ private:
     PID_ATune steamAutoTuner;
     String tuningMode;
     bool isTuning;
+    WebServer* server;
 
     void parseQueue(ulong);
     void loadParameters();
