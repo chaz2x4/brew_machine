@@ -10,7 +10,7 @@ GCP::GCP()
 , maxOffset(15)
 , minOffset(-15)
 , websiteQueueSize(150)
-, windowSize(2000)
+, windowSize(8000)
 , logInterval(1000)
 , tempOffset(-8)
 , targetTemp(92)
@@ -285,13 +285,13 @@ void GCP::autoTune(String mode) {
 	PID_ATune* autoTuner;
 	if(mode == "steam") {
 		autoTuner = &steamAutoTuner;
-		steam_output = 400;
-		autoTuner->SetOutputStep(400);
+		steam_output = 	1600;
+		autoTuner->SetOutputStep(1600);
 	}
 	else {
 		autoTuner = &brewAutoTuner;
-		brew_output = 200;
-		autoTuner->SetOutputStep(200);
+		brew_output = 800;
+		autoTuner->SetOutputStep(800);
 	}
 	autoTuner->SetControlType(1);
 	autoTuner->SetNoiseBand(0.5);
