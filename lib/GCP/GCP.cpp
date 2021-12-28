@@ -216,11 +216,11 @@ void GCP::loadParameters(){
 }
 
 void GCP::autoTune() {
-	brew_output = 75;
-	autoTuner.SetOutputStep(75);
+	brew_output = 64;
+	autoTuner.SetOutputStep(64);
 	autoTuner.SetControlType(1);
-	autoTuner.SetNoiseBand(0.5);
-	autoTuner.SetLookbackSec(50);
+	autoTuner.SetNoiseBand(0.25);
+	autoTuner.SetLookbackSec(25);
 	isTuned = false;
 }
 
