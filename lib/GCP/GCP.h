@@ -82,10 +82,10 @@ private:
     const double minSteamTemp;
     const double maxOffset;
     const double minOffset;
-    const uint8_t websiteQueueSize;
+    const int websiteQueueSize;
     const ulong windowSize;
     const ulong logInterval;
-    const uint8_t powerFrequency;
+    const int powerFrequency;
 
     double currentTemp;
     double tempOffset;
@@ -94,8 +94,8 @@ private:
 
     double brew_output;
     double steam_output;
-    uint8_t lastBrewOutput;
-    uint8_t lastSteamOutput;
+    int lastBrewOutput;
+    int lastSteamOutput;
 
     ulong windowStartTime;
     ulong logStartTime;
@@ -112,7 +112,7 @@ private:
     PID_ATune autoTuner;
     bool isTuned;
 
-    uint8_t regulateOutput(double);
+    int regulateOutput(double);
     void parseQueue(ulong);
     void loadParameters();
 };
