@@ -12,6 +12,7 @@ GCP::GCP()
 , websiteQueueSize(150)
 , windowSize(2000)
 , logInterval(1000)
+, powerFrequency(60)
 , tempOffset(-8)
 , targetTemp(92)
 , targetSteamTemp(150)
@@ -230,6 +231,13 @@ void GCP::cancelAutoTune() {
 	isTuned = true;
 }
 
+uint8_t GCP::regulateOutput(double output) {
+	int roundedOutput = uint8_t(output);
+	int remainder = roundedOutput % powerFrequency;
+	if(remainder == 0) return roundedOutput;
+	return roundedOutput + powerFrequency - remainder;
+}
+
 void GCP::refresh(ulong realTime) {
 	/* 
 		Brew Relay and Steam Relay will always be calculating
@@ -260,8 +268,8 @@ void GCP::refresh(ulong realTime) {
 
 	if(now - windowStartTime > windowSize) {
 		windowStartTime += windowSize;
-		lastBrewOutput = brew_output;
-		lastSteamOutput = steam_output;
+		lastBrewOutput = regulateOutput(brew_output);
+		lastSteamOutput = regulateOutput(steam_output);
 	}
 
 	if(lastBrewOutput > now - windowStartTime) digitalWrite(HEATER_PIN, HIGH);
