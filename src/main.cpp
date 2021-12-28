@@ -12,6 +12,10 @@ void setup() {
 	//Primary Mission: start coffee machine
 	Serial.begin(115200);
 
+	EEPROM.begin(512);
+	brew_machine.start();
+	screen.start(&brew_machine);
+
 	WiFi.mode(WIFI_STA);
 	WiFi.begin(SECRET_SSID, SECRET_PASSWORD);
 	  while (WiFi.status() != WL_CONNECTED) {
@@ -107,10 +111,6 @@ void setup() {
 	ArduinoOTA.begin();
 	server.begin();
 	timeClient.begin();
-
-	EEPROM.begin(512);
-	brew_machine.start();
-	screen.start(&brew_machine);
 }
 
 // the loop function runs over and over again until power down or reset
