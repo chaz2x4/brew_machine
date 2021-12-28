@@ -18,9 +18,7 @@ void setup() {
 
 	WiFi.mode(WIFI_STA);
 	WiFi.begin(SECRET_SSID, SECRET_PASSWORD);
-	  while (WiFi.status() != WL_CONNECTED) {
-		Serial.print(".");
-	}
+	while (WiFi.status() != WL_CONNECTED) {}
 	Serial.print("IP Address: ");
 	Serial.print(WiFi.localIP());
 	Serial.println("");
