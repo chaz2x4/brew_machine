@@ -233,7 +233,7 @@ void GCP::cancelAutoTune() {
 
 uint8_t GCP::regulateOutput(double output) {
 	int roundedOutput = uint8_t(output);
-	int powerPeriod = 1/powerFrequency;
+	int powerPeriod = uint8_t(1000/powerFrequency);
 	int remainder = roundedOutput % powerPeriod;
 	if(remainder == 0) return roundedOutput;
 	return roundedOutput + powerPeriod - remainder;
