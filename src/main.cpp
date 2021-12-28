@@ -34,55 +34,34 @@ void setup() {
 		server.send(200, "text/json", brew_machine.getOutput());
 	});
 
-	server.on("/get_tunings/brew", HTTP_GET, [](){
-		server.send(200, "text/json", brew_machine.getTunings("brew"));
-	});
-
-	server.on("/get_tunings/steam", HTTP_GET, [](){
-		server.send(200, "text/json", brew_machine.getTunings("steam"));
+	server.on("/get_tunings", HTTP_GET, [](){
+		server.send(200, "text/json", brew_machine.getTunings());
 	});
 
 	server.on("/set_tunings", HTTP_PUT, [](){
 		double tunings[3];
 		String params = server.arg(0);
-		String mode = "";
 		int stringIndex = params.indexOf(",");
-		int arrayIndex = -1;
+		int arrayIndex = 0;
 		while(stringIndex > 0) {
 			String substr = params.substring(0, stringIndex);
 			params = params.substring(stringIndex + 1);
 			stringIndex = params.indexOf(",");
-			if(arrayIndex == -1) {
-				mode = substr;
-			}
-			else {
-				double result = substr.toDouble();
-				tunings[arrayIndex] = result;
-			}
+			tunings[arrayIndex] = substr.toDouble();
 			arrayIndex++;
 		}
 		tunings[arrayIndex] = params.toDouble();
-		brew_machine.setTunings(mode, tunings[0], tunings[1], tunings[2]);
+		brew_machine.setTunings(tunings[0], tunings[1], tunings[2]);
 		server.send(200, "text/plain", "Success!");
 	});
 
-	server.on("/autotune/brew", HTTP_GET, []() {
-		brew_machine.autoTune("brew");
+	server.on("/autotune", HTTP_POST, []() {
+		brew_machine.autoTune();
 		server.send(200, "text/plain", "Success!");
 	});
 
-	server.on("/autotune/steam", HTTP_GET, []() {
-		brew_machine.autoTune("steam");
-		server.send(200, "text/plain", "Success!");
-	});
-
-	server.on("/autotune/brew/cancel", HTTP_POST, []() {
-		brew_machine.cancelAutoTune("brew");
-		server.send(200, "text/plain", "Success!");
-	});
-
-	server.on("/autotune/steam/cancel", HTTP_POST, []() {
-		brew_machine.cancelAutoTune("steam");
+	server.on("/autotune/cancel", HTTP_POST, []() {
+		brew_machine.cancelAutoTune();
 		server.send(200, "text/plain", "Success!");
 	});
 

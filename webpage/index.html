@@ -178,7 +178,7 @@
                     var kp = document.getElementById("kp");
                     var ki = document.getElementById("ki");
                     var kd = document.getElementById("kd");
-                    var tunings = [mode, kp.value, ki.value, kd.value];
+                    var tunings = [kp.value, ki.value, kd.value];
                     autoTuningButton.classList.add("d-none");
                     callServer.put("/set_tunings", tunings , function(){
                         button.disabled = false;
@@ -202,7 +202,7 @@
                     button.innerHTML = "Auto Tune";
                     tuningButton.innerHTML = "Submit";
                     tuningButton.disabled = false;
-                    callServer.post("/autotune/" + mode + "/cancel");
+                    callServer.post("/autotune/cancel");
                     refreshTunings();
                 }
                 else {
@@ -210,7 +210,7 @@
                     tuningButton.innerHTML = "Tuning...";
                     tuningButton.disabled = true;
                     button.innerHTML = "Cancel";
-                    callServer.get("/autotune/" + mode, function(response){
+                    callServer.post("/autotune", function(response){
                         isAutoTuning = false;
                         refreshTunings();
                     });
@@ -282,7 +282,7 @@
             })();
 
             function refreshTunings() {
-                callServer.get("/get_tunings/" + mode, function(response){
+                callServer.get("/get_tunings", function(response){
                     Object.entries(response).forEach(entry => {
                         const [name, value] = entry;
                         var input = document.getElementById(name);
