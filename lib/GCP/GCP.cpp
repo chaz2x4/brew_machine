@@ -214,8 +214,8 @@ void GCP::loadParameters(){
 }
 
 void GCP::autoTune() {
-	brew_output = 150;
-	autoTuner.SetOutputStep(150);
+	brew_output = 75;
+	autoTuner.SetOutputStep(75);
 	autoTuner.SetControlType(1);
 	autoTuner.SetNoiseBand(0.5);
 	autoTuner.SetLookbackSec(50);
