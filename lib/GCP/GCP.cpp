@@ -22,7 +22,7 @@ GCP::GCP()
 , brewTempManager(PID(&currentTemp, &brew_output, &targetTemp, Kp, Ki, Kd, P_ON_E, DIRECT))
 , steamTempManager(PID(&currentTemp, &steam_output, &targetSteamTemp, Kp, Ki, Kd, P_ON_E, DIRECT))
 , autoTuner(PID_ATune(&currentTemp, &brew_output))
-, isTuning(false)
+, isTuned(true)
 {}
 
 GCP::~GCP(){
@@ -133,6 +133,7 @@ String GCP::getOutput(){
 }
 
 String GCP::getTunings(){
+	if(!isTuned) return "false";
 	String output;
     output += "{ \"kp\": ";
     output += Kp;
@@ -219,14 +220,14 @@ void GCP::autoTune() {
 	autoTuner.SetControlType(1);
 	autoTuner.SetNoiseBand(0.5);
 	autoTuner.SetLookbackSec(50);
-	isTuning = true;
+	isTuned = false;
 }
 
 void GCP::cancelAutoTune() {
 	autoTuner.Cancel();
 	brewTempManager.SetMode(AUTOMATIC);
 	steamTempManager.SetMode(AUTOMATIC);
-	isTuning = false;
+	isTuned = true;
 }
 
 void GCP::refresh(ulong realTime) {
@@ -246,9 +247,9 @@ void GCP::refresh(ulong realTime) {
 
 	ulong now = millis();
 	this->getCurrentTemp();
-	if(isTuning) {
+	if(!isTuned) {
 		if(autoTuner.Runtime()){
-			isTuning = false;
+			isTuned = true;
 			setTunings(autoTuner.GetKp(), autoTuner.GetKi(), autoTuner.GetKd());
 		}
 	}

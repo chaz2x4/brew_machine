@@ -186,34 +186,32 @@
                     })
                 }
                 else{
-                    button.classList.add('active');
-                    button.innerHTML = "Submit";
-                    autoTuningButton = document.getElementById('autotuning_button');
-                    autoTuningButton.classList.remove("d-none");
+                    changeTuningButtons();
                     tunings_open = true;
                 }
             }
 
-            var isAutoTuning = false;
-            function runAutoTune(){
-                var button = this;
-                if(isAutoTuning) {
-                    isAutoTuning = false;
-                    button.innerHTML = "Auto Tune";
+            var isTuned = true;
+            function changeAutoTune(){
+                if(isTuned) callServer.post("/autotune");
+                else callServer.post("/autotune/cancel");
+                isTuned = !isTuned;
+                changeTuningButtons();
+                refreshTunings();
+            }
+            
+            function changeTuningButtons() {
+                if(isTuned) {
+                    tuningButton.classList.add('active');
                     tuningButton.innerHTML = "Submit";
                     tuningButton.disabled = false;
-                    callServer.post("/autotune/cancel");
-                    refreshTunings();
-                }
-                else {
-                    isAutoTuning = true;
+                    autoTuningButton.innerHTML = "Auto Tune";
+                    autoTuningButton.classList.remove("d-none");
+                } else {
                     tuningButton.innerHTML = "Tuning...";
                     tuningButton.disabled = true;
-                    button.innerHTML = "Cancel";
-                    callServer.post("/autotune", function(response){
-                        isAutoTuning = false;
-                        refreshTunings();
-                    });
+                    autoTuningButton.innerHTML = "Cancel";
+                    autoTuningButton.classList.remove("d-none");
                 }
             }
 
@@ -283,11 +281,18 @@
 
             function refreshTunings() {
                 callServer.get("/get_tunings", function(response){
-                    Object.entries(response).forEach(entry => {
-                        const [name, value] = entry;
-                        var input = document.getElementById(name);
-                        input.value = value;
-                    });
+                    if(response) {                        
+                        Object.entries(response).forEach(entry => {
+                            const [name, value] = entry;
+                            var input = document.getElementById(name);
+                            input.value = value;
+                        });
+                        isTuned = true;
+                    }
+                    else {
+                        isTuned = false;
+                        changeTuningButtons();
+                    }
                 });
             }
 
@@ -299,7 +304,7 @@
             tuningButton = document.getElementById("tuning_button");
             autoTuningButton = document.getElementById("autotuning_button");
             tuningButton.onclick = changeTunings;
-            autoTuningButton.onclick= runAutoTune;
+            autoTuningButton.onclick= changeAutoTune;
         }
     </script>
 </head>

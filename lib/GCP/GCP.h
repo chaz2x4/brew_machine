@@ -109,7 +109,7 @@ private:
     PID steamTempManager;
 
     PID_ATune autoTuner;
-    bool isTuning;
+    bool isTuned;
 
     void parseQueue(ulong);
     void loadParameters();
