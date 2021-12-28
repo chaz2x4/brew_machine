@@ -233,9 +233,10 @@ void GCP::cancelAutoTune() {
 
 uint8_t GCP::regulateOutput(double output) {
 	int roundedOutput = uint8_t(output);
-	int remainder = roundedOutput % powerFrequency;
+	int powerPeriod = 1/powerFrequency;
+	int remainder = roundedOutput % powerPeriod;
 	if(remainder == 0) return roundedOutput;
-	return roundedOutput + powerFrequency - remainder;
+	return roundedOutput + powerPeriod - remainder;
 }
 
 void GCP::refresh(ulong realTime) {
