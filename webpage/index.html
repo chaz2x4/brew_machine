@@ -175,6 +175,7 @@
                     button.innerHTML = "Setting Tunings...";
                     button.disabled = true;
                     tunings_open = false;
+                    isTuned = false;
                     var kp = document.getElementById("kp");
                     var ki = document.getElementById("ki");
                     var kd = document.getElementById("kd");
@@ -183,6 +184,7 @@
                     callServer.put("/set_tunings", tunings , function(){
                         button.disabled = false;
                         button.innerHTML = "Set Tunings:";
+                        isTuned = true;
                     })
                 }
                 else{
