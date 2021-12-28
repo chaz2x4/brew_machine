@@ -20,8 +20,8 @@ GCP::GCP()
 , Ki(10)
 , Kd(50)
 , outputQueue(Queue(websiteQueueSize))
-, brewTempManager(PID(&currentTemp, &brew_output, &targetTemp, Kp, Ki, Kd, P_ON_E, DIRECT))
-, steamTempManager(PID(&currentTemp, &steam_output, &targetSteamTemp, Kp, Ki, Kd, P_ON_E, DIRECT))
+, brewTempManager(PID(&currentTemp, &brew_output, &targetTemp, Kp, Ki, Kd, P_ON_M, DIRECT))
+, steamTempManager(PID(&currentTemp, &steam_output, &targetSteamTemp, Kp, Ki, Kd, P_ON_M, DIRECT))
 , autoTuner(PID_ATune(&currentTemp, &brew_output))
 , isTuned(true)
 {}
@@ -152,10 +152,10 @@ void GCP::setTunings(double kp, double ki, double kd){
 	this->Ki = ki;
 	this->Kd = kd;
 
-	brewTempManager.SetTunings(kp, ki, kd);
+	brewTempManager.SetTunings(kp, ki, kd, P_ON_M);
 	brewTempManager.SetMode(AUTOMATIC);
 
-	steamTempManager.SetTunings(kp, ki, kd);
+	steamTempManager.SetTunings(kp, ki, kd, P_ON_M);
 	steamTempManager.SetMode(AUTOMATIC);
 	
 	EEPROM.put(tuningAddress, kp);
