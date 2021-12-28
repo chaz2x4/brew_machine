@@ -5,7 +5,6 @@
 
 #include <Adafruit_MAX31865.h>
 #include <EEPROM.h>
-#include <WebServer.h>
 #include <PID_v1.h>
 #include <PID_AutoTune_v0.h>
 
@@ -16,8 +15,7 @@
 #define BREW_TEMP_ADDRESS 0
 #define STEAM_TEMP_ADDRESS 8
 #define OFFSET_ADDRESS 16
-#define BREW_TUNING_ADDRESS 24
-#define STEAM_TUNING_ADDRESS 48
+#define TUNING_ADDRESS 24
 
 struct Queue {
     int front, rear, capacity, count;
@@ -67,14 +65,14 @@ public:
     double getCurrentTemp();
     double getTempOffset();
     String getOutput();
-    String getTunings(String);
+    String getTunings();
     void setTargetTemp(double);
     void setTargetSteamTemp(double);
     void setTempOffset(double);
-    void setTunings(String, double, double, double);
+    void setTunings(double, double, double);
     void refresh(ulong);
-    void autoTune(String, WebServer*);
-    void cancelAutoTune(String);
+    void autoTune();
+    void cancelAutoTune();
 private:
     Adafruit_MAX31865 tempProbe;
     const double emergencyShutoffTemp;
@@ -101,16 +99,17 @@ private:
     ulong windowStartTime;
     ulong logStartTime;
 
+    double Kp;
+    double Ki;
+    double Kd;
+
     String outputString;
     Queue outputQueue;
     PID brewTempManager;
     PID steamTempManager;
 
-    PID_ATune brewAutoTuner;
-    PID_ATune steamAutoTuner;
-    String tuningMode;
-    bool isTuning;
-    WebServer* server;
+    PID_ATune autoTuner;
+    bool isTuned;
 
     void parseQueue(ulong);
     void loadParameters();

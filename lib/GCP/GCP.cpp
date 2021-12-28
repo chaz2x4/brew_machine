@@ -15,13 +15,14 @@ GCP::GCP()
 , tempOffset(-8)
 , targetTemp(92)
 , targetSteamTemp(150)
+, Kp(130)
+, Ki(10)
+, Kd(50)
 , outputQueue(Queue(websiteQueueSize))
-, brewTempManager(PID(&currentTemp, &brew_output, &targetTemp, 125, 10, 50, P_ON_E, DIRECT))
-, steamTempManager(PID(&currentTemp, &steam_output, &targetSteamTemp, 125, 10, 50, P_ON_E, DIRECT))
-, brewAutoTuner(PID_ATune(&currentTemp, &brew_output))
-, steamAutoTuner(PID_ATune(&currentTemp, &steam_output))
-, tuningMode("brew")
-, isTuning(false)
+, brewTempManager(PID(&currentTemp, &brew_output, &targetTemp, Kp, Ki, Kd, P_ON_E, DIRECT))
+, steamTempManager(PID(&currentTemp, &steam_output, &targetSteamTemp, Kp, Ki, Kd, P_ON_E, DIRECT))
+, autoTuner(PID_ATune(&currentTemp, &brew_output))
+, isTuned(true)
 {}
 
 GCP::~GCP(){
@@ -131,34 +132,31 @@ String GCP::getOutput(){
 	return this->outputString;
 }
 
-String GCP::getTunings(String currentMode){
+String GCP::getTunings(){
+	if(!isTuned) return "false";
 	String output;
-	PID *tempManager;
-	if(currentMode == "steam") tempManager = &steamTempManager;
-	else tempManager = &brewTempManager;
     output += "{ \"kp\": ";
-    output += tempManager->GetKp();
+    output += Kp;
     output += ", \"ki\": ";
-    output += tempManager->GetKi();
+    output += Ki;
     output +=  ", \"kd\": ";
-    output += tempManager->GetKd();
+    output += Kd;
     output += " }";
     return output;
 }
 
-void GCP::setTunings(String currentMode, double kp, double ki, double kd){
-	PID* tempManager;
-	int tuningAddress;
-	if(currentMode == "steam") {
-		tempManager = &steamTempManager;
-		tuningAddress = STEAM_TUNING_ADDRESS;
-	}
-	else {
-		tempManager = &brewTempManager;
-		tuningAddress = BREW_TUNING_ADDRESS;
-	}
-	tempManager->SetTunings(kp, ki, kd);
-	tempManager->SetMode(AUTOMATIC);
+void GCP::setTunings(double kp, double ki, double kd){
+	int tuningAddress = TUNING_ADDRESS;
+	this->Kp = kp;
+	this->Ki = ki;
+	this->Kd = kd;
+
+	brewTempManager.SetTunings(kp, ki, kd);
+	brewTempManager.SetMode(AUTOMATIC);
+
+	steamTempManager.SetTunings(kp, ki, kd);
+	steamTempManager.SetMode(AUTOMATIC);
+	
 	EEPROM.put(tuningAddress, kp);
 	EEPROM.put(tuningAddress + 8, ki);
 	EEPROM.put(tuningAddress + 16, kd);
@@ -204,63 +202,32 @@ void GCP::loadParameters(){
 	if(steamTemp && !isnan(steamTemp)) targetSteamTemp = steamTemp;
 	if(offset && !isnan(offset)) tempOffset = offset;
 
-	double brewTunings[3];
-	bool brewTuningsValid = true;
+	double tunings[3];
+	bool tuningsValid = true;
 	for(int i=0; i<3; i++) {
-		EEPROM.get(BREW_TUNING_ADDRESS + i*8, brewTunings[i]);
-		if(!brewTunings[i] || isnan(brewTunings[i])) {
-			brewTuningsValid = false;
+		EEPROM.get(TUNING_ADDRESS + i*8, tunings[i]);
+		if(!tunings[i] || isnan(tunings[i])) {
+			tuningsValid = false;
 			break;
 		}
 	}
-	if(brewTuningsValid) brewTempManager.SetTunings(brewTunings[0], brewTunings[1], brewTunings[2]);
-
-	double steamTunings[3];
-	bool steamTuningsValid = true;
-	for(int i=0; i<3; i++) {
-		EEPROM.get(STEAM_TUNING_ADDRESS + i*8, steamTunings[i]);
-		if(!steamTunings[i] || isnan(steamTunings[i])) {
-			steamTuningsValid = false;
-			break;
-		}
-	}
-	if(steamTuningsValid) steamTempManager.SetTunings(steamTunings[0], steamTunings[1], steamTunings[2]);
+	if(tuningsValid) setTunings(tunings[0], tunings[1], tunings[2]);
 }
 
-void GCP::autoTune(String mode, WebServer* server) {
-	PID_ATune* autoTuner;
-	if(mode == "steam") {
-		autoTuner = &steamAutoTuner;
-		steam_output = 	300;
-		autoTuner->SetOutputStep(300);
-	}
-	else {
-		autoTuner = &brewAutoTuner;
-		brew_output = 150;
-		autoTuner->SetOutputStep(150);
-	}
-	autoTuner->SetControlType(1);
-	autoTuner->SetNoiseBand(0.5);
-	autoTuner->SetLookbackSec(50);
-	isTuning = true;
-	tuningMode = mode;
-	this->server = server;
+void GCP::autoTune() {
+	brew_output = 75;
+	autoTuner.SetOutputStep(75);
+	autoTuner.SetControlType(1);
+	autoTuner.SetNoiseBand(0.5);
+	autoTuner.SetLookbackSec(50);
+	isTuned = false;
 }
 
-void GCP::cancelAutoTune(String mode) {
-	PID_ATune* autoTuner;
-	PID* tempManager;
-	if(mode == "steam") {
-		autoTuner = &steamAutoTuner;
-		tempManager = &steamTempManager;
-	}
-	else {
-		autoTuner = &brewAutoTuner;
-		tempManager = &brewTempManager;
-	}
-	autoTuner->Cancel();
-	isTuning = false;
-	tempManager->SetMode(AUTOMATIC);
+void GCP::cancelAutoTune() {
+	autoTuner.Cancel();
+	brewTempManager.SetMode(AUTOMATIC);
+	steamTempManager.SetMode(AUTOMATIC);
+	isTuned = true;
 }
 
 void GCP::refresh(ulong realTime) {
@@ -280,15 +247,10 @@ void GCP::refresh(ulong realTime) {
 
 	ulong now = millis();
 	this->getCurrentTemp();
-	if(isTuning) {
-		PID_ATune* autoTuner;
-		if(tuningMode == "steam") autoTuner = &steamAutoTuner;
-		else autoTuner = &brewAutoTuner;
-		if(autoTuner->Runtime()){
-			isTuning = false;
-			setTunings(tuningMode, autoTuner->GetKp(), autoTuner->GetKi(), autoTuner->GetKd());
-			String tunings = this->getTunings(tuningMode);
-			server->send(200, "text/json", tunings);
+	if(!isTuned) {
+		if(autoTuner.Runtime()){
+			isTuned = true;
+			setTunings(autoTuner.GetKp(), autoTuner.GetKi(), autoTuner.GetKd());
 		}
 	}
 	else {
