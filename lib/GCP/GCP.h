@@ -23,7 +23,7 @@ struct Queue {
 
     Queue(int c) {
         front = rear = 0;
-        capacity = c;
+        capacity = c + 1;
         queue = new String[capacity];
     }
 
@@ -99,6 +99,7 @@ private:
 
     ulong windowStartTime;
     ulong logStartTime;
+    ulong lastTime;
 
     double Kp;
     double Ki;

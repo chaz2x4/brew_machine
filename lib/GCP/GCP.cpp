@@ -16,6 +16,7 @@ GCP::GCP()
 , tempOffset(-8)
 , targetTemp(92)
 , targetSteamTemp(150)
+, lastTime(-1)
 , Kp(130)
 , Ki(10)
 , Kd(50)
@@ -42,6 +43,8 @@ void GCP::start() {
 	steamTempManager.SetMode(AUTOMATIC);
 	brewTempManager.SetOutputLimits(0, windowSize);
 	steamTempManager.SetOutputLimits(0, windowSize);
+	brewTempManager.SetSampleTime(windowSize);
+	steamTempManager.SetSampleTime(windowSize);
 }
 
 void GCP::setTargetTemp(double temp) {
@@ -286,7 +289,8 @@ void GCP::refresh(ulong realTime) {
 	}
 
 	if(now - logStartTime > logInterval) {
-		parseQueue(realTime);
+		if(lastTime < realTime) parseQueue(realTime);
+		lastTime = realTime;
 		logStartTime += logInterval;
 	}
 }
