@@ -100,7 +100,6 @@
                     mode = 'brew';
                     updateElements();
                     chart.render();
-                    refreshTunings();
                 },
             }, {
                 name: "Steam Temps",
@@ -114,7 +113,6 @@
                     mode = 'steam';
                     updateElements();
                     chart.render();
-                    refreshTunings();
                 }
             }];
             
@@ -182,14 +180,15 @@
                     var tunings = [kp.value, ki.value, kd.value];
                     autoTuningButton.classList.add("d-none");
                     callServer.put("/set_tunings", tunings , function(){
+                        isTuned = true;
                         button.disabled = false;
                         button.innerHTML = "Set Tunings:";
-                        isTuned = true;
                     })
                 }
                 else{
-                    changeTuningButtons();
                     tunings_open = true;
+                    changeTuningButtons();
+                    refreshTunings();
                 }
             }
 
@@ -204,11 +203,18 @@
             
             function changeTuningButtons() {
                 if(isTuned) {
-                    tuningButton.classList.add('active');
-                    tuningButton.innerHTML = "Submit";
                     tuningButton.disabled = false;
                     autoTuningButton.innerHTML = "Auto Tune";
-                    autoTuningButton.classList.remove("d-none");
+                    if(tunings_open) {
+                        tuningButton.innerHTML = "Submit";
+                        tuningButton.classList.add('active');
+                        autoTuningButton.classList.remove("d-none");
+                    }
+                    else {
+                        tuningButton.innerHTML = "Set Tunings:";
+                        tuningButton.classList.remove('active');
+                        autoTuningButton.classList.add("d-none");
+                    }
                 } else {
                     tuningButton.innerHTML = "Tuning...";
                     tuningButton.disabled = true;
@@ -278,11 +284,11 @@
 
                     updateElements();
                     refreshTemps();
-                    if(!isTuned) refreshTunings();
+                    if(!isTuned && !tunings_open) refreshTunings();
                 });
             })();
 
-            function refreshTunings() {
+            function refreshTunings(isFirstLoad) {
                 callServer.get("/get_tunings", function(response){
                     if(response) {                        
                         Object.entries(response).forEach(entry => {
@@ -291,15 +297,17 @@
                             input.value = value;
                         });
                         isTuned = true;
+                        if(!isFirstLoad) changeTuningButtons();
                     }
-                    else {
+                    else { 
+                        if(!isTuned) return;
                         isTuned = false;
                         changeTuningButtons();
                     }
                 });
             }
 
-            refreshTunings();
+            refreshTunings(true);
             document.getElementById("targetplus").onclick = incrementTarget;
             document.getElementById("targetminus").onclick = decrementTarget;
             document.getElementById("offsetplus").onclick = incrementOffset;

@@ -219,7 +219,7 @@ void GCP::autoTune() {
 	brew_output = 64;
 	autoTuner.SetOutputStep(64);
 	autoTuner.SetControlType(1);
-	autoTuner.SetNoiseBand(0.25);
+	autoTuner.SetNoiseBand(0.1);
 	autoTuner.SetLookbackSec(25);
 	isTuned = false;
 }
