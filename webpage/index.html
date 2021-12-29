@@ -165,14 +165,14 @@
                 updateElements();
             }
 
-            var tunings_open = false;
+            var isTuningsOpen = false;
             function changeTunings() {
                 var button = this;
-                if(tunings_open) {
+                if(isTuningsOpen) {
                     button.classList.remove('active');
                     button.innerHTML = "Setting Tunings...";
                     button.disabled = true;
-                    tunings_open = false;
+                    isTuningsOpen = false;
                     isTuned = false;
                     var kp = document.getElementById("kp");
                     var ki = document.getElementById("ki");
@@ -186,7 +186,7 @@
                     })
                 }
                 else{
-                    tunings_open = true;
+                    isTuningsOpen = true;
                     changeTuningButtons();
                     refreshTunings();
                 }
@@ -205,7 +205,7 @@
                 if(isTuned) {
                     tuningButton.disabled = false;
                     autoTuningButton.innerHTML = "Auto Tune";
-                    if(tunings_open) {
+                    if(isTuningsOpen) {
                         tuningButton.innerHTML = "Submit";
                         tuningButton.classList.add('active');
                         autoTuningButton.classList.remove("d-none");
@@ -284,7 +284,7 @@
 
                     updateElements();
                     refreshTemps();
-                    if(!isTuned && !tunings_open) refreshTunings();
+                    if(!isTuned && !isTuningsOpen) refreshTunings();
                 });
             })();
 
