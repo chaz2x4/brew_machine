@@ -10,14 +10,14 @@ GCP::GCP()
 , maxOffset(15)
 , minOffset(-15)
 , websiteQueueSize(150)
-, windowSize(2000)
+, windowSize(4000)
 , logInterval(1000)
 , powerFrequency(60)
 , tempOffset(-8)
 , targetTemp(92)
 , targetSteamTemp(150)
 , lastTime(-1)
-, Kp(130)
+, Kp(20)
 , Ki(10)
 , Kd(50)
 , outputQueue(Queue(websiteQueueSize))
@@ -43,8 +43,6 @@ void GCP::start() {
 	steamTempManager.SetMode(AUTOMATIC);
 	brewTempManager.SetOutputLimits(0, windowSize);
 	steamTempManager.SetOutputLimits(0, windowSize);
-	brewTempManager.SetSampleTime(windowSize);
-	steamTempManager.SetSampleTime(windowSize);
 }
 
 void GCP::setTargetTemp(double temp) {
@@ -219,11 +217,11 @@ void GCP::loadParameters(){
 }
 
 void GCP::autoTune() {
-	brew_output = 64;
-	autoTuner.SetOutputStep(64);
+	brew_output = 96;
+	autoTuner.SetOutputStep(96);
 	autoTuner.SetControlType(1);
-	autoTuner.SetNoiseBand(0.1);
-	autoTuner.SetLookbackSec(25);
+	autoTuner.SetNoiseBand(0.5);
+	autoTuner.SetLookbackSec(60);
 	isTuned = false;
 }
 
@@ -258,19 +256,19 @@ void GCP::refresh(ulong realTime) {
 	*/
 
 	ulong now = millis();
-	this->getCurrentTemp();
-	if(!isTuned) {
-		if(autoTuner.Runtime()){
-			isTuned = true;
-			setTunings(autoTuner.GetKp(), autoTuner.GetKi(), autoTuner.GetKd());
-		}
-	}
-	else {
-		brewTempManager.Compute();
-		steamTempManager.Compute();
-	}
 
 	if(now - windowStartTime > windowSize) {
+		this->getCurrentTemp();
+		if(!isTuned) {
+			if(autoTuner.Runtime()){
+				isTuned = true;
+				setTunings(autoTuner.GetKp(), autoTuner.GetKi(), autoTuner.GetKd());
+			}
+		}
+		else {
+			brewTempManager.Compute();
+			steamTempManager.Compute();
+		}
 		windowStartTime += windowSize;
 		lastBrewOutput = regulateOutput(brew_output);
 		lastSteamOutput = regulateOutput(steam_output);
