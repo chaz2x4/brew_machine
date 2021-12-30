@@ -17,8 +17,8 @@ GCP::GCP()
 , targetTemp(92)
 , targetSteamTemp(150)
 , lastTime(-1)
-, Kp(20)
-, Ki(10)
+, Kp(120)
+, Ki(15)
 , Kd(50)
 , outputQueue(Queue(websiteQueueSize))
 , brewTempManager(PID(&currentTemp, &brew_output, &targetTemp, Kp, Ki, Kd, P_ON_M, DIRECT))
@@ -257,7 +257,7 @@ void GCP::refresh(ulong realTime) {
 
 	ulong now = millis();
 
-	if(now - windowStartTime > windowSize) {
+	if(now - windowStartTime > windowSize / 2) {
 		this->getCurrentTemp();
 		if(!isTuned) {
 			if(autoTuner.Runtime()){
@@ -269,6 +269,9 @@ void GCP::refresh(ulong realTime) {
 			brewTempManager.Compute();
 			steamTempManager.Compute();
 		}
+	}
+	
+	if(now - windowStartTime > windowSize) {
 		windowStartTime += windowSize;
 		lastBrewOutput = regulateOutput(brew_output);
 		lastSteamOutput = regulateOutput(steam_output);
