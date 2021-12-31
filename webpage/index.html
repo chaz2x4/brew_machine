@@ -274,9 +274,10 @@
                     var requestedSteamTargets = [];
                     
                     var sortedOutputs = response.sort((a, b) => a.time - b.time);
-                    sortedOutputs.forEach(output => {
-                        if(brewTarget == null) [brewTarget, steamTarget, tempOffset] = [output.targets.brew, output.targets.steam, output.targets.offset];
-                        
+                    var lastOutput = sortedOutputs[sortedOutputs.length - 1];
+                    if(brewTarget == null) [brewTarget, steamTarget, tempOffset] = [lastOutput.targets.brew, lastOutput.targets.steam, lastOutput.targets.offset];
+                    
+                    sortedOutputs.forEach(output => {                        
                         requestedLabels.push(output.time * 1000);
                         requestedTempData.push(output.temperature);
                         requestedBrewOutput.push(output.outputs.brew);
