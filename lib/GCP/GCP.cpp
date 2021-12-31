@@ -200,15 +200,15 @@ void GCP::loadParameters(){
 	EEPROM.get(STEAM_TEMP_ADDRESS, steamTemp);
 	EEPROM.get(OFFSET_ADDRESS, offset);
 
-	if(brewTemp && !isnan(brewTemp)) targetTemp = brewTemp;
-	if(steamTemp && !isnan(steamTemp)) targetSteamTemp = steamTemp;
-	if(offset && !isnan(offset)) tempOffset = offset;
+	if(!isnan(brewTemp) && brewTemp >= minBrewTemp && brewTemp <= maxBrewTemp) targetTemp = brewTemp;
+	if(!isnan(steamTemp) && steamTemp >= minSteamTemp && steamTemp <= maxSteamTemp) targetSteamTemp = steamTemp;
+	if(!isnan(offset) && offset >= minOffset && steamTemp <= maxOffset) tempOffset = offset;
 
 	double tunings[3];
 	bool tuningsValid = true;
 	for(int i=0; i<3; i++) {
 		EEPROM.get(TUNING_ADDRESS + i*8, tunings[i]);
-		if(!tunings[i] || isnan(tunings[i])) {
+		if(tunings[i] < 0 || isnan(tunings[i])) {
 			tuningsValid = false;
 			break;
 		}
