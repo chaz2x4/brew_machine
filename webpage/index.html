@@ -12,8 +12,8 @@
             var cycleTime = 1000;
             var mode = 'brew';
             var tempData = [];
-            var brewData = [];
-            var steamData = [];
+            var targetData = {};
+            var outputData = {};
             var labels = [];
             var data = {
                 labels: labels,
@@ -22,21 +22,37 @@
                     label: 'Temperature',
                     data: [],
                     backgroundColor: function (context) {
-                        var pointTemp = context.dataset.data[context.dataIndex];
-                        var targetTemp = (mode == 'brew') ? brewTarget : steamTarget;
-                        var acceptableError = (mode == 'brew') ? 0.5 : 1.0;
-                        if(pointTemp > (targetTemp + acceptableError)) return '#FF6384';
-                        if(pointTemp < (targetTemp - acceptableError)) return '#331F2E';
-                        else return '#63FF8F';
+                        if(context.dataset.data.length) {
+                            var pointTemp = context.dataset.data[context.dataIndex];
+                            var targetTemp = targetData[mode][context.dataIndex];
+                            var acceptableError = (mode == 'brew') ? 0.5 : 1.0;
+                            if(pointTemp > (targetTemp + acceptableError)) return '#FF6384';
+                            if(pointTemp < (targetTemp - acceptableError)) return '#331F2E';
+                            else return '#63FF8F';
+                        }
                     },
-                    tension: 0.4,
+                    borderWidth: 2,
+                    tension: 0.1,
                     yAxisID: 'y',
                 }, {
                     type: 'bar',
                     label: 'Output',
-                    data: brewData,
-                    backgroundColor: "#63FFDD",
+                    data: outputData.brew,
+                    backgroundColor: '#63FFDD',
                     yAxisID: 'y1',
+                }, {
+                    type: 'line',
+                    label: 'Target',
+                    data: targetData,
+                    borderColor: '#4285F4',
+                    borderWidth: 2,
+                    yAxisID: 'y',
+                    elements: {
+                        point: {
+                            radius: 0
+                        }
+                    },
+                    animations: 'off',
                 }],
             };
 
@@ -71,11 +87,6 @@
                             text: "Temperature",
                         },
                         position: 'left',
-                        grid: {
-                            color: function(context) {
-                                if(context.tick.value == brewTarget) return "#FF6384";
-                            },
-                        },
                     },
                     y1: {
                         suggestedMax: cycleTime,
@@ -93,10 +104,8 @@
                 id: "brew",
                 handler() {
                     chart.options.plugins.title.text = "Brew Temperature";
-                    chart.options.scales.y.grid.color = function(context) {
-                        if(context.tick.value == brewTarget) return "#FF6384";
-                    };
-                    chart.data.datasets[1].data = brewData;
+                    chart.data.datasets[1].data = outputData.brew;
+                    chart.data.datasets[2].data = targetData.brew;
                     mode = 'brew';
                     updateElements();
                     chart.render();
@@ -106,10 +115,8 @@
                 id: "steam",
                 handler() {
                     chart.options.plugins.title.text = "Steam Temperature";
-                    chart.options.scales.y.grid.color = function(context) {
-                        if(context.tick.value == steamTarget) return "#FF6384";
-                    };
-                    chart.data.datasets[1].data = steamData;
+                    chart.data.datasets[1].data = outputData.steam;
+                    chart.data.datasets[2].data = targetData.steam;
                     mode = 'steam';
                     updateElements();
                     chart.render();
@@ -264,23 +271,34 @@
                 return callServer.get("/get_temps", function(response){
                     var requestedLabels = [];
                     var requestedTempData = [];
-                    var requestedBrewData = [];
-                    var requestedSteamData = [];
-
-                    if(brewTarget == null) [brewTarget, steamTarget, tempOffset] = [response.targets.brew, response.targets.steam, response.targets.offset];
-
-                    var sortedOutputs = response.outputs.sort((a, b) => a.time - b.time);
-                    sortedOutputs.forEach(output => {
+                    var requestedBrewOutput = [];
+                    var requestedSteamOutput = [];
+                    var requestedBrewTargets = [];
+                    var requestedSteamTargets = [];
+                    
+                    var sortedOutputs = response.sort((a, b) => a.time - b.time);
+                    var lastOutput = sortedOutputs[sortedOutputs.length - 1];
+                    if(brewTarget == null) [brewTarget, steamTarget, tempOffset] = [lastOutput.targets.brew, lastOutput.targets.steam, lastOutput.targets.offset];
+                    
+                    sortedOutputs.forEach(output => {                        
                         requestedLabels.push(output.time * 1000);
                         requestedTempData.push(output.temperature);
-                        requestedBrewData.push(output.outputs.brew);
-                        requestedSteamData.push(output.outputs.steam);
+                        requestedBrewOutput.push(output.outputs.brew);
+                        requestedSteamOutput.push(output.outputs.steam);
+                        requestedBrewTargets.push(output.targets.brew);
+                        requestedSteamTargets.push(output.targets.steam);
                     })
 
                     chart.data.labels = requestedLabels;
                     chart.data.datasets[0].data = tempData = requestedTempData;
-                    if(mode == 'brew') { chart.data.datasets[1].data = brewData = requestedBrewData }
-                    else { chart.data.datasets[1].data = steamData = requestedSteamData }        
+                    if(mode == 'brew') { 
+                        chart.data.datasets[1].data = outputData.brew = requestedBrewOutput;
+                        chart.data.datasets[2].data = targetData.brew = requestedBrewTargets;
+                    }
+                    else { 
+                        chart.data.datasets[1].data = outputData.steam = requestedSteamOutput;
+                        chart.data.datasets[2].data = targetData.steam = requestedSteamTargets;
+                    }        
 
                     updateElements();
                     refreshTemps();
@@ -360,20 +378,14 @@
                     <div class="tuning-button input-group col">
                         <span for="kp" class="input-group-text"> Kp: </span>
                         <input class="tuning-input form-control" type="text" id="kp" value="" placeholder="Proportional" min="0">
-                        <button class="tuning-button btn btn-outline-secondary" type="button" id="kpplus"> + </button>
-                        <button class="tuning-button btn btn-outline-secondary" type="button" id="kpminus"> - </button>
                     </div>
                     <div class="tuning-button input-group col">
                         <span for="kp" class="input-group-text"> Ki: </span>
                         <input class="tuning-input form-control" type="text" id="ki" value="" placeholder="Integral" min="0">
-                        <button class="tuning-button btn btn-outline-secondary" type="button" id="kiplus"> + </button>
-                        <button class="tuning-button btn btn-outline-secondary" type="button" id="kiminus"> - </button>
                     </div>
                     <div class="tuning-button input-group col">
                         <span for="kp" class="input-group-text"> Kd: </span>
                         <input class="tuning-input form-control" type="text" id="kd" value="" placeholder="Derivative" min="0">
-                        <button class="tuning-button btn btn-outline-secondary" type="button" id="kdplus"> + </button>
-                        <button class="tuning-button btn btn-outline-secondary" type="button" id="kdminus"> - </button>
                     </div>
                 </div>
             </form>

@@ -105,7 +105,6 @@ private:
     double Ki;
     double Kd;
 
-    String outputString;
     Queue outputQueue;
     PID brewTempManager;
     PID steamTempManager;

@@ -17,9 +17,9 @@ GCP::GCP()
 , targetTemp(92)
 , targetSteamTemp(150)
 , lastTime(-1)
-, Kp(120)
-, Ki(55)
-, Kd(50)
+, Kp(132.5)
+, Ki(6.62)
+, Kd(1749)
 , outputQueue(Queue(websiteQueueSize))
 , brewTempManager(PID(&currentTemp, &brew_output, &targetTemp, Kp, Ki, Kd, P_ON_M, DIRECT))
 , steamTempManager(PID(&currentTemp, &steam_output, &targetSteamTemp, Kp, Ki, Kd, P_ON_M, DIRECT))
@@ -43,6 +43,8 @@ void GCP::start() {
 	steamTempManager.SetMode(AUTOMATIC);
 	brewTempManager.SetOutputLimits(0, windowSize);
 	steamTempManager.SetOutputLimits(0, windowSize);
+	brewTempManager.SetSampleTime(logInterval);
+	steamTempManager.SetSampleTime(logInterval);
 }
 
 void GCP::setTargetTemp(double temp) {
@@ -131,7 +133,15 @@ void GCP::setTempOffset(double offset){
 }
 
 String GCP::getOutput(){
-	return this->outputString;
+	String outputString = "[";
+
+	for(unsigned i = 0; i < outputQueue.size(); i++){
+		if(i > 0 ) outputString += ",";
+		outputString += outputQueue.at(i);
+	}
+
+	outputString += "]";
+	return outputString;
 }
 
 String GCP::getTunings(){
@@ -148,7 +158,6 @@ String GCP::getTunings(){
 }
 
 void GCP::setTunings(double kp, double ki, double kd){
-	int tuningAddress = TUNING_ADDRESS;
 	this->Kp = kp;
 	this->Ki = ki;
 	this->Kd = kd;
@@ -159,9 +168,9 @@ void GCP::setTunings(double kp, double ki, double kd){
 	steamTempManager.SetTunings(kp, ki, kd, P_ON_M);
 	steamTempManager.SetMode(AUTOMATIC);
 	
-	EEPROM.put(tuningAddress, kp);
-	EEPROM.put(tuningAddress + 8, ki);
-	EEPROM.put(tuningAddress + 16, kd);
+	EEPROM.put(TUNING_ADDRESS, kp);
+	EEPROM.put(TUNING_ADDRESS + 8, ki);
+	EEPROM.put(TUNING_ADDRESS + 16, kd);
 	EEPROM.commit();
 }
 
@@ -175,23 +184,14 @@ void GCP::parseQueue(ulong time){
     outputs += this->lastBrewOutput;
     outputs += ", \"steam\": ";
     outputs += this->lastSteamOutput;
+	outputs += "}, \"targets\": { \"brew\": ";
+    outputs += this->targetTemp;
+    outputs += ", \"steam\": ";
+    outputs += this->targetSteamTemp;
+	outputs += ", \"offset\": ";
+    outputs += this->tempOffset;
     outputs += " }}";
 	outputQueue.push(outputs);
-
-	outputString = "{ \"targets\": { \"brew\": ";
-	outputString += this->targetTemp;
-	outputString += ", \"steam\": ";
-	outputString += this->targetSteamTemp;
-	outputString += ", \"offset\": ";
-	outputString += this->tempOffset;
-	outputString += " }, \"outputs\":[";
-
-	for(unsigned i = 0; i < outputQueue.size(); i++){
-		if(i > 0 ) outputString += ",";
-		outputString += outputQueue.at(i);
-	}
-
-	outputString += "]}";
 }
 
 void GCP::loadParameters(){
@@ -200,15 +200,15 @@ void GCP::loadParameters(){
 	EEPROM.get(STEAM_TEMP_ADDRESS, steamTemp);
 	EEPROM.get(OFFSET_ADDRESS, offset);
 
-	if(brewTemp && !isnan(brewTemp)) targetTemp = brewTemp;
-	if(steamTemp && !isnan(steamTemp)) targetSteamTemp = steamTemp;
-	if(offset && !isnan(offset)) tempOffset = offset;
+	if(!isnan(brewTemp) && brewTemp >= minBrewTemp && brewTemp <= maxBrewTemp) targetTemp = brewTemp;
+	if(!isnan(steamTemp) && steamTemp >= minSteamTemp && steamTemp <= maxSteamTemp) targetSteamTemp = steamTemp;
+	if(!isnan(offset) && offset >= minOffset && steamTemp <= maxOffset) tempOffset = offset;
 
 	double tunings[3];
 	bool tuningsValid = true;
 	for(int i=0; i<3; i++) {
 		EEPROM.get(TUNING_ADDRESS + i*8, tunings[i]);
-		if(!tunings[i] || isnan(tunings[i])) {
+		if(tunings[i] < 0 || isnan(tunings[i])) {
 			tuningsValid = false;
 			break;
 		}
