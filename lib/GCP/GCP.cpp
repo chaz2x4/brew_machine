@@ -133,7 +133,15 @@ void GCP::setTempOffset(double offset){
 }
 
 String GCP::getOutput(){
-	return this->outputString;
+	String outputString = "[";
+
+	for(unsigned i = 0; i < outputQueue.size(); i++){
+		if(i > 0 ) outputString += ",";
+		outputString += outputQueue.at(i);
+	}
+
+	outputString += "]";
+	return outputString;
 }
 
 String GCP::getTunings(){
@@ -176,23 +184,14 @@ void GCP::parseQueue(ulong time){
     outputs += this->lastBrewOutput;
     outputs += ", \"steam\": ";
     outputs += this->lastSteamOutput;
+	outputs += "}, \"targets\": { \"brew\": ";
+    outputs += this->targetTemp;
+    outputs += ", \"steam\": ";
+    outputs += this->targetSteamTemp;
+	outputs += ", \"offset\": ";
+    outputs += this->tempOffset;
     outputs += " }}";
 	outputQueue.push(outputs);
-
-	outputString = "{ \"targets\": { \"brew\": ";
-	outputString += this->targetTemp;
-	outputString += ", \"steam\": ";
-	outputString += this->targetSteamTemp;
-	outputString += ", \"offset\": ";
-	outputString += this->tempOffset;
-	outputString += " }, \"outputs\":[";
-
-	for(unsigned i = 0; i < outputQueue.size(); i++){
-		if(i > 0 ) outputString += ",";
-		outputString += outputQueue.at(i);
-	}
-
-	outputString += "]}";
 }
 
 void GCP::loadParameters(){

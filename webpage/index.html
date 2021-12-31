@@ -12,6 +12,7 @@
             var cycleTime = 1000;
             var mode = 'brew';
             var tempData = [];
+            var targetData = [];
             var brewData = [];
             var steamData = [];
             var labels = [];
@@ -23,20 +24,34 @@
                     data: [],
                     backgroundColor: function (context) {
                         var pointTemp = context.dataset.data[context.dataIndex];
-                        var targetTemp = (mode == 'brew') ? brewTarget : steamTarget;
+                        var targetTemp = targetData[context.dataIndex];
                         var acceptableError = (mode == 'brew') ? 0.5 : 1.0;
                         if(pointTemp > (targetTemp + acceptableError)) return '#FF6384';
                         if(pointTemp < (targetTemp - acceptableError)) return '#331F2E';
                         else return '#63FF8F';
                     },
-                    tension: 0.4,
+                    borderWidth: 2,
+                    tension: 0.1,
                     yAxisID: 'y',
                 }, {
                     type: 'bar',
                     label: 'Output',
                     data: brewData,
-                    backgroundColor: "#63FFDD",
+                    backgroundColor: '#63FFDD',
                     yAxisID: 'y1',
+                }, {
+                    type: 'line',
+                    label: 'Target',
+                    data: targetData,
+                    borderColor: '#4285F4',
+                    borderWidth: 2,
+                    yAxisID: 'y',
+                    elements: {
+                        point: {
+                            radius: 0
+                        }
+                    },
+                    animations: 'off',
                 }],
             };
 
@@ -71,11 +86,6 @@
                             text: "Temperature",
                         },
                         position: 'left',
-                        grid: {
-                            color: function(context) {
-                                if(context.tick.value == brewTarget) return "#FF6384";
-                            },
-                        },
                     },
                     y1: {
                         suggestedMax: cycleTime,
@@ -93,9 +103,6 @@
                 id: "brew",
                 handler() {
                     chart.options.plugins.title.text = "Brew Temperature";
-                    chart.options.scales.y.grid.color = function(context) {
-                        if(context.tick.value == brewTarget) return "#FF6384";
-                    };
                     chart.data.datasets[1].data = brewData;
                     mode = 'brew';
                     updateElements();
@@ -106,9 +113,6 @@
                 id: "steam",
                 handler() {
                     chart.options.plugins.title.text = "Steam Temperature";
-                    chart.options.scales.y.grid.color = function(context) {
-                        if(context.tick.value == steamTarget) return "#FF6384";
-                    };
                     chart.data.datasets[1].data = steamData;
                     mode = 'steam';
                     updateElements();
@@ -264,23 +268,33 @@
                 return callServer.get("/get_temps", function(response){
                     var requestedLabels = [];
                     var requestedTempData = [];
-                    var requestedBrewData = [];
-                    var requestedSteamData = [];
-
-                    if(brewTarget == null) [brewTarget, steamTarget, tempOffset] = [response.targets.brew, response.targets.steam, response.targets.offset];
-
-                    var sortedOutputs = response.outputs.sort((a, b) => a.time - b.time);
+                    var requestedBrewOutput = [];
+                    var requestedSteamOutput = [];
+                    var requestedBrewTargets = [];
+                    var requestedSteamTargets = [];
+                    
+                    var sortedOutputs = response.sort((a, b) => a.time - b.time);
                     sortedOutputs.forEach(output => {
+                        if(brewTarget == null) [brewTarget, steamTarget, tempOffset] = [output.targets.brew, output.targets.steam, output.targets.offset];
+                        
                         requestedLabels.push(output.time * 1000);
                         requestedTempData.push(output.temperature);
-                        requestedBrewData.push(output.outputs.brew);
-                        requestedSteamData.push(output.outputs.steam);
+                        requestedBrewOutput.push(output.outputs.brew);
+                        requestedSteamOutput.push(output.outputs.steam);
+                        requestedBrewTargets.push(output.targets.brew);
+                        requestedSteamTargets.push(output.targets.steam);
                     })
 
                     chart.data.labels = requestedLabels;
                     chart.data.datasets[0].data = tempData = requestedTempData;
-                    if(mode == 'brew') { chart.data.datasets[1].data = brewData = requestedBrewData }
-                    else { chart.data.datasets[1].data = steamData = requestedSteamData }        
+                    if(mode == 'brew') { 
+                        chart.data.datasets[1].data = brewData = requestedBrewOutput;
+                        chart.data.datasets[2].data = targetData = requestedBrewTargets;
+                    }
+                    else { 
+                        chart.data.datasets[1].data = steamData = requestedSteamOutput;
+                        chart.data.datasets[2].data = targetData = requestedSteamTargets;
+                    }        
 
                     updateElements();
                     refreshTemps();
