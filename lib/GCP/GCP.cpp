@@ -43,6 +43,8 @@ void GCP::start() {
 	steamTempManager.SetMode(AUTOMATIC);
 	brewTempManager.SetOutputLimits(0, windowSize);
 	steamTempManager.SetOutputLimits(0, windowSize);
+	brewTempManager.SetSampleTime(logInterval);
+	steamTempManager.SetSampleTime(logInterval);
 }
 
 void GCP::setTargetTemp(double temp) {
@@ -148,7 +150,6 @@ String GCP::getTunings(){
 }
 
 void GCP::setTunings(double kp, double ki, double kd){
-	int tuningAddress = TUNING_ADDRESS;
 	this->Kp = kp;
 	this->Ki = ki;
 	this->Kd = kd;
@@ -159,9 +160,9 @@ void GCP::setTunings(double kp, double ki, double kd){
 	steamTempManager.SetTunings(kp, ki, kd, P_ON_M);
 	steamTempManager.SetMode(AUTOMATIC);
 	
-	EEPROM.put(tuningAddress, kp);
-	EEPROM.put(tuningAddress + 8, ki);
-	EEPROM.put(tuningAddress + 16, kd);
+	EEPROM.put(TUNING_ADDRESS, kp);
+	EEPROM.put(TUNING_ADDRESS + 8, ki);
+	EEPROM.put(TUNING_ADDRESS + 16, kd);
 	EEPROM.commit();
 }
 
