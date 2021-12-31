@@ -22,7 +22,7 @@
                     label: 'Temperature',
                     data: [],
                     backgroundColor: function (context) {
-                        if(context.dataset.length) {
+                        if(context.dataset.data.length) {
                             var pointTemp = context.dataset.data[context.dataIndex];
                             var targetTemp = targetData[mode][context.dataIndex];
                             var acceptableError = (mode == 'brew') ? 0.5 : 1.0;
