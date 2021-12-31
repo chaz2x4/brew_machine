@@ -3,7 +3,7 @@
 GCP::GCP()
 : tempProbe(Adafruit_MAX31865(A5))
 , emergencyShutoffTemp(165.0)
-, maxBrewTemp(100.0)
+, maxBrewTemp(115.0)
 , minBrewTemp(85.0)
 , maxSteamTemp(160.0)
 , minSteamTemp(140.0)
