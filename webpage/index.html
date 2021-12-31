@@ -178,7 +178,7 @@
                     var ki = document.getElementById("ki");
                     var kd = document.getElementById("kd");
                     var tunings = [kp.value, ki.value, kd.value];
-                    autoTuningButton.classList.add("d-none");
+                    // autoTuningButton.classList.add("d-none");
                     callServer.put("/set_tunings", tunings , function(){
                         isTuned = true;
                         button.disabled = false;
@@ -192,34 +192,34 @@
                 }
             }
 
-            var isTuned = true;
-            function changeAutoTune(){
-                if(isTuned) callServer.post("/autotune");
-                else callServer.post("/autotune/cancel");
-                isTuned = !isTuned;
-                changeTuningButtons();
-                refreshTunings();
-            }
+            // var isTuned = true;
+            // function changeAutoTune(){
+            //     if(isTuned) callServer.post("/autotune");
+            //     else callServer.post("/autotune/cancel");
+            //     isTuned = !isTuned;
+            //     changeTuningButtons();
+            //     refreshTunings();
+            // }
             
             function changeTuningButtons() {
                 if(isTuned) {
                     tuningButton.disabled = false;
-                    autoTuningButton.innerHTML = "Auto Tune";
+                    // autoTuningButton.innerHTML = "Auto Tune";
                     if(isTuningsOpen) {
                         tuningButton.innerHTML = "Submit";
                         tuningButton.classList.add('active');
-                        autoTuningButton.classList.remove("d-none");
+                        // autoTuningButton.classList.remove("d-none");
                     }
                     else {
                         tuningButton.innerHTML = "Set Tunings:";
                         tuningButton.classList.remove('active');
-                        autoTuningButton.classList.add("d-none");
+                        // autoTuningButton.classList.add("d-none");
                     }
                 } else {
-                    tuningButton.innerHTML = "Tuning...";
-                    tuningButton.disabled = true;
-                    autoTuningButton.innerHTML = "Cancel";
-                    autoTuningButton.classList.remove("d-none");
+                //     tuningButton.innerHTML = "Tuning...";
+                //     tuningButton.disabled = true;
+                //     autoTuningButton.innerHTML = "Cancel";
+                //     autoTuningButton.classList.remove("d-none");
                 }
             }
 
@@ -313,9 +313,9 @@
             document.getElementById("offsetplus").onclick = incrementOffset;
             document.getElementById("offsetminus").onclick = decrementOffset;
             tuningButton = document.getElementById("tuning_button");
-            autoTuningButton = document.getElementById("autotuning_button");
+            // autoTuningButton = document.getElementById("autotuning_button");
             tuningButton.onclick = changeTunings;
-            autoTuningButton.onclick= changeAutoTune;
+            // autoTuningButton.onclick= changeAutoTune;
         }
     </script>
 </head>
@@ -350,9 +350,9 @@
             <button class="btn btn-outline-secondary" type="button" id="tuning_button" data-bs-toggle="collapse" data-bs-target="#tunings_tab">
                 Set Tunings:
             </button>
-            <button class="btn btn-outline-secondary d-none" type="button" data-bs-toggle="collapse" data-bs-target="#tunings_tab" id="autotuning_button">
+            <!-- button class="btn btn-outline-secondary d-none" type="button" data-bs-toggle="collapse" data-bs-target="#tunings_tab" id="autotuning_button">
                 Auto Tune
-            </button>
+            </button -->
         </p>
         <div class="collapse" id="tunings_tab">
             <form class="accordion-body" id="tunings-form">

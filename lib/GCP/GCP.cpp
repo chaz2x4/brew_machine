@@ -23,8 +23,8 @@ GCP::GCP()
 , outputQueue(Queue(websiteQueueSize))
 , brewTempManager(PID(&currentTemp, &brew_output, &targetTemp, Kp, Ki, Kd, P_ON_M, DIRECT))
 , steamTempManager(PID(&currentTemp, &steam_output, &targetSteamTemp, Kp, Ki, Kd, P_ON_M, DIRECT))
-, autoTuner(PID_ATune(&currentTemp, &brew_output))
-, isTuned(true)
+// , autoTuner(PID_ATune(&currentTemp, &brew_output))
+// , isTuned(true)
 {}
 
 GCP::~GCP(){
@@ -135,7 +135,7 @@ String GCP::getOutput(){
 }
 
 String GCP::getTunings(){
-	if(!isTuned) return "false";
+	// if(!isTuned) return "false";
 	String output;
     output += "{ \"kp\": ";
     output += Kp;
@@ -216,21 +216,21 @@ void GCP::loadParameters(){
 	if(tuningsValid) setTunings(tunings[0], tunings[1], tunings[2]);
 }
 
-void GCP::autoTune() {
-	brew_output = 96;
-	autoTuner.SetOutputStep(96);
-	autoTuner.SetControlType(1);
-	autoTuner.SetNoiseBand(0.5);
-	autoTuner.SetLookbackSec(60);
-	isTuned = false;
-}
+// void GCP::autoTune() {
+// 	brew_output = 96;
+// 	autoTuner.SetOutputStep(96);
+// 	autoTuner.SetControlType(1);
+// 	autoTuner.SetNoiseBand(0.5);
+// 	autoTuner.SetLookbackSec(60);
+// 	isTuned = false;
+// }
 
-void GCP::cancelAutoTune() {
-	autoTuner.Cancel();
-	brewTempManager.SetMode(AUTOMATIC);
-	steamTempManager.SetMode(AUTOMATIC);
-	isTuned = true;
-}
+// void GCP::cancelAutoTune() {
+// 	autoTuner.Cancel();
+// 	brewTempManager.SetMode(AUTOMATIC);
+// 	steamTempManager.SetMode(AUTOMATIC);
+// 	isTuned = true;
+// }
 
 int GCP::regulateOutput(double output) {
 	int roundedOutput = int(output);
@@ -257,18 +257,18 @@ void GCP::refresh(ulong realTime) {
 
 	ulong now = millis();
 
-	if(now - logStartTime > logInterva) {
+	if(now - logStartTime > logInterval) {
 		this->getCurrentTemp();
-		if(!isTuned) {
-			if(autoTuner.Runtime()){
-				isTuned = true;
-				setTunings(autoTuner.GetKp(), autoTuner.GetKi(), autoTuner.GetKd());
-			}
-		}
-		else {
+		// if(!isTuned) {
+		// 	if(autoTuner.Runtime()){
+		// 		isTuned = true;
+		// 		setTunings(autoTuner.GetKp(), autoTuner.GetKi(), autoTuner.GetKd());
+		// 	}
+		// }
+		// else {
 			brewTempManager.Compute();
 			steamTempManager.Compute();
-		}
+		// }
 
 		if(lastTime < realTime) parseQueue(realTime);
 		lastTime = realTime;

@@ -57,15 +57,15 @@ void setup() {
 		server.send(200, "text/plain", "Success!");
 	});
 
-	server.on("/autotune", HTTP_POST, []() {
-		brew_machine.autoTune();
-		server.send(200, "text/plain", "Success!");
-	});
+	// server.on("/autotune", HTTP_POST, []() {
+	// 	brew_machine.autoTune();
+	// 	server.send(200, "text/plain", "Success!");
+	// });
 
-	server.on("/autotune/cancel", HTTP_POST, []() {
-		brew_machine.cancelAutoTune();
-		server.send(200, "text/plain", "Success!");
-	});
+	// server.on("/autotune/cancel", HTTP_POST, []() {
+	// 	brew_machine.cancelAutoTune();
+	// 	server.send(200, "text/plain", "Success!");
+	// });
 
 	server.on("/increment_target", HTTP_POST, [](){
 		brew_machine.incrementTemp(server.arg(0));
