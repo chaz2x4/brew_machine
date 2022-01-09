@@ -1,7 +1,7 @@
 #include "GCP.h"
 
 GCP::GCP()
-: tempProbe(Adafruit_MAX31865(A5))
+: tempProbe(Adafruit_MAX31865(THERMOPROBE_PIN))
 , emergencyShutoffTemp(165.0)
 , maxBrewTemp(115.0)
 , minBrewTemp(85.0)

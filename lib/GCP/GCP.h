@@ -10,6 +10,7 @@
 
 #define HEATER_PIN 13
 #define STEAM_PIN 27
+#define THERMOPROBE_PIN A5
 #define RREF 430
 
 #define BREW_TEMP_ADDRESS 0

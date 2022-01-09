@@ -13,6 +13,10 @@
 #define BUTTON_B 32 //pin 32; cycle modes; decrement temperature 
 #define BUTTON_C 14 //pin 14; press and hold on brew screen to change temperature
 
+#define OLED_WIDTH 128
+#define OLED_HEIGHT 32
+#define OLED_I2C_ADDRESS 0x3C
+
 class OLED {
 public:
     OLED();

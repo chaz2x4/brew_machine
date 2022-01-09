@@ -1,7 +1,7 @@
 #include "OLED.h"
 
 OLED::OLED()
-: display(Adafruit_SSD1306(128, 32, &Wire))
+: display(Adafruit_SSD1306(OLED_WIDTH, OLED_HEIGHT, &Wire))
 , currentMode("brew")
 , timeLastButton(-1)
 , lastTime(-1)
@@ -19,7 +19,7 @@ OLED::~OLED(){
 }
 
 void OLED::start(GCP* brew_machine){
-    display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
+    display.begin(SSD1306_SWITCHCAPVCC, OLED_I2C_ADDRESS);
     display.clearDisplay();
     display.dim(true);
     display.display();
