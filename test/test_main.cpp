@@ -4,25 +4,11 @@
 
 GCP brew_machine;
 OLED screen;
-DynamicJsonDocument savedTargetTunings(1024);
+DynamicJsonDocument savedTargetTunings(512);
 double savedTargetBrewTemp;
 double savedTargetSteamTemp;
 double savedTargetOffset;
 
-void setUp(){
-    String savedTuningsString;
-    savedTargetBrewTemp = brew_machine.getTargetTemp("brew");
-    savedTargetSteamTemp = brew_machine.getTargetTemp("steam");
-    savedTargetOffset = brew_machine.getTempOffset();
-    deserializeJson(savedTargetTunings, brew_machine.getTunings());
-}
-
-void tearDown(){
-    brew_machine.setTargetTemp("brew", savedTargetBrewTemp);
-    brew_machine.setTargetTemp("steam", savedTargetSteamTemp);
-    brew_machine.setTempOffset(savedTargetOffset);
-    brew_machine.setTunings(savedTargetTunings["kp"], savedTargetTunings["ki"], savedTargetTunings["kd"]);
-}
 
 void test_function_gcp_set_brew_temp(){
     brew_machine.setTargetTemp("brew", 95);
@@ -216,6 +202,11 @@ void setup(){
     brew_machine.start();
     screen.start(&brew_machine);
     EEPROM.begin(512);
+
+    savedTargetBrewTemp = brew_machine.getTargetTemp("brew");
+    savedTargetSteamTemp = brew_machine.getTargetTemp("steam");
+    savedTargetOffset = brew_machine.getTempOffset();
+    deserializeJson(savedTargetTunings, brew_machine.getTunings());
     
     UNITY_BEGIN();
     RUN_TEST(test_function_gcp_set_brew_temp);
@@ -249,6 +240,12 @@ void setup(){
     RUN_TEST(test_function_oled_decrement_brew);
     RUN_TEST(test_function_oled_decrement_steam);
     // RUN_TEST(test_function_oled_decrement_offset);
+
+
+    brew_machine.setTargetTemp("brew", savedTargetBrewTemp);
+    brew_machine.setTargetTemp("steam", savedTargetSteamTemp);
+    brew_machine.setTempOffset(savedTargetOffset);
+    brew_machine.setTunings(savedTargetTunings["kp"], savedTargetTunings["ki"], savedTargetTunings["kd"]);
     UNITY_END();
 }
 
