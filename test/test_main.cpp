@@ -1,10 +1,27 @@
-#include <GCP.h>
+#include <header.h>
 #include <unity.h>
+#include <ArduinoJson.h> 
 
 GCP brew_machine;
+OLED screen;
+DynamicJsonDocument savedTargetTunings(1024);
+double savedTargetBrewTemp;
+double savedTargetSteamTemp;
+double savedTargetOffset;
 
 void setUp(){
+    String savedTuningsString;
+    savedTargetBrewTemp = brew_machine.getTargetTemp("brew");
+    savedTargetSteamTemp = brew_machine.getTargetTemp("steam");
+    savedTargetOffset = brew_machine.getTempOffset();
+    deserializeJson(savedTargetTunings, brew_machine.getTunings());
+}
 
+void tearDown(){
+    brew_machine.setTargetTemp("brew", savedTargetBrewTemp);
+    brew_machine.setTargetTemp("steam", savedTargetSteamTemp);
+    brew_machine.setTempOffset(savedTargetOffset);
+    brew_machine.setTunings(savedTargetTunings["kp"], savedTargetTunings["ki"], savedTargetTunings["kd"]);
 }
 
 void test_function_gcp_set_brew_temp(){
@@ -149,6 +166,7 @@ void test_function_gcp_output(){
 void setup(){
     delay(2000);
     brew_machine.start();
+    screen.start(&brew_machine);
     
     UNITY_BEGIN();
     RUN_TEST(test_function_gcp_set_brew_temp);
