@@ -56,13 +56,16 @@ void setup() {
 		request->send(200, "text/json", brew_machine.getTunings());
 	});
 
-	server.on("/set_tunings", HTTP_PUT, [](AsyncWebServerRequest *request){
-
-	});
-
 	AsyncCallbackJsonWebHandler* handler = new AsyncCallbackJsonWebHandler("/set_tunings", [](AsyncWebServerRequest *request, JsonVariant &json) {
-		// JsonObject& jsonObj = json.as<JsonObject>();
-		Serial.println("hello");
+		JsonObject&& tunings = json.as<JsonObject>();
+		double kp = tunings["kp"].as<double>();
+		double ki = tunings["ki"].as<double>();
+		double kd = tunings["kd"].as<double>();
+		if(kp && ki && kd) {
+			brew_machine.setTunings(kp, ki, kd);
+			request->send(200);
+		}
+		else request->send(400);
 	});
 	server.addHandler(handler);
 

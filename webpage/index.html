@@ -184,9 +184,8 @@
                     var kp = document.getElementById("kp");
                     var ki = document.getElementById("ki");
                     var kd = document.getElementById("kd");
-                    var tunings = [kp.value, ki.value, kd.value];
-                    // autoTuningButton.classList.add("d-none");
-                    callServer.put("/set_tunings", tunings , function(){
+                    var tunings = { "kp" : kp.value, "ki": ki.value, "kd": kd.value };
+                    callServer.put("/set_tunings", JSON.stringify(tunings), function(){
                         isTuned = true;
                         button.disabled = false;
                         button.innerHTML = "Set Tunings:";
@@ -200,33 +199,18 @@
             }
 
             var isTuned = true;
-            // function changeAutoTune(){
-            //     if(isTuned) callServer.post("/autotune");
-            //     else callServer.post("/autotune/cancel");
-            //     isTuned = !isTuned;
-            //     changeTuningButtons();
-            //     refreshTunings();
-            // }
             
             function changeTuningButtons() {
                 if(isTuned) {
                     tuningButton.disabled = false;
-                    // autoTuningButton.innerHTML = "Auto Tune";
                     if(isTuningsOpen) {
                         tuningButton.innerHTML = "Submit";
                         tuningButton.classList.add('active');
-                        // autoTuningButton.classList.remove("d-none");
                     }
                     else {
                         tuningButton.innerHTML = "Set Tunings:";
                         tuningButton.classList.remove('active');
-                        // autoTuningButton.classList.add("d-none");
                     }
-                } else {
-                //     tuningButton.innerHTML = "Tuning...";
-                //     tuningButton.disabled = true;
-                //     autoTuningButton.innerHTML = "Cancel";
-                //     autoTuningButton.classList.remove("d-none");
                 }
             }
 
@@ -246,7 +230,10 @@
                 async function request(url, method, data){
                     const response = await fetch(url, {
                         method: method,
-                        body: data
+                        body: data,
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
                     });
                     return response;
                 }
@@ -331,9 +318,7 @@
             document.getElementById("offsetplus").onclick = incrementOffset;
             document.getElementById("offsetminus").onclick = decrementOffset;
             tuningButton = document.getElementById("tuning_button");
-            // autoTuningButton = document.getElementById("autotuning_button");
             tuningButton.onclick = changeTunings;
-            // autoTuningButton.onclick= changeAutoTune;
         }
     </script>
 </head>
@@ -368,9 +353,6 @@
             <button class="btn btn-outline-secondary" type="button" id="tuning_button" data-bs-toggle="collapse" data-bs-target="#tunings_tab">
                 Set Tunings:
             </button>
-            <!-- button class="btn btn-outline-secondary d-none" type="button" data-bs-toggle="collapse" data-bs-target="#tunings_tab" id="autotuning_button">
-                Auto Tune
-            </button -->
         </p>
         <div class="collapse" id="tunings_tab">
             <form class="accordion-body" id="tunings-form">

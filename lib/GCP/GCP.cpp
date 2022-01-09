@@ -31,7 +31,7 @@ GCP::~GCP(){
 }
 
 void GCP::start() {
-	loadParameters();
+	// loadParameters();
 
 	this->tempProbe.begin(MAX31865_3WIRE);
 	this->getCurrentTemp();
