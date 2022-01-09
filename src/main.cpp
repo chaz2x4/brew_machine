@@ -58,14 +58,16 @@ void setup() {
 
 	AsyncCallbackJsonWebHandler* handler = new AsyncCallbackJsonWebHandler("/set_tunings", [](AsyncWebServerRequest *request, JsonVariant &json) {
 		JsonObject&& tunings = json.as<JsonObject>();
-		double kp = tunings["kp"].as<double>();
-		double ki = tunings["ki"].as<double>();
-		double kd = tunings["kd"].as<double>();
-		if(kp && ki && kd) {
+		if(tunings["kp"].isNull() || tunings["ki"].isNull() || tunings["kd"].isNull()) {
+			request->send(400);
+		}
+		else {
+			double kp = tunings["kp"].as<double>();
+			double ki = tunings["ki"].as<double>();
+			double kd = tunings["kd"].as<double>();
 			brew_machine.setTunings(kp, ki, kd);
 			request->send(200);
 		}
-		else request->send(400);
 	});
 	server.addHandler(handler);
 
