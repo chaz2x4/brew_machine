@@ -151,12 +151,12 @@ void test_function_gcp_eeprom_offset(){
 
 void test_function_gcp_eeprom_tunings(){
     double actualTunings[3];
-    double expectedTunings[3] = {11, 11, 11};
-    brew_machine.setTunings(11, 11, 11);
+    double expectedTunings[3] = {11, 12, 13};
+    brew_machine.setTunings(11, 12, 13);
     for(int i=0; i<3 ; i++) {
         EEPROM.get(TUNING_ADDRESS + i*8, actualTunings[i]);
+        TEST_ASSERT_EQUAL(expectedTunings[i], actualTunings[i]);
     }
-    TEST_ASSERT_EQUAL(expectedTunings, actualTunings);
 }
 
 void test_function_oled_increment_brew(){
@@ -215,6 +215,7 @@ void setup(){
     delay(2000);
     brew_machine.start();
     screen.start(&brew_machine);
+    EEPROM.begin(512);
     
     UNITY_BEGIN();
     RUN_TEST(test_function_gcp_set_brew_temp);
