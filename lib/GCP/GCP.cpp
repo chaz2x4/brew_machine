@@ -23,8 +23,6 @@ GCP::GCP()
 , outputQueue(Queue(websiteQueueSize))
 , brewTempManager(PID(&currentTemp, &brew_output, &targetTemp, Kp, Ki, Kd, P_ON_M, DIRECT))
 , steamTempManager(PID(&currentTemp, &steam_output, &targetSteamTemp, Kp, Ki, Kd, P_ON_M, DIRECT))
-// , autoTuner(PID_ATune(&currentTemp, &brew_output))
-// , isTuned(true)
 {}
 
 GCP::~GCP(){
@@ -146,7 +144,6 @@ String GCP::getOutput(){
 }
 
 String GCP::getTunings(){
-	// if(!isTuned) return "false";
 	String output;
     output += "{ \"kp\": ";
     output += Kp;
@@ -262,16 +259,8 @@ void GCP::refresh(ulong realTime) {
 	ulong now = millis();
 	if(now - logStartTime > logInterval) {
 		this->getCurrentTemp();
-		// if(!isTuned) {
-		// 	if(autoTuner.Runtime()){
-		// 		isTuned = true;
-		// 		setTunings(autoTuner.GetKp(), autoTuner.GetKi(), autoTuner.GetKd());
-		// 	}
-		// }
-		// else {
-			brewTempManager.Compute();
-			steamTempManager.Compute();
-		// }
+    brewTempManager.Compute();
+    steamTempManager.Compute();
 
 		if(lastTime < realTime) parseQueue(realTime);
 		lastTime = realTime;

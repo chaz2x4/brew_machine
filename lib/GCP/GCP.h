@@ -71,8 +71,6 @@ public:
     void startTimer(ulong);
     void stopTimer();
     void refresh(ulong);
-    // void autoTune();
-    // void cancelAutoTune();
 private:
     Adafruit_MAX31865 tempProbe;
     const double emergencyShutoffTemp;
@@ -111,9 +109,6 @@ private:
     Queue outputQueue;
     PID brewTempManager;
     PID steamTempManager;
-
-    // PID_ATune autoTuner;
-    // bool isTuned;
 
     double sensedCurrent();
     int regulateOutput(double);
