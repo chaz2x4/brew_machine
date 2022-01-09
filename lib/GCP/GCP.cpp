@@ -48,18 +48,32 @@ void GCP::start() {
 }
 
 void GCP::setTargetTemp(String currentMode, double temp) {
-	double minTemp = minBrewTemp;
-	double maxTemp = maxBrewTemp;
-	int tempAddress = BREW_TEMP_ADDRESS;
-	if(currentMode == "steam") {
+	double minTemp;
+	double maxTemp;
+	int tempAddress;
+	if(currentMode == "offset") {
+		minTemp = minOffset;
+		maxTemp = maxOffset;
+		tempAddress = OFFSET_ADDRESS;
+	}
+	else if(currentMode == "steam") {
 		minTemp = minSteamTemp;
 		maxTemp = maxSteamTemp;
 		tempAddress = STEAM_TEMP_ADDRESS;
 	}
+	else {
+		minTemp = minBrewTemp;
+		maxTemp = maxBrewTemp;
+		tempAddress = BREW_TEMP_ADDRESS;
+	}
+
 	if (temp < minTemp) temp = minTemp;
 	else if (temp > maxTemp) temp = maxTemp;
-	if(currentMode == "steam") this->targetSteamTemp = temp;
+
+	if(currentMode == "offset") this->tempOffset = temp;
+	else if(currentMode == "steam") this->targetSteamTemp = temp;
 	else this->targetTemp = temp;
+
 	EEPROM.put(tempAddress, temp);
 	EEPROM.commit();
 }
@@ -67,7 +81,8 @@ void GCP::setTargetTemp(String currentMode, double temp) {
 void GCP::incrementTemp(String currentMode) {
 	double temp;
 	double i = 0.5;
-	if(currentMode == "steam") { 
+	if(currentMode == "offset") temp = tempOffset;
+	else if(currentMode == "steam") { 
 		temp = targetSteamTemp;
 		i = 1;
 	}
@@ -79,7 +94,8 @@ void GCP::incrementTemp(String currentMode) {
 void GCP::decrementTemp(String currentMode) {
 	double temp;
 	double i = 0.5;
-	if(currentMode == "steam") {
+	if(currentMode == "offset") temp = tempOffset;
+	else if(currentMode == "steam") {
 		temp = targetSteamTemp;
 		i = 1;
 	}
@@ -90,6 +106,7 @@ void GCP::decrementTemp(String currentMode) {
 
 double GCP::getTargetTemp(String currentMode) {
 	if(currentMode == "steam") return this->targetSteamTemp;
+	else if(currentMode == "offset") return this->tempOffset;
 	else return this->targetTemp;
 }
 
@@ -114,18 +131,6 @@ double GCP::getCurrentTemp() {
 	temp += tempOffset;
 	this->currentTemp = temp;
 	return temp;
-}
-
-double GCP::getTempOffset(){
-	return this->tempOffset;
-}
-
-void GCP::setTempOffset(double offset){
-	if(offset > maxOffset) this->tempOffset = maxOffset;
-	else if(offset < minOffset) this->tempOffset = minOffset;
-	else this->tempOffset = offset;
-	EEPROM.put(OFFSET_ADDRESS, tempOffset);
-	EEPROM.commit();
 }
 
 String GCP::getOutput(){
@@ -207,7 +212,7 @@ void GCP::loadParameters(){
 
 	if(!isnan(brewTemp) && brewTemp >= minBrewTemp && brewTemp <= maxBrewTemp) targetTemp = brewTemp;
 	if(!isnan(steamTemp) && steamTemp >= minSteamTemp && steamTemp <= maxSteamTemp) targetSteamTemp = steamTemp;
-	if(!isnan(offset) && offset >= minOffset && steamTemp <= maxOffset) tempOffset = offset;
+	if(!isnan(offset) && offset >= minOffset && offset <= maxOffset) tempOffset = offset;
 
 	double tunings[3];
 	bool tuningsValid = true;
@@ -220,22 +225,6 @@ void GCP::loadParameters(){
 	}
 	if(tuningsValid) setTunings(tunings[0], tunings[1], tunings[2]);
 }
-
-// void GCP::autoTune() {
-// 	brew_output = 96;
-// 	autoTuner.SetOutputStep(96);
-// 	autoTuner.SetControlType(1);
-// 	autoTuner.SetNoiseBand(0.5);
-// 	autoTuner.SetLookbackSec(60);
-// 	isTuned = false;
-// }
-
-// void GCP::cancelAutoTune() {
-// 	autoTuner.Cancel();
-// 	brewTempManager.SetMode(AUTOMATIC);
-// 	steamTempManager.SetMode(AUTOMATIC);
-// 	isTuned = true;
-// }
 
 double GCP::sensedCurrent() {
 	return 1;

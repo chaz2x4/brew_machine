@@ -25,7 +25,7 @@ void loadParameters(){
 void saveParameters(){
     brew_machine.setTargetTemp("brew", savedTargetBrewTemp);
     brew_machine.setTargetTemp("steam", savedTargetSteamTemp);
-    brew_machine.setTempOffset(savedTargetOffset);
+    brew_machine.setTargetTemp("offset", savedTargetOffset);
     brew_machine.setTunings(savedTunings[0], savedTunings[1], savedTunings[2]);
 }
 
@@ -40,8 +40,8 @@ void test_function_gcp_set_steam_temp(){
 }
 
 void test_function_gcp_set_offset(){
-    brew_machine.setTempOffset(-10);
-    TEST_ASSERT_EQUAL(-10, brew_machine.getTempOffset());
+     brew_machine.setTargetTemp("offset", -10);
+    TEST_ASSERT_EQUAL(-10, brew_machine.getTargetTemp("offset"));
 }
 
 void test_function_gcp_increment_brew_temp(){
@@ -56,6 +56,12 @@ void test_function_gcp_increment_steam_temp(){
     TEST_ASSERT_EQUAL(151, brew_machine.getTargetTemp("steam"));
 }
 
+void test_function_gcp_increment_offset(){
+    brew_machine.setTargetTemp("offset", -10);
+    brew_machine.incrementTemp("offset");
+    TEST_ASSERT_EQUAL(-9.5, brew_machine.getTargetTemp("offset"));
+}
+
 void test_function_gcp_decrement_brew_temp(){
     brew_machine.setTargetTemp("brew", 95);
     brew_machine.decrementTemp("brew");
@@ -66,6 +72,12 @@ void test_function_gcp_decrement_steam_temp(){
     brew_machine.setTargetTemp("steam", 150);
     brew_machine.decrementTemp("steam");
     TEST_ASSERT_EQUAL(149, brew_machine.getTargetTemp("steam"));
+}
+
+void test_function_gcp_decrement_offset(){
+    brew_machine.setTargetTemp("offset", 10);
+    brew_machine.decrementTemp("offset");
+    TEST_ASSERT_EQUAL(9.5, brew_machine.getTargetTemp("offset"));
 }
 
 void test_function_gcp_brew_max_1(){
@@ -112,19 +124,31 @@ void test_function_gcp_steam_min_2(){
     TEST_ASSERT_EQUAL(140, brew_machine.getTargetTemp("steam"));
 }
 
-void test_function_gcp_offset_max(){
-    brew_machine.setTempOffset(20);
-    TEST_ASSERT_EQUAL(15, brew_machine.getTempOffset());
+void test_function_gcp_offset_max_1(){
+    brew_machine.setTargetTemp("offset", 20);
+    TEST_ASSERT_EQUAL(15, brew_machine.getTargetTemp("offset"));
 }
 
-void test_function_gcp_offset_min(){
-    brew_machine.setTempOffset(-20);
-    TEST_ASSERT_EQUAL(-15, brew_machine.getTempOffset());
+void test_function_gcp_offset_min_1(){
+    brew_machine.setTargetTemp("offset", -20);
+    TEST_ASSERT_EQUAL(-15, brew_machine.getTargetTemp("offset"));
+}
+
+void test_function_gcp_offset_max_2(){
+    brew_machine.setTargetTemp("offset", 20);
+    brew_machine.incrementTemp("offset");
+    TEST_ASSERT_EQUAL(15, brew_machine.getTargetTemp("offset"));
+}
+
+void test_function_gcp_offset_min_2(){
+    brew_machine.setTargetTemp("offset", -20);
+    brew_machine.decrementTemp("offset");
+    TEST_ASSERT_EQUAL(-15, brew_machine.getTargetTemp("offset"));
 }
 
 void test_function_gcp_current_temp(){
     double temp = brew_machine.getActualTemp();
-    double offset = brew_machine.getTempOffset();
+    double offset = brew_machine.getTargetTemp("offset");
     TEST_ASSERT_EQUAL(temp + offset, brew_machine.getCurrentTemp());
 }
 
@@ -149,7 +173,7 @@ void test_function_gcp_eeprom_steam(){
 
 void test_function_gcp_eeprom_offset(){
     double temp;
-    brew_machine.setTempOffset(-11);
+    brew_machine.setTargetTemp("offset", -11);
     EEPROM.get(OFFSET_ADDRESS, temp);
     TEST_ASSERT_EQUAL(-11, temp);
 }
@@ -242,6 +266,8 @@ void setup(){
     RUN_TEST(test_function_gcp_decrement_brew_temp);
     RUN_TEST(test_function_gcp_increment_steam_temp);
     RUN_TEST(test_function_gcp_decrement_steam_temp);
+    RUN_TEST(test_function_gcp_increment_offset);
+    RUN_TEST(test_function_gcp_decrement_offset);
     RUN_TEST(test_function_gcp_brew_max_1);
     RUN_TEST(test_function_gcp_brew_min_1);
     RUN_TEST(test_function_gcp_steam_max_1);
@@ -250,8 +276,10 @@ void setup(){
     RUN_TEST(test_function_gcp_brew_min_2);
     RUN_TEST(test_function_gcp_steam_max_2);
     RUN_TEST(test_function_gcp_steam_min_2);
-    RUN_TEST(test_function_gcp_offset_max);
-    RUN_TEST(test_function_gcp_offset_min);
+    RUN_TEST(test_function_gcp_offset_max_1);
+    RUN_TEST(test_function_gcp_offset_min_1);
+    RUN_TEST(test_function_gcp_offset_max_2);
+    RUN_TEST(test_function_gcp_offset_min_2);
     RUN_TEST(test_function_gcp_current_temp);
     RUN_TEST(test_function_gcp_set_tunings);
     RUN_TEST(test_function_gcp_eeprom_brew);
