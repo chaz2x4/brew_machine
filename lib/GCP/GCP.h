@@ -59,15 +59,13 @@ public:
     void start();
     void incrementTemp(String);
     void decrementTemp(String);
-    double getTargetTemp();
-    double getTargetSteamTemp();
+    double getTargetTemp(String);
     double getActualTemp();
     double getCurrentTemp();
     double getTempOffset();
     String getOutput();
     String getTunings();
-    void setTargetTemp(double);
-    void setTargetSteamTemp(double);
+    void setTargetTemp(String, double);
     void setTempOffset(double);
     void setTunings(double, double, double);
     void refresh(ulong);

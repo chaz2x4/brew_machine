@@ -109,11 +109,11 @@ void OLED::refresh(){
     ulong wait;
     ulong now = millis();
     char* modeTitle = "Brew";
-    double targetTemp = gcp->getTargetTemp();
+    double targetTemp = gcp->getTargetTemp("brew");
     double currentTemp = gcp->getCurrentTemp();
     if(this->currentMode == "steam") {
         modeTitle = "Steam";
-        targetTemp = gcp->getTargetSteamTemp();
+        targetTemp = gcp->getTargetTemp("steam");
     }
     if(this->isEditable) {
         if(flash) display.printf("Set %s\n %#.1f C", modeTitle, targetTemp);

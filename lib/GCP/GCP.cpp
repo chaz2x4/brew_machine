@@ -47,19 +47,20 @@ void GCP::start() {
 	steamTempManager.SetSampleTime(logInterval);
 }
 
-void GCP::setTargetTemp(double temp) {
-	if (temp < minBrewTemp) temp = minBrewTemp;
-	else if (temp > maxBrewTemp) temp = maxBrewTemp;
-	this->targetTemp = temp;
-	EEPROM.put(BREW_TEMP_ADDRESS, temp);
-	EEPROM.commit();
-}
-
-void GCP::setTargetSteamTemp(double temp) {
-	if (temp < minSteamTemp) temp = minSteamTemp;
-	else if (temp > maxSteamTemp) temp = maxSteamTemp;
-	this->targetSteamTemp = temp;
-	EEPROM.put(STEAM_TEMP_ADDRESS, temp);
+void GCP::setTargetTemp(String currentMode, double temp) {
+	double minTemp = minBrewTemp;
+	double maxTemp = maxBrewTemp;
+	int tempAddress = BREW_TEMP_ADDRESS;
+	if(currentMode == "steam") {
+		minTemp = minSteamTemp;
+		maxTemp = maxSteamTemp;
+		tempAddress = STEAM_TEMP_ADDRESS;
+	}
+	if (temp < minTemp) temp = minTemp;
+	else if (temp > maxTemp) temp = maxTemp;
+	if(currentMode == "steam") this->targetSteamTemp = temp;
+	else this->targetTemp = temp;
+	EEPROM.put(tempAddress, temp);
 	EEPROM.commit();
 }
 
@@ -72,8 +73,7 @@ void GCP::incrementTemp(String currentMode) {
 	}
 	else temp = targetTemp;
 	temp += i;
-	if(currentMode == "steam") this->setTargetSteamTemp(temp);
-	else this->setTargetTemp(temp);
+	this->setTargetTemp(currentMode, temp);
 }
 
 void GCP::decrementTemp(String currentMode) {
@@ -85,16 +85,12 @@ void GCP::decrementTemp(String currentMode) {
 	}
 	else temp = targetTemp;
 	temp -= i;
-	if(currentMode == "steam") this->setTargetSteamTemp(temp);
-	else this->setTargetTemp(temp);
+	this->setTargetTemp(currentMode, temp);
 }
 
-double GCP::getTargetTemp() {
-	return this->targetTemp;
-}
-
-double GCP::getTargetSteamTemp() {
-	return this->targetSteamTemp;
+double GCP::getTargetTemp(String currentMode) {
+	if(currentMode == "steam") return this->targetSteamTemp;
+	else return this->targetTemp;
 }
 
 double GCP::getActualTemp() {
