@@ -19,7 +19,7 @@ public:
     ~OLED();
     void start(GCP*);
     void eventListener();
-    void refresh();
+    void refresh(ulong);
     void changeMode();
     String getCurrentMode();
     void incrementTemp();
@@ -29,6 +29,7 @@ private:
     GCP *gcp;
     String currentMode;
     
+    ulong realTime;
     ulong timeLastButton;   //records the last time a button was pressed
     ulong lastTime;         // records time of event
     ulong downTime;         // records when button was pressed and held for hold functionality

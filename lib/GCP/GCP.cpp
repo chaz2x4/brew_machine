@@ -153,6 +153,20 @@ String GCP::getTunings(){
     return output;
 }
 
+void GCP::startTimer(ulong realTime){
+	this->timerStartTime = realTime;
+	this->timerIsRunning = true;
+}
+
+void GCP::stopTimer() {
+	this->timerIsRunning = false;
+}
+
+double GCP::getCurrentTimer(ulong now){
+	if(timerIsRunning) return (now - timerStartTime) / 1000;
+	else return 0;
+}
+
 void GCP::setTunings(double kp, double ki, double kd){
 	this->Kp = kp;
 	this->Ki = ki;

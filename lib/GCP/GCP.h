@@ -65,9 +65,12 @@ public:
     double getTempOffset();
     String getOutput();
     String getTunings();
+    double getCurrentTimer(ulong);
     void setTargetTemp(String, double);
     void setTempOffset(double);
     void setTunings(double, double, double);
+    void startTimer(ulong);
+    void stopTimer();
     void refresh(ulong);
     // void autoTune();
     // void cancelAutoTune();
@@ -97,7 +100,9 @@ private:
 
     ulong windowStartTime;
     ulong logStartTime;
+    ulong timerStartTime;
     ulong lastTime;
+    bool timerIsRunning;
 
     double Kp;
     double Ki;

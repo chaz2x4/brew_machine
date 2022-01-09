@@ -8,7 +8,26 @@ double savedTargetBrewTemp;
 double savedTargetSteamTemp;
 double savedTargetOffset;
 double savedTunings[3];
+ulong timerStartTime;
 
+int currentLoop = 0;
+int maxLoops = 10;
+
+void loadParameters(){
+    EEPROM.get(BREW_TEMP_ADDRESS, savedTargetBrewTemp);
+    EEPROM.get(STEAM_TEMP_ADDRESS, savedTargetSteamTemp);
+    EEPROM.get(OFFSET_ADDRESS, savedTargetOffset);
+    for(int i=0;i<3;i++) {
+        EEPROM.get(TUNING_ADDRESS + i*8, savedTunings[i]);
+    }
+}
+
+void saveParameters(){
+    brew_machine.setTargetTemp("brew", savedTargetBrewTemp);
+    brew_machine.setTargetTemp("steam", savedTargetSteamTemp);
+    brew_machine.setTempOffset(savedTargetOffset);
+    brew_machine.setTunings(savedTunings[0], savedTunings[1], savedTunings[2]);
+}
 
 void test_function_gcp_set_brew_temp(){
     brew_machine.setTargetTemp("brew", 95);
@@ -197,19 +216,25 @@ void test_function_oled_decrement_steam(){
     }
 }
 
+void test_function_gcp_timer_running(){
+    double now = millis();
+    double timer = brew_machine.getCurrentTimer(now);
+    TEST_ASSERT_EQUAL((now - timerStartTime) / 1000, timer);
+}
+
+void test_function_gcp_timer_not_running(){
+    double now = millis();
+    double timer = brew_machine.getCurrentTimer(now);
+    TEST_ASSERT_EQUAL(0, timer);
+}
+
 void setup(){
     delay(2000);
     brew_machine.start();
     screen.start(&brew_machine);
     EEPROM.begin(512);
+    loadParameters();    
 
-    EEPROM.get(BREW_TEMP_ADDRESS, savedTargetBrewTemp);
-    EEPROM.get(STEAM_TEMP_ADDRESS, savedTargetSteamTemp);
-    EEPROM.get(OFFSET_ADDRESS, savedTargetOffset);
-    for(int i=0;i<3;i++) {
-        EEPROM.get(TUNING_ADDRESS + i*8, savedTunings[i]);
-    }
-    
     UNITY_BEGIN();
     RUN_TEST(test_function_gcp_set_brew_temp);
     RUN_TEST(test_function_gcp_set_steam_temp);
@@ -243,15 +268,20 @@ void setup(){
     RUN_TEST(test_function_oled_decrement_steam);
     // RUN_TEST(test_function_oled_decrement_offset);
 
-    brew_machine.setTargetTemp("brew", savedTargetBrewTemp);
-    brew_machine.setTargetTemp("steam", savedTargetSteamTemp);
-    brew_machine.setTempOffset(savedTargetOffset);
-    brew_machine.setTunings(savedTunings[0], savedTunings[1], savedTunings[2]);
-    
-    UNITY_END();
+    timerStartTime = millis();
+    brew_machine.startTimer(timerStartTime);
 }
 
-
 void loop(){
-
+    if(currentLoop < maxLoops) {
+        RUN_TEST(test_function_gcp_timer_running);
+        delay(1000);
+        currentLoop++;
+    }
+    else {
+        brew_machine.stopTimer();
+        RUN_TEST(test_function_gcp_timer_not_running);
+        UNITY_END();
+        saveParameters();
+    }
 }

@@ -98,7 +98,8 @@ bool OLED::checkedIfTimedout(){
     return false;
 }
 
-void OLED::refresh(){
+void OLED::refresh(ulong realTime){
+    this->realTime = realTime;
     this->eventListener();
     if(checkedIfTimedout()) return;
     display.setTextSize(2);

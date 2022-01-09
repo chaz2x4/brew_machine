@@ -119,7 +119,7 @@ void loop() {
 
 	ulong currentTime = timeClient.getEpochTime();
 	if(currentTime) {
-		brew_machine.refresh(timeClient.getEpochTime());
-		screen.refresh();
+		brew_machine.refresh(currentTime);
+		screen.refresh(currentTime);
 	}
 }
