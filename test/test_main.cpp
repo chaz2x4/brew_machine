@@ -217,15 +217,14 @@ void test_function_oled_decrement_steam(){
 }
 
 void test_function_gcp_timer_running(){
-    double now = millis();
+    ulong now = millis();
     double timer = brew_machine.getCurrentTimer(now);
     TEST_ASSERT_EQUAL((now - timerStartTime) / 1000, timer);
 }
 
-void test_function_gcp_timer_not_running(){
-    double now = millis();
-    double timer = brew_machine.getCurrentTimer(now);
-    TEST_ASSERT_EQUAL(0, timer);
+void test_function_gcp_output(){
+    ulong now = millis();
+    brew_machine.refresh(now);
 }
 
 void setup(){
@@ -259,7 +258,6 @@ void setup(){
     RUN_TEST(test_function_gcp_eeprom_steam);
     RUN_TEST(test_function_gcp_eeprom_offset);
     RUN_TEST(test_function_gcp_eeprom_tunings);
-    // RUN_TEST(test_function_gcp_output);
 
     RUN_TEST(test_function_oled_increment_brew);
     RUN_TEST(test_function_oled_increment_steam);
@@ -269,19 +267,19 @@ void setup(){
     // RUN_TEST(test_function_oled_decrement_offset);
 
     timerStartTime = millis();
-    brew_machine.startTimer(timerStartTime);
 }
 
 void loop(){
     if(currentLoop < maxLoops) {
         RUN_TEST(test_function_gcp_timer_running);
+        RUN_TEST(test_function_gcp_output);
         delay(1000);
         currentLoop++;
     }
     else {
-        brew_machine.stopTimer();
-        RUN_TEST(test_function_gcp_timer_not_running);
-        UNITY_END();
         saveParameters();
+        digitalWrite(HEATER_PIN, LOW);
+		digitalWrite(STEAM_PIN, LOW);
+        UNITY_END();
     }
 }

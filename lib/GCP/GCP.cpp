@@ -155,15 +155,10 @@ String GCP::getTunings(){
 
 void GCP::startTimer(ulong realTime){
 	this->timerStartTime = realTime;
-	this->timerIsRunning = true;
-}
-
-void GCP::stopTimer() {
-	this->timerIsRunning = false;
 }
 
 double GCP::getCurrentTimer(ulong now){
-	if(timerIsRunning) return (now - timerStartTime) / 1000;
+	if(brewSwitchOn) return (now - timerStartTime) / 1000;
 	else return 0;
 }
 
@@ -242,6 +237,10 @@ void GCP::loadParameters(){
 // 	isTuned = true;
 // }
 
+double GCP::sensedCurrent() {
+	return 1;
+}
+
 int GCP::regulateOutput(double output) {
 	int roundedOutput = int(output);
 	int powerPeriod = int(1000/powerFrequency);
@@ -265,8 +264,13 @@ void GCP::refresh(ulong realTime) {
 		If temperature rises above maximum safe temperature turn off relay
 	*/
 
-	ulong now = millis();
+	double currentCurrent = sensedCurrent();
+	if(!brewSwitchOn && currentCurrent > 0) {
+		brewSwitchOn = true;
+		this->startTimer(realTime);
+	} else if(currentCurrent == 0) brewSwitchOn = false;
 
+	ulong now = millis();
 	if(now - logStartTime > logInterval) {
 		this->getCurrentTemp();
 		// if(!isTuned) {

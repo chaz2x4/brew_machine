@@ -102,7 +102,8 @@ private:
     ulong logStartTime;
     ulong timerStartTime;
     ulong lastTime;
-    bool timerIsRunning;
+
+    bool brewSwitchOn;
 
     double Kp;
     double Ki;
@@ -115,6 +116,7 @@ private:
     // PID_ATune autoTuner;
     // bool isTuned;
 
+    double sensedCurrent();
     int regulateOutput(double);
     void parseQueue(ulong);
     void loadParameters();
