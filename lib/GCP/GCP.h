@@ -6,7 +6,6 @@
 #include <Adafruit_MAX31865.h>
 #include <EEPROM.h>
 #include <PID_v1.h>
-// #include <PID_AutoTune_v0.h>
 
 #define HEATER_PIN 13
 #define STEAM_PIN 27
