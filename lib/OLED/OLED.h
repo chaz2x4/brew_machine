@@ -20,6 +20,8 @@ public:
     void start(GCP*);
     void eventListener();
     void refresh();
+    void changeMode();
+    String getCurrentMode();
     void incrementTemp();
     void decrementTemp();
 private:
@@ -36,8 +38,6 @@ private:
     int lastButtonState[3]; // checks if button was pressed by comparing state to buttonState
     const int screenTimeout; // amount of milliseconds before screen goes blank
     const int triggerTime;  // amount of time to hold button for settings change
-
-    void changeMode();
     bool checkedIfTimedout();
 };
 

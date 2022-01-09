@@ -159,8 +159,56 @@ void test_function_gcp_eeprom_tunings(){
     TEST_ASSERT_EQUAL(expectedTunings, actualTunings);
 }
 
-void test_function_gcp_output(){
+void test_function_oled_increment_brew(){
+    String currentMode = screen.getCurrentMode();
+    double target = brew_machine.getTargetTemp("brew");
+    if(currentMode == "brew") {
+        screen.incrementTemp();
+        TEST_ASSERT_EQUAL(target + 0.5, brew_machine.getTargetTemp("brew"));
+    }
+    else {
+        screen.changeMode();
+        test_function_oled_increment_brew();
+    }
+}
 
+void test_function_oled_decrement_brew(){
+    String currentMode = screen.getCurrentMode();
+    double target = brew_machine.getTargetTemp("brew");
+    if(currentMode == "brew") {
+        screen.decrementTemp();
+        TEST_ASSERT_EQUAL(target - 0.5, brew_machine.getTargetTemp("brew"));
+    }
+    else {
+        screen.changeMode();
+        test_function_oled_decrement_brew();
+    }
+}
+
+void test_function_oled_increment_steam(){
+    String currentMode = screen.getCurrentMode();
+    double target = brew_machine.getTargetTemp("steam");
+    if(currentMode == "steam") {
+        screen.incrementTemp();
+        TEST_ASSERT_EQUAL(target + 1, brew_machine.getTargetTemp("steam"));
+    }
+    else {
+        screen.changeMode();
+        test_function_oled_increment_steam();
+    }
+}
+
+void test_function_oled_decrement_steam(){
+    String currentMode = screen.getCurrentMode();
+    double target = brew_machine.getTargetTemp("steam");
+    if(currentMode == "steam") {
+        screen.decrementTemp();
+        TEST_ASSERT_EQUAL(target - 1, brew_machine.getTargetTemp("steam"));
+    }
+    else {
+        screen.changeMode();
+        test_function_oled_decrement_steam();
+    }
 }
 
 void setup(){
@@ -192,7 +240,14 @@ void setup(){
     RUN_TEST(test_function_gcp_eeprom_steam);
     RUN_TEST(test_function_gcp_eeprom_offset);
     RUN_TEST(test_function_gcp_eeprom_tunings);
-    RUN_TEST(test_function_gcp_output);
+    // RUN_TEST(test_function_gcp_output);
+
+    RUN_TEST(test_function_oled_increment_brew);
+    RUN_TEST(test_function_oled_increment_steam);
+    // RUN_TEST(test_function_oled_increment_offset);
+    RUN_TEST(test_function_oled_decrement_brew);
+    RUN_TEST(test_function_oled_decrement_steam);
+    // RUN_TEST(test_function_oled_decrement_offset);
     UNITY_END();
 }
 

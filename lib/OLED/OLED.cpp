@@ -140,6 +140,10 @@ void OLED::changeMode(){
     this->currentMode = this->currentMode == "brew" ? "steam" : "brew";
 }
 
+String OLED::getCurrentMode(){
+    return this->currentMode;;
+}
+
 void OLED::incrementTemp(){
     gcp->incrementTemp(this->currentMode);
 }
