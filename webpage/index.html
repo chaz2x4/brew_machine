@@ -254,8 +254,8 @@
                 }
             })();
 
-            (function refreshTemps(){
-                return callServer.get("/get_temps", function(response){
+            setInterval(function(){
+                callServer.get("/get_temps", function(response){
                     var requestedLabels = [];
                     var requestedTempData = [];
                     var requestedBrewOutput = [];
@@ -288,10 +288,10 @@
                     }        
 
                     updateElements();
-                    refreshTemps();
                     if(!isTuned && !isTuningsOpen) refreshTunings();
                 });
-            })();
+            }, 1000);
+
 
             function refreshTunings(isFirstLoad) {
                 callServer.get("/get_tunings", function(response){
