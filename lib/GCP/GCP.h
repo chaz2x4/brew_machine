@@ -6,10 +6,10 @@
 #include <Adafruit_MAX31865.h>
 #include <EEPROM.h>
 #include <PID_v1.h>
-#include <PID_AutoTune_v0.h>
 
 #define HEATER_PIN 13
 #define STEAM_PIN 27
+#define THERMOPROBE_PIN A5
 #define RREF 430
 
 #define BREW_TEMP_ADDRESS 0
@@ -23,7 +23,7 @@ struct Queue {
 
     Queue(int c) {
         front = rear = 0;
-        capacity = c;
+        capacity = c + 1;
         queue = new String[capacity];
     }
 
@@ -59,20 +59,17 @@ public:
     void start();
     void incrementTemp(String);
     void decrementTemp(String);
-    double getTargetTemp();
-    double getTargetSteamTemp();
+    double getTargetTemp(String);
     double getActualTemp();
     double getCurrentTemp();
-    double getTempOffset();
     String getOutput();
     String getTunings();
-    void setTargetTemp(double);
-    void setTargetSteamTemp(double);
-    void setTempOffset(double);
+    double getCurrentTimer(ulong);
+    void setTargetTemp(String, double);
     void setTunings(double, double, double);
+    void startTimer(ulong);
+    void stopTimer();
     void refresh(ulong);
-    void autoTune();
-    void cancelAutoTune();
 private:
     Adafruit_MAX31865 tempProbe;
     const double emergencyShutoffTemp;
@@ -85,6 +82,7 @@ private:
     const int websiteQueueSize;
     const ulong windowSize;
     const ulong logInterval;
+    const int powerFrequency;
 
     double currentTemp;
     double tempOffset;
@@ -93,24 +91,26 @@ private:
 
     double brew_output;
     double steam_output;
+    int lastBrewOutput;
+    int lastSteamOutput;
 
-    double lastBrewOutput;
-    double lastSteamOutput;
     ulong windowStartTime;
     ulong logStartTime;
+    ulong timerStartTime;
+    ulong lastTime;
+
+    bool brewSwitchOn;
 
     double Kp;
     double Ki;
     double Kd;
 
-    String outputString;
     Queue outputQueue;
     PID brewTempManager;
     PID steamTempManager;
 
-    PID_ATune autoTuner;
-    bool isTuned;
-
+    double sensedCurrent();
+    int regulateOutput(double);
     void parseQueue(ulong);
     void loadParameters();
 };

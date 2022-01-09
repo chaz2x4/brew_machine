@@ -13,13 +13,19 @@
 #define BUTTON_B 32 //pin 32; cycle modes; decrement temperature 
 #define BUTTON_C 14 //pin 14; press and hold on brew screen to change temperature
 
+#define OLED_WIDTH 128
+#define OLED_HEIGHT 32
+#define OLED_I2C_ADDRESS 0x3C
+
 class OLED {
 public:
     OLED();
     ~OLED();
     void start(GCP*);
     void eventListener();
-    void refresh();
+    void refresh(ulong);
+    void changeMode();
+    String getCurrentMode();
     void incrementTemp();
     void decrementTemp();
 private:
@@ -27,6 +33,7 @@ private:
     GCP *gcp;
     String currentMode;
     
+    ulong realTime;
     ulong timeLastButton;   //records the last time a button was pressed
     ulong lastTime;         // records time of event
     ulong downTime;         // records when button was pressed and held for hold functionality
@@ -36,8 +43,6 @@ private:
     int lastButtonState[3]; // checks if button was pressed by comparing state to buttonState
     const int screenTimeout; // amount of milliseconds before screen goes blank
     const int triggerTime;  // amount of time to hold button for settings change
-
-    void changeMode();
     bool checkedIfTimedout();
 };
 

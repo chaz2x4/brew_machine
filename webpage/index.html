@@ -12,8 +12,8 @@
             var cycleTime = 1000;
             var mode = 'brew';
             var tempData = [];
-            var brewData = [];
-            var steamData = [];
+            var targetData = {};
+            var outputData = {};
             var labels = [];
             var data = {
                 labels: labels,
@@ -22,21 +22,37 @@
                     label: 'Temperature',
                     data: [],
                     backgroundColor: function (context) {
-                        var pointTemp = context.dataset.data[context.dataIndex];
-                        var targetTemp = (mode == 'brew') ? brewTarget : steamTarget;
-                        var acceptableError = (mode == 'brew') ? 0.5 : 1.0;
-                        if(pointTemp > (targetTemp + acceptableError)) return '#FF6384';
-                        if(pointTemp < (targetTemp - acceptableError)) return '#331F2E';
-                        else return '#63FF8F';
+                        if(context.dataset.data.length) {
+                            var pointTemp = context.dataset.data[context.dataIndex];
+                            var targetTemp = targetData[mode][context.dataIndex];
+                            var acceptableError = (mode == 'brew') ? 0.5 : 1.0;
+                            if(pointTemp > (targetTemp + acceptableError)) return '#FF6384';
+                            if(pointTemp < (targetTemp - acceptableError)) return '#331F2E';
+                            else return '#63FF8F';
+                        }
                     },
-                    tension: 0.4,
+                    borderWidth: 2,
+                    tension: 0.1,
                     yAxisID: 'y',
                 }, {
                     type: 'bar',
                     label: 'Output',
-                    data: brewData,
-                    backgroundColor: "#63FFDD",
+                    data: outputData.brew,
+                    backgroundColor: '#63FFDD',
                     yAxisID: 'y1',
+                }, {
+                    type: 'line',
+                    label: 'Target',
+                    data: targetData,
+                    borderColor: '#4285F4',
+                    borderWidth: 2,
+                    yAxisID: 'y',
+                    elements: {
+                        point: {
+                            radius: 0
+                        }
+                    },
+                    animations: 'off',
                 }],
             };
 
@@ -71,11 +87,6 @@
                             text: "Temperature",
                         },
                         position: 'left',
-                        grid: {
-                            color: function(context) {
-                                if(context.tick.value == brewTarget) return "#FF6384";
-                            },
-                        },
                     },
                     y1: {
                         suggestedMax: cycleTime,
@@ -93,28 +104,22 @@
                 id: "brew",
                 handler() {
                     chart.options.plugins.title.text = "Brew Temperature";
-                    chart.options.scales.y.grid.color = function(context) {
-                        if(context.tick.value == brewTarget) return "#FF6384";
-                    };
-                    chart.data.datasets[1].data = brewData;
+                    chart.data.datasets[1].data = outputData.brew;
+                    chart.data.datasets[2].data = targetData.brew;
                     mode = 'brew';
                     updateElements();
                     chart.render();
-                    refreshTunings();
                 },
             }, {
                 name: "Steam Temps",
                 id: "steam",
                 handler() {
                     chart.options.plugins.title.text = "Steam Temperature";
-                    chart.options.scales.y.grid.color = function(context) {
-                        if(context.tick.value == steamTarget) return "#FF6384";
-                    };
-                    chart.data.datasets[1].data = steamData;
+                    chart.data.datasets[1].data = outputData.steam;
+                    chart.data.datasets[2].data = targetData.steam;
                     mode = 'steam';
                     updateElements();
                     chart.render();
-                    refreshTunings();
                 }
             }];
             
@@ -140,78 +145,71 @@
             }
 
             function incrementTarget(){
-                var maxTemp = (mode == "brew") ? 105 : 155;
+                var maxTemp = (mode == "brew") ? 115 : 160;
                 if(mode == "brew") brewTarget = (brewTarget < maxTemp) ? brewTarget + 0.5 : maxTemp;
                 else steamTarget = (steamTarget < maxTemp) ? steamTarget + 1 : maxTemp;
-                callServer.post("/increment_target", mode);
+                callServer.post("/increment_target?mode=" + mode);
                 updateElements();
             }
 
             function decrementTarget(){
-                var minTemp = (mode == "brew") ? 85 : 145;
+                var minTemp = (mode == "brew") ? 85 : 140;
                 if(mode == "brew") brewTarget = (brewTarget > minTemp) ? brewTarget - 0.5 : minTemp;
                 else steamTarget = (steamTarget > minTemp) ? steamTarget - 1 : minTemp;
-                callServer.post("/decrement_target", mode);
+                callServer.post("/decrement_target?mode=" + mode);
                 updateElements();
             }
 
             function incrementOffset(){
                 if(tempOffset < 15) tempOffset += 0.5;
-                callServer.post("/set_offset", tempOffset);
+                callServer.post("/increment_target?mode=offset");
                 updateElements();
             }
 
             function decrementOffset(){
                 if(tempOffset > -15) tempOffset -= 0.5;
-                callServer.post("/set_offset", tempOffset);
+                callServer.post("/decrement_target?mode=offset");
                 updateElements();
             }
 
-            var tunings_open = false;
+            var isTuningsOpen = false;
             function changeTunings() {
                 var button = this;
-                if(tunings_open) {
+                if(isTuningsOpen) {
                     button.classList.remove('active');
                     button.innerHTML = "Setting Tunings...";
                     button.disabled = true;
-                    tunings_open = false;
+                    isTuningsOpen = false;
+                    isTuned = false;
                     var kp = document.getElementById("kp");
                     var ki = document.getElementById("ki");
                     var kd = document.getElementById("kd");
-                    var tunings = [kp.value, ki.value, kd.value];
-                    autoTuningButton.classList.add("d-none");
-                    callServer.put("/set_tunings", tunings , function(){
+                    var tunings = { "kp" : kp.value, "ki": ki.value, "kd": kd.value };
+                    callServer.put("/set_tunings", JSON.stringify(tunings), function(){
+                        isTuned = true;
                         button.disabled = false;
                         button.innerHTML = "Set Tunings:";
                     })
                 }
                 else{
+                    isTuningsOpen = true;
                     changeTuningButtons();
-                    tunings_open = true;
+                    refreshTunings();
                 }
             }
 
             var isTuned = true;
-            function changeAutoTune(){
-                if(isTuned) callServer.post("/autotune");
-                else callServer.post("/autotune/cancel");
-                isTuned = !isTuned;
-                changeTuningButtons();
-                refreshTunings();
-            }
-            
             function changeTuningButtons() {
                 if(isTuned) {
-                    tuningButton.classList.add('active');
-                    tuningButton.innerHTML = "Submit";
                     tuningButton.disabled = false;
-                    autoTuningButton.innerHTML = "Auto Tune";
-                    autoTuningButton.classList.remove("d-none");
-                } else {
-                    tuningButton.innerHTML = "Tuning...";
-                    tuningButton.disabled = true;
-                    autoTuningButton.innerHTML = "Cancel";
-                    autoTuningButton.classList.remove("d-none");
+                    if(isTuningsOpen) {
+                        tuningButton.innerHTML = "Submit";
+                        tuningButton.classList.add('active');
+                    }
+                    else {
+                        tuningButton.innerHTML = "Set Tunings:";
+                        tuningButton.classList.remove('active');
+                    }
                 }
             }
 
@@ -231,7 +229,10 @@
                 async function request(url, method, data){
                     const response = await fetch(url, {
                         method: method,
-                        body: data
+                        body: data,
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
                     });
                     return response;
                 }
@@ -252,34 +253,46 @@
                 }
             })();
 
-            (function refreshTemps(){
-                return callServer.get("/get_temps", function(response){
+            setInterval(function(){
+                callServer.get("/get_temps", function(response){
                     var requestedLabels = [];
                     var requestedTempData = [];
-                    var requestedBrewData = [];
-                    var requestedSteamData = [];
-
-                    if(brewTarget == null) [brewTarget, steamTarget, tempOffset] = [response.targets.brew, response.targets.steam, response.targets.offset];
-
-                    var sortedOutputs = response.outputs.sort((a, b) => a.time - b.time);
-                    sortedOutputs.forEach(output => {
+                    var requestedBrewOutput = [];
+                    var requestedSteamOutput = [];
+                    var requestedBrewTargets = [];
+                    var requestedSteamTargets = [];
+                    
+                    var sortedOutputs = response.sort((a, b) => a.time - b.time);
+                    var lastOutput = sortedOutputs[sortedOutputs.length - 1];
+                    if(brewTarget == null) [brewTarget, steamTarget, tempOffset] = [lastOutput.targets.brew, lastOutput.targets.steam, lastOutput.targets.offset];
+                    
+                    sortedOutputs.forEach(output => {                        
                         requestedLabels.push(output.time * 1000);
                         requestedTempData.push(output.temperature);
-                        requestedBrewData.push(output.outputs.brew);
-                        requestedSteamData.push(output.outputs.steam);
+                        requestedBrewOutput.push(output.outputs.brew);
+                        requestedSteamOutput.push(output.outputs.steam);
+                        requestedBrewTargets.push(output.targets.brew);
+                        requestedSteamTargets.push(output.targets.steam);
                     })
 
                     chart.data.labels = requestedLabels;
                     chart.data.datasets[0].data = tempData = requestedTempData;
-                    if(mode == 'brew') { chart.data.datasets[1].data = brewData = requestedBrewData }
-                    else { chart.data.datasets[1].data = steamData = requestedSteamData }        
+                    if(mode == 'brew') { 
+                        chart.data.datasets[1].data = outputData.brew = requestedBrewOutput;
+                        chart.data.datasets[2].data = targetData.brew = requestedBrewTargets;
+                    }
+                    else { 
+                        chart.data.datasets[1].data = outputData.steam = requestedSteamOutput;
+                        chart.data.datasets[2].data = targetData.steam = requestedSteamTargets;
+                    }        
 
                     updateElements();
-                    refreshTemps();
+                    if(!isTuned && !isTuningsOpen) refreshTunings();
                 });
-            })();
+            }, 1000);
 
-            function refreshTunings() {
+
+            function refreshTunings(isFirstLoad) {
                 callServer.get("/get_tunings", function(response){
                     if(response) {                        
                         Object.entries(response).forEach(entry => {
@@ -288,23 +301,23 @@
                             input.value = value;
                         });
                         isTuned = true;
+                        if(!isFirstLoad) changeTuningButtons();
                     }
-                    else {
+                    else { 
+                        if(!isTuned) return;
                         isTuned = false;
                         changeTuningButtons();
                     }
                 });
             }
 
-            refreshTunings();
+            refreshTunings(true);
             document.getElementById("targetplus").onclick = incrementTarget;
             document.getElementById("targetminus").onclick = decrementTarget;
             document.getElementById("offsetplus").onclick = incrementOffset;
             document.getElementById("offsetminus").onclick = decrementOffset;
             tuningButton = document.getElementById("tuning_button");
-            autoTuningButton = document.getElementById("autotuning_button");
             tuningButton.onclick = changeTunings;
-            autoTuningButton.onclick= changeAutoTune;
         }
     </script>
 </head>
@@ -339,9 +352,6 @@
             <button class="btn btn-outline-secondary" type="button" id="tuning_button" data-bs-toggle="collapse" data-bs-target="#tunings_tab">
                 Set Tunings:
             </button>
-            <button class="btn btn-outline-secondary d-none" type="button" data-bs-toggle="collapse" data-bs-target="#tunings_tab" id="autotuning_button">
-                Auto Tune
-            </button>
         </p>
         <div class="collapse" id="tunings_tab">
             <form class="accordion-body" id="tunings-form">
@@ -349,20 +359,14 @@
                     <div class="tuning-button input-group col">
                         <span for="kp" class="input-group-text"> Kp: </span>
                         <input class="tuning-input form-control" type="text" id="kp" value="" placeholder="Proportional" min="0">
-                        <button class="tuning-button btn btn-outline-secondary" type="button" id="kpplus"> + </button>
-                        <button class="tuning-button btn btn-outline-secondary" type="button" id="kpminus"> - </button>
                     </div>
                     <div class="tuning-button input-group col">
                         <span for="kp" class="input-group-text"> Ki: </span>
                         <input class="tuning-input form-control" type="text" id="ki" value="" placeholder="Integral" min="0">
-                        <button class="tuning-button btn btn-outline-secondary" type="button" id="kiplus"> + </button>
-                        <button class="tuning-button btn btn-outline-secondary" type="button" id="kiminus"> - </button>
                     </div>
                     <div class="tuning-button input-group col">
                         <span for="kp" class="input-group-text"> Kd: </span>
                         <input class="tuning-input form-control" type="text" id="kd" value="" placeholder="Derivative" min="0">
-                        <button class="tuning-button btn btn-outline-secondary" type="button" id="kdplus"> + </button>
-                        <button class="tuning-button btn btn-outline-secondary" type="button" id="kdminus"> - </button>
                     </div>
                 </div>
             </form>

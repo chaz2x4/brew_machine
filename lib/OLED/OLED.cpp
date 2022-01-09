@@ -1,7 +1,7 @@
 #include "OLED.h"
 
 OLED::OLED()
-: display(Adafruit_SSD1306(128, 32, &Wire))
+: display(Adafruit_SSD1306(OLED_WIDTH, OLED_HEIGHT, &Wire))
 , currentMode("brew")
 , timeLastButton(-1)
 , lastTime(-1)
@@ -19,7 +19,7 @@ OLED::~OLED(){
 }
 
 void OLED::start(GCP* brew_machine){
-    display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
+    display.begin(SSD1306_SWITCHCAPVCC, OLED_I2C_ADDRESS);
     display.clearDisplay();
     display.dim(true);
     display.display();
@@ -98,7 +98,8 @@ bool OLED::checkedIfTimedout(){
     return false;
 }
 
-void OLED::refresh(){
+void OLED::refresh(ulong realTime){
+    this->realTime = realTime;
     this->eventListener();
     if(checkedIfTimedout()) return;
     display.setTextSize(2);
@@ -109,11 +110,11 @@ void OLED::refresh(){
     ulong wait;
     ulong now = millis();
     char* modeTitle = "Brew";
-    double targetTemp = gcp->getTargetTemp();
+    double targetTemp = gcp->getTargetTemp("brew");
     double currentTemp = gcp->getCurrentTemp();
     if(this->currentMode == "steam") {
         modeTitle = "Steam";
-        targetTemp = gcp->getTargetSteamTemp();
+        targetTemp = gcp->getTargetTemp("steam");
     }
     if(this->isEditable) {
         if(flash) display.printf("Set %s\n %#.1f C", modeTitle, targetTemp);
@@ -138,6 +139,10 @@ void OLED::changeMode(){
     lastTime = millis();
     flash = true;
     this->currentMode = this->currentMode == "brew" ? "steam" : "brew";
+}
+
+String OLED::getCurrentMode(){
+    return this->currentMode;;
 }
 
 void OLED::incrementTemp(){

@@ -10,7 +10,9 @@
 
 #include <WiFi.h>
 #include <WiFiClient.h>
-#include <WebServer.h>
+#include <ESPAsyncWebServer.h>
+#include <AsyncJson.h>
+#include <ArduinoJson.h>
 #include <ESPmDNS.h>
 #include <Update.h>
 #include <WiFiUdp.h>
