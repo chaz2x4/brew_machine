@@ -26,6 +26,8 @@ GCP::GCP()
 {}
 
 GCP::~GCP(){
+	digitalWrite(HEATER_PIN, LOW);
+	digitalWrite(STEAM_PIN, LOW);
 }
 
 void GCP::start() {
