@@ -10,16 +10,16 @@ GCP::GCP()
 , maxOffset(15)
 , minOffset(-15)
 , websiteQueueSize(150)
-, windowSize(2000)
-, logInterval(1000)
+, windowSize(1500)
+, logInterval(500)
 , powerFrequency(60)
 , tempOffset(-8)
 , targetTemp(92)
 , targetSteamTemp(150)
 , lastTime(-1)
-, Kp(183.75)
-, Ki(28.71)
-, Kd(441)
+, Kp(179.16)
+, Ki(24.79)
+, Kd(481.95)
 , outputQueue(Queue(websiteQueueSize))
 , brewTempManager(PID(&currentTemp, &brew_output, &targetTemp, Kp, Ki, Kd, P_ON_M, DIRECT))
 , steamTempManager(PID(&currentTemp, &steam_output, &targetSteamTemp, Kp, Ki, Kd, P_ON_M, DIRECT))
@@ -253,6 +253,7 @@ void GCP::refresh(ulong realTime) {
 	*/
 
 	double currentCurrent = sensedCurrent();
+	double currentTemp;
 	if(!brewSwitchOn && currentCurrent > 0) {
 		brewSwitchOn = true;
 		this->startTimer(realTime);
@@ -260,9 +261,9 @@ void GCP::refresh(ulong realTime) {
 
 	ulong now = millis();
 	if(now - logStartTime > logInterval) {
-		this->getCurrentTemp();
-    brewTempManager.Compute();
-    steamTempManager.Compute();
+		currentTemp = this->getCurrentTemp();
+   		brewTempManager.Compute();
+		steamTempManager.Compute();
 
 		if(lastTime < realTime) parseQueue(realTime);
 		lastTime = realTime;
@@ -273,6 +274,11 @@ void GCP::refresh(ulong realTime) {
 		windowStartTime += windowSize;
 		lastBrewOutput = regulateOutput(brew_output);
 		lastSteamOutput = regulateOutput(steam_output);
+
+		if(targetSteamTemp - currentTemp > 10) lastSteamOutput = windowSize;
+		if(targetTemp - currentTemp > 10) lastBrewOutput = windowSize;
+		if(targetSteamTemp - currentTemp < -2) lastSteamOutput = 0;
+		if(targetTemp - currentTemp < -2) lastBrewOutput = 0;
 	}
 
 	if(lastBrewOutput > now - windowStartTime) digitalWrite(HEATER_PIN, HIGH);
