@@ -21,6 +21,8 @@
                     type: 'line',
                     label: 'Temperature',
                     data: [],
+                    borderColor: '#4285F4',
+                    borderWidth: 2,
                     backgroundColor: function (context) {
                         if(context.dataset.data.length) {
                             var pointTemp = context.dataset.data[context.dataIndex];
@@ -31,7 +33,11 @@
                             else return '#63FF8F';
                         }
                     },
-                    borderWidth: 2,
+                    elements: {
+                        point: {
+                            radius: 0.5,
+                        },
+                    },
                     tension: 0.1,
                     yAxisID: 'y1',
                 }, {
@@ -40,6 +46,7 @@
                     data: targetData,
                     borderColor: '#4285F4',
                     borderWidth: 2,
+                    borderDash: [5, 5],
                     yAxisID: 'y1',
                     elements: {
                         point: {
@@ -59,7 +66,7 @@
             const options = {
                 responsive: true,
                 interaction: {
-                    mode: 'nearest',
+                    mode: 'index',
                     axis: 'x',
                     intersect: false
                 },
