@@ -33,12 +33,6 @@
                     },
                     borderWidth: 2,
                     tension: 0.1,
-                    yAxisID: 'y',
-                }, {
-                    type: 'bar',
-                    label: 'Output',
-                    data: outputData.brew,
-                    backgroundColor: '#63FFDD',
                     yAxisID: 'y1',
                 }, {
                     type: 'line',
@@ -46,13 +40,19 @@
                     data: targetData,
                     borderColor: '#4285F4',
                     borderWidth: 2,
-                    yAxisID: 'y',
+                    yAxisID: 'y1',
                     elements: {
                         point: {
                             radius: 0
                         }
                     },
                     animations: 'off',
+                }, {
+                    type: 'bar',
+                    label: 'Output',
+                    data: outputData.brew,
+                    backgroundColor: '#63FFDD',
+                    yAxisID: 'y2',
                 }],
             };
 
@@ -81,14 +81,15 @@
                         },
                         spanGaps: true,
                     },
-                    y: {
+                    y1: {
                         title: {
                             display: true,
                             text: "Temperature",
                         },
                         position: 'left',
                     },
-                    y1: {
+                    y2: {
+                        min: 0,
                         max: cycleTime,
                         title: {
                             display: true,
@@ -104,8 +105,8 @@
                 id: "brew",
                 handler() {
                     chart.options.plugins.title.text = "Brew Temperature";
-                    chart.data.datasets[1].data = outputData.brew;
-                    chart.data.datasets[2].data = targetData.brew;
+                    chart.data.datasets[1].data = targetData.brew;
+                    chart.data.datasets[2].data = outputData.brew;
                     mode = 'brew';
                     updateElements();
                     chart.render();
@@ -115,8 +116,8 @@
                 id: "steam",
                 handler() {
                     chart.options.plugins.title.text = "Steam Temperature";
-                    chart.data.datasets[1].data = outputData.steam;
-                    chart.data.datasets[2].data = targetData.steam;
+                    chart.data.datasets[1].data = targetData.steam;
+                    chart.data.datasets[2].data = outputData.steam;
                     mode = 'steam';
                     updateElements();
                     chart.render();
@@ -138,8 +139,8 @@
                 var offsetLabel = document.getElementById("offset_label");
                 offsetLabel.innerHTML = "Offset: " + tempOffset + " C";
 
-                chart.options.scales.y.suggestedMin = targetTemp - 0.5;
-                chart.options.scales.y.suggestedMax = targetTemp + 0.5;
+                chart.options.scales.y1.suggestedMin = targetTemp - 0.5;
+                chart.options.scales.y1.suggestedMax = targetTemp + 0.5;
 
                 chart.update();
             }
@@ -278,12 +279,12 @@
                     chart.data.labels = requestedLabels;
                     chart.data.datasets[0].data = tempData = requestedTempData;
                     if(mode == 'brew') { 
-                        chart.data.datasets[1].data = outputData.brew = requestedBrewOutput;
-                        chart.data.datasets[2].data = targetData.brew = requestedBrewTargets;
+                        chart.data.datasets[1].data = targetData.brew = requestedBrewTargets;
+                        chart.data.datasets[2].data = outputData.brew = requestedBrewOutput;
                     }
                     else { 
-                        chart.data.datasets[1].data = outputData.steam = requestedSteamOutput;
-                        chart.data.datasets[2].data = targetData.steam = requestedSteamTargets;
+                        chart.data.datasets[1].data = targetData.steam = requestedSteamTargets;
+                        chart.data.datasets[2].data = outputData.steam = requestedSteamOutput;
                     }        
 
                     updateElements();
@@ -375,6 +376,5 @@
     <script src="https://cdn.jsdelivr.net/npm/moment@2.29.1/moment.js" integrity="sha256-8AdWdyRXkrETyAGla9NmgkYVlqw4MOHR6sJJmtFGAYQ=" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js" integrity="sha256-Y26AMvaIfrZ1EQU49pf6H4QzVTrOI8m9wQYKkftBt4s=" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment@1.0.0/dist/chartjs-adapter-moment.min.js" integrity="sha256-sFB24K2xU2EOgWAtb3ySAGjhMqcUvUJGmwjDcTQa04k=" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js" integrity="sha256-cMPWkL3FzjuaFSfEYESYmjF25hCIL6mfRSPnW8OVvM4=" crossorigin="anonymous"></script>
 </body>
 </html>
