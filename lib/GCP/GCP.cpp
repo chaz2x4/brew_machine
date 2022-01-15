@@ -17,9 +17,9 @@ GCP::GCP()
 , targetTemp(92)
 , targetSteamTemp(150)
 , lastTime(-1)
-, Kp(179.16)
-, Ki(24.79)
-, Kd(481.95)
+, Kp(127.5)
+, Ki(15.55)
+, Kd(392.06)
 , outputQueue(Queue(websiteQueueSize))
 , brewTempManager(PID(&currentTemp, &brew_output, &targetTemp, Kp, Ki, Kd, P_ON_M, DIRECT))
 , steamTempManager(PID(&currentTemp, &steam_output, &targetSteamTemp, Kp, Ki, Kd, P_ON_M, DIRECT))
@@ -277,8 +277,8 @@ void GCP::refresh(ulong realTime) {
 
 		if(targetSteamTemp - currentTemp > 10) lastSteamOutput = windowSize;
 		if(targetTemp - currentTemp > 10) lastBrewOutput = windowSize;
-		if(targetSteamTemp - currentTemp < -2) lastSteamOutput = 0;
-		if(targetTemp - currentTemp < -2) lastBrewOutput = 0;
+		if(targetSteamTemp - currentTemp < -1) lastSteamOutput = 0;
+		if(targetTemp - currentTemp < -1) lastBrewOutput = 0;
 	}
 
 	if(lastBrewOutput > now - windowStartTime) digitalWrite(HEATER_PIN, HIGH);
