@@ -32,6 +32,7 @@
                             if(pointTemp < (targetTemp - acceptableError)) return '#331F2E';
                             else return '#63FF8F';
                         }
+                        else return '#4285F4';
                     },
                     elements: {
                         point: {
@@ -331,7 +332,25 @@
 </head>
 <body class="container-sm">
     <div class="row p-2" id="chartContainer">
-        <canvas id="tempChart"></canvas>
+        <div class="col-sm d-none d-sm-flex">
+            <canvas id="tempChart"></canvas>
+        </div>
+        <div class="w-100 d-block d-sm-none">
+            <div class="alert alert-info"> Rotate screen for chart! </div>
+        </div>
+        <div class="w-100 d-block d-md-none"></div>
+        <div class="card col-md-2 my-sm-5">
+            <div class="card-body">
+                <h5 class="card-title">
+                    Gaggia Classic:
+                </h5>
+                <div class="card-text"> 
+                    <p> Temperature: </p>
+                    <p> Pressure: </p>
+                    <p> Time: </p>
+                </div>
+            </div>
+        </div>
     </div>
     <div class="row p-2 row-cols-2 row-cols-sm-4 align-items-center" id="tempContainer">
         <div class="col order-1">
@@ -381,6 +400,7 @@
         </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/moment@2.29.1/moment.js" integrity="sha256-8AdWdyRXkrETyAGla9NmgkYVlqw4MOHR6sJJmtFGAYQ=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js" integrity="sha256-cMPWkL3FzjuaFSfEYESYmjF25hCIL6mfRSPnW8OVvM4=" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js" integrity="sha256-Y26AMvaIfrZ1EQU49pf6H4QzVTrOI8m9wQYKkftBt4s=" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment@1.0.0/dist/chartjs-adapter-moment.min.js" integrity="sha256-sFB24K2xU2EOgWAtb3ySAGjhMqcUvUJGmwjDcTQa04k=" crossorigin="anonymous"></script>
 </body>
