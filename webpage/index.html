@@ -76,6 +76,12 @@
                         display: true,
                         text: "Brew Temperature",
                     },
+                    legend: {
+                        display: false,
+                    },
+                    tooltip: {
+                        displayColors: false,
+                    },
                 },
                 scales: {
                     x: {
@@ -186,7 +192,7 @@
                 var button = this;
                 if(isTuningsOpen) {
                     button.classList.remove('active');
-                    button.innerHTML = "Setting Tunings...";
+                    button.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
                     button.disabled = true;
                     isTuningsOpen = false;
                     isTuned = false;
@@ -330,73 +336,75 @@
         }
     </script>
 </head>
-<body class="container-sm">
-    <div class="row p-2" id="chartContainer">
-        <div class="col-sm d-none d-sm-flex">
-            <canvas id="tempChart"></canvas>
+<body>
+    <div class="container-sm p-2">
+        <div class="row" id="chartContainer">
+            <div class="col-sm d-none d-sm-flex">
+                <canvas id="tempChart"></canvas>
+            </div>
+            <div class="w-100 d-block d-sm-none">
+                <div class="alert alert-info"> Rotate screen for chart! </div>
+            </div>
+            <div class="w-100 d-block d-md-none"></div>
+            <div class="card col-md-2 my-sm-5">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        Gaggia Classic:
+                    </h5>
+                    <div class="card-text"> 
+                        <p> Temperature: </p>
+                        <p> Pressure: </p>
+                        <p> Time: </p>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="w-100 d-block d-sm-none">
-            <div class="alert alert-info"> Rotate screen for chart! </div>
-        </div>
-        <div class="w-100 d-block d-md-none"></div>
-        <div class="card col-md-2 my-sm-5">
-            <div class="card-body">
-                <h5 class="card-title">
-                    Gaggia Classic:
-                </h5>
-                <div class="card-text"> 
-                    <p> Temperature: </p>
-                    <p> Pressure: </p>
-                    <p> Time: </p>
+        <div class="row row-cols-2 row-cols-sm-4 align-items-center" id="tempContainer">
+            <div class="col order-1">
+                <button class="btn btn-outline-primary active" id="switch_brew"> Water Temp </button>
+            </div>
+            <div class=" col order-3 me-sm-auto">
+                <button class="btn btn-outline-primary" id="switch_steam"> Steam Temp </button>
+            </div>
+            <div class="col row row-cols-1 row-cols-xl-2 order-2 order-sm-3"> 
+                <label class="form-label col" id="target_label"> Target: 100 C</label>
+                <div class="col-2 btn-group">
+                    <button class="btn btn-outline-danger" id="targetplus"> + </button>
+                    <button class="btn btn-outline-secondary" id="targetminus"> - </button>
+                </div>
+            </div>
+            <div class="col row row-cols-1 row-cols-xl-2 order-4"> 
+                <label class="form-label col" id="offset_label"> Offset: -8 C</label>
+                <div class="col-2 btn-group">
+                    <button class="btn btn-outline-danger" id="offsetplus"> + </button>
+                    <button class="btn btn-outline-secondary" id="offsetminus"> - </button>
                 </div>
             </div>
         </div>
-    </div>
-    <div class="row p-2 row-cols-2 row-cols-sm-4 align-items-center" id="tempContainer">
-        <div class="col order-1">
-            <button class="btn btn-outline-primary active" id="switch_brew"> Water Temp </button>
-        </div>
-        <div class=" col order-3 me-sm-auto">
-            <button class="btn btn-outline-primary" id="switch_steam"> Steam Temp </button>
-        </div>
-        <div class="col row row-cols-1 row-cols-xl-2 order-2 order-sm-3"> 
-            <label class="form-label col" id="target_label"> Target: 100 C</label>
-            <div class="col-2 btn-group">
-                <button class="btn btn-outline-danger" id="targetplus"> + </button>
-                <button class="btn btn-outline-secondary" id="targetminus"> - </button>
+        <div class="row" id="tunerContainer">
+            <div class="my-2">
+                <button class="btn btn-outline-secondary" type="button" id="tuning_button" data-bs-toggle="collapse" data-bs-target="#tunings_tab">
+                    Set Tunings:
+                </button>
             </div>
-        </div>
-        <div class="col row row-cols-1 row-cols-xl-2 order-4"> 
-            <label class="form-label col" id="offset_label"> Offset: -8 C</label>
-            <div class="col-2 btn-group">
-                <button class="btn btn-outline-danger" id="offsetplus"> + </button>
-                <button class="btn btn-outline-secondary" id="offsetminus"> - </button>
+            <div class="collapse" id="tunings_tab">
+                <form class="accordion-body" id="tunings-form">
+                    <div class="row">
+                        <div class="tuning-button input-group col">
+                            <span for="kp" class="input-group-text"> Kp: </span>
+                            <input class="tuning-input form-control" type="text" id="kp" value="" placeholder="Proportional" min="0">
+                        </div>
+                        <div class="tuning-button input-group col">
+                            <span for="kp" class="input-group-text"> Ki: </span>
+                            <input class="tuning-input form-control" type="text" id="ki" value="" placeholder="Integral" min="0">
+                        </div>
+                        <div class="tuning-button input-group col">
+                            <span for="kp" class="input-group-text"> Kd: </span>
+                            <input class="tuning-input form-control" type="text" id="kd" value="" placeholder="Derivative" min="0">
+                        </div>
+                    </div>
+                </form>
             </div>
-        </div>
-    </div>
-    <div class="row p-2" id="tunerContainer">
-        <p>
-            <button class="btn btn-outline-secondary" type="button" id="tuning_button" data-bs-toggle="collapse" data-bs-target="#tunings_tab">
-                Set Tunings:
-            </button>
-        </p>
-        <div class="collapse" id="tunings_tab">
-            <form class="accordion-body" id="tunings-form">
-                <div class="row">
-                    <div class="tuning-button input-group col">
-                        <span for="kp" class="input-group-text"> Kp: </span>
-                        <input class="tuning-input form-control" type="text" id="kp" value="" placeholder="Proportional" min="0">
-                    </div>
-                    <div class="tuning-button input-group col">
-                        <span for="kp" class="input-group-text"> Ki: </span>
-                        <input class="tuning-input form-control" type="text" id="ki" value="" placeholder="Integral" min="0">
-                    </div>
-                    <div class="tuning-button input-group col">
-                        <span for="kp" class="input-group-text"> Kd: </span>
-                        <input class="tuning-input form-control" type="text" id="kd" value="" placeholder="Derivative" min="0">
-                    </div>
-                </div>
-            </form>
         </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/moment@2.29.1/moment.js" integrity="sha256-8AdWdyRXkrETyAGla9NmgkYVlqw4MOHR6sJJmtFGAYQ=" crossorigin="anonymous"></script>
