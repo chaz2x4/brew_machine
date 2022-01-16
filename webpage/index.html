@@ -85,13 +85,14 @@
                 },
                 scales: {
                     x: {
-                        type: 'time',
-                        time: {
-                            unit: 'second',
-                        },
                         title: {
                             display: true,
                             text: "Time",
+                        },
+                        ticks: {
+                            callback: (value, index) => {
+                                return index % 10 === 0 ? value : '';
+                            },
                         },
                         spanGaps: true,
                     },
@@ -113,6 +114,16 @@
                     },
                 },
             }
+
+            moment.relativeTimeThreshold('s', 200);
+            moment.relativeTimeThreshold('ss', 1);
+            moment.updateLocale('en', {
+                relativeTime: {
+                    's': 'a second',
+                    'm': 'a minute',
+                    'mm': '%d minutes'
+                }
+            })
 
             const actions = [{
                 name: "Brew Temps",
@@ -281,8 +292,8 @@
                     var lastOutput = sortedOutputs[sortedOutputs.length - 1];
                     if(brewTarget == null) [brewTarget, steamTarget, tempOffset] = [lastOutput.targets.brew, lastOutput.targets.steam, lastOutput.targets.offset];
                     
-                    sortedOutputs.forEach(output => {                        
-                        requestedLabels.push(output.time * 1000);
+                    sortedOutputs.forEach((output, index) => {             
+                        requestedLabels.push(moment(output.time * 1000).fromNow());
                         requestedTempData.push(output.temperature);
                         requestedBrewOutput.push(output.outputs.brew);
                         requestedSteamOutput.push(output.outputs.steam);
