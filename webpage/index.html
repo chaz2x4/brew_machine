@@ -164,8 +164,8 @@
                 var offsetLabel = document.getElementById("offset_label");
                 offsetLabel.innerHTML = "Offset: " + tempOffset + " C";
 
-                chart.options.scales.y1.suggestedMin = targetTemp - 0.5;
-                chart.options.scales.y1.suggestedMax = targetTemp + 0.5;
+                chart.options.scales.y1.suggestedMin = targetTemp % 5 === 0 ? Math.floor(targetTemp / 5 - 1) * 5 : Math.floor(targetTemp / 5) * 5;
+                chart.options.scales.y1.suggestedMax = targetTemp % 5 === 0 ? Math.ceil(targetTemp / 5 + 1) * 5 : Math.ceil(targetTemp / 5) * 5;
 
                 chart.update();
             }
