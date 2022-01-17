@@ -1,9 +1,14 @@
-<html >
+<html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" >
     <title>Gaggia - Homebrew Server</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" integrity="sha256-djO3wMl9GeaC/u6K+ic4Uj/LKhRUSlUFcsruzS7v5ms=" crossorigin="anonymous">
+    <style>
+        button {
+            touch-action: manipulation;
+        }
+    </style>
     <script>
         window.onload = function () {
             var brewTarget;
@@ -203,7 +208,7 @@
                 var button = this;
                 if(isTuningsOpen) {
                     button.classList.remove('active');
-                    button.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
+                    button.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>Setting Tunings...';
                     button.disabled = true;
                     isTuningsOpen = false;
                     isTuned = false;
@@ -349,50 +354,54 @@
 </head>
 <body>
     <div class="container-sm p-2">
-        <div class="row" id="chartContainer">
-            <div class="col-sm d-none d-sm-flex">
-                <canvas id="tempChart"></canvas>
-            </div>
+        <div class="row row-cols-1" id="chartContainer">
             <div class="w-100 d-block d-sm-none">
                 <div class="alert alert-info"> Rotate screen for chart! </div>
             </div>
-            <div class="w-100 d-block d-md-none"></div>
-            <div class="card col-md-2 my-sm-5">
-                <div class="card-body">
-                    <h5 class="card-title">
-                        Gaggia Classic:
-                    </h5>
-                    <div class="card-text"> 
-                        <p> Temperature: </p>
-                        <p> Pressure: </p>
-                        <p> Time: </p>
+            <div class="col-sm d-none d-sm-flex">
+                <canvas id="tempChart"></canvas>
+            </div>
+            <div class="col col-md-2 my-sm-5">
+                <div class="card">
+                    <div class="card-header" id="tempContainer">
+                        <ul class="nav nav-pills nav-justified card-header-pills">
+                            <li class="nav-item">
+                                <button class="nav-link active" id="switch_brew">Brew</button>
+                              </li>
+                              <li class="nav-item">
+                                <button class="nav-link" id="switch_steam">Steam</button>
+                              </li>
+                        </ul>
+                    </div>
+                    <div class="card-body">
+                        <div> 
+                            Temperature: 
+                        </div>
+                        <div> 
+                            Pressure: 
+                        </div>
+                        <div> 
+                            Time: 
+                        </div>
+                        <div class="col-2 col-sm-1"> 
+                            <label class="form-label" id="target_label"> Target: 100 C</label>
+                            <div class="col-2 col-sm-1 btn-group">
+                                <button class="btn btn-outline-danger" id="targetplus"> + </button>
+                                <button class="btn btn-outline-secondary" id="targetminus"> - </button>
+                            </div>
+                        </div>
+                        <div class="col-2 col-sm-1"> 
+                            <label class="form-label" id="offset_label"> Offset: -8 C</label>
+                            <div class="btn-group">
+                                <button class="btn btn-outline-danger" id="offsetplus"> + </button>
+                                <button class="btn btn-outline-secondary" id="offsetminus"> - </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="row row-cols-2 row-cols-sm-4 align-items-center" id="tempContainer">
-            <div class="col order-1">
-                <button class="btn btn-outline-primary active" id="switch_brew"> Water Temp </button>
-            </div>
-            <div class=" col order-3 me-sm-auto">
-                <button class="btn btn-outline-primary" id="switch_steam"> Steam Temp </button>
-            </div>
-            <div class="col row row-cols-1 row-cols-xl-2 order-2 order-sm-3"> 
-                <label class="form-label col" id="target_label"> Target: 100 C</label>
-                <div class="col-2 btn-group">
-                    <button class="btn btn-outline-danger" id="targetplus"> + </button>
-                    <button class="btn btn-outline-secondary" id="targetminus"> - </button>
-                </div>
-            </div>
-            <div class="col row row-cols-1 row-cols-xl-2 order-4"> 
-                <label class="form-label col" id="offset_label"> Offset: -8 C</label>
-                <div class="col-2 btn-group">
-                    <button class="btn btn-outline-danger" id="offsetplus"> + </button>
-                    <button class="btn btn-outline-secondary" id="offsetminus"> - </button>
-                </div>
-            </div>
-        </div>
-        <div class="row" id="tunerContainer">
+        <div id="tunerContainer">
             <div class="my-2">
                 <button class="btn btn-outline-secondary" type="button" id="tuning_button" data-bs-toggle="collapse" data-bs-target="#tunings_tab">
                     Set Tunings:
