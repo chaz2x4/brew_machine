@@ -15,7 +15,7 @@
             let steamTarget;
             let tempOffset;
             let cycleTime = 1500;
-            let mode = 'brew';
+            let currentMode = 'brew';
             let tempData = [];
             let targetData = {};
             let outputData = {};
@@ -31,8 +31,8 @@
                     backgroundColor: function (context) {
                         if(context.dataset.data.length) {
                             let pointTemp = context.dataset.data[context.dataIndex];
-                            let targetTemp = targetData[mode][context.dataIndex];
-                            let acceptableError = (mode == 'brew') ? 0.5 : 1.0;
+                            let targetTemp = targetData[currentMode][context.dataIndex];
+                            let acceptableError = (currentMode == 'brew') ? 0.5 : 1.0;
                             if(pointTemp > (targetTemp + acceptableError)) return '#FF6384';
                             if(pointTemp < (targetTemp - acceptableError)) return '#331F2E';
                             else return '#63FF8F';
@@ -137,9 +137,9 @@
                     chart.options.plugins.title.text = "Brew Temperature";
                     chart.data.datasets[1].data = targetData.brew;
                     chart.data.datasets[2].data = outputData.brew;
-                    mode = "brew";
-                    switchTab(mode);
-                    updateElements(mode);
+                    currentMode = "brew";
+                    switchTab(currentMode);
+                    updateElements(currentMode);
                     chart.render();
                 },
             }, {
@@ -149,9 +149,9 @@
                     chart.options.plugins.title.text = "Steam Temperature";
                     chart.data.datasets[1].data = targetData.steam;
                     chart.data.datasets[2].data = outputData.steam;
-                    mode = "steam";
-                    switchTab(mode);
-                    updateElements(mode);
+                    currentMode = "steam";
+                    switchTab(currentMode);
+                    updateElements(currentMode);
                     chart.render();
                 }
             }, {
@@ -349,7 +349,10 @@
                     
                     let sortedOutputs = response.sort((a, b) => a.time - b.time);
                     let lastOutput = sortedOutputs[sortedOutputs.length - 1];
-                    if(brewTarget == null) [brewTarget, steamTarget, tempOffset] = [lastOutput.targets.brew, lastOutput.targets.steam, lastOutput.targets.offset];
+                    if(brewTarget == null) {
+                        [brewTarget, steamTarget, tempOffset] = [lastOutput.targets.brew, lastOutput.targets.steam, lastOutput.targets.offset];
+                        updateElements('offset');
+                    }
                     
                     sortedOutputs.forEach((output, index) => {             
                         requestedLabels.push(moment(output.time * 1000).fromNow());
@@ -362,7 +365,7 @@
 
                     chart.data.labels = requestedLabels;
                     chart.data.datasets[0].data = tempData = requestedTempData;
-                    if(mode == 'brew') { 
+                    if(currentMode == 'brew') { 
                         chart.data.datasets[1].data = targetData.brew = requestedBrewTargets;
                         chart.data.datasets[2].data = outputData.brew = requestedBrewOutput;
                     }
@@ -371,7 +374,7 @@
                         chart.data.datasets[2].data = outputData.steam = requestedSteamOutput;
                     }        
 
-                    updateElements(mode);
+                    updateElements(currentMode);
                     if(!isTuned && !isTuningsOpen) refreshTunings();
                 });
             }, 1000);
