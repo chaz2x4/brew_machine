@@ -25,6 +25,8 @@ void setup() {
 		String type;
 		if (ArduinoOTA.getCommand() == U_FLASH) type = "sketch";
 		else type = "filesystem";
+		digitalWrite(HEATER_PIN, LOW);
+		digitalWrite(STEAM_PIN, LOW);
 		Serial.println("Updating " + type);
 	}).onEnd([](){
 		Serial.println("\nComplete");

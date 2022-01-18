@@ -1,44 +1,49 @@
-<html >
+<html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" >
     <title>Gaggia - Homebrew Server</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" integrity="sha256-djO3wMl9GeaC/u6K+ic4Uj/LKhRUSlUFcsruzS7v5ms=" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" integrity="sha256-YvdLHPgkqJ8DVUxjjnGVlMMJtNimJ6dYkowFFvp4kKs=" crossorigin="anonymous">    <style>
+        button {
+            touch-action: manipulation;
+        }
+    </style>
     <script>
         window.onload = function () {
-            var brewTarget;
-            var steamTarget;
-            var tempOffset;
-            var cycleTime = 1000;
-            var mode = 'brew';
-            var tempData = [];
-            var targetData = {};
-            var outputData = {};
-            var labels = [];
-            var data = {
+            let brewTarget;
+            let steamTarget;
+            let tempOffset;
+            let cycleTime = 1500;
+            let currentMode = 'brew';
+            let tempData = [];
+            let targetData = {};
+            let outputData = {};
+            let labels = [];
+            let data = {
                 labels: labels,
                 datasets: [{
                     type: 'line',
                     label: 'Temperature',
                     data: [],
+                    borderColor: '#4285F4',
+                    borderWidth: 2,
                     backgroundColor: function (context) {
                         if(context.dataset.data.length) {
-                            var pointTemp = context.dataset.data[context.dataIndex];
-                            var targetTemp = targetData[mode][context.dataIndex];
-                            var acceptableError = (mode == 'brew') ? 0.5 : 1.0;
+                            let pointTemp = context.dataset.data[context.dataIndex];
+                            let targetTemp = targetData[currentMode][context.dataIndex];
+                            let acceptableError = (currentMode == 'brew') ? 0.5 : 1.0;
                             if(pointTemp > (targetTemp + acceptableError)) return '#FF6384';
                             if(pointTemp < (targetTemp - acceptableError)) return '#331F2E';
                             else return '#63FF8F';
                         }
+                        else return '#4285F4';
                     },
-                    borderWidth: 2,
+                    elements: {
+                        point: {
+                            radius: 0.5,
+                        },
+                    },
                     tension: 0.1,
-                    yAxisID: 'y',
-                }, {
-                    type: 'bar',
-                    label: 'Output',
-                    data: outputData.brew,
-                    backgroundColor: '#63FFDD',
                     yAxisID: 'y1',
                 }, {
                     type: 'line',
@@ -46,145 +51,226 @@
                     data: targetData,
                     borderColor: '#4285F4',
                     borderWidth: 2,
-                    yAxisID: 'y',
+                    borderDash: [5, 5],
+                    yAxisID: 'y1',
                     elements: {
                         point: {
                             radius: 0
                         }
                     },
                     animations: 'off',
+                }, {
+                    type: 'bar',
+                    label: 'Output',
+                    data: outputData.brew,
+                    backgroundColor: '#63FFDD',
+                    yAxisID: 'y2',
                 }],
             };
 
             const options = {
                 responsive: true,
                 interaction: {
-                    mode: 'nearest',
+                    mode: 'index',
                     axis: 'x',
                     intersect: false
                 },
                 plugins: {
                     title: {
                         display: true,
-                        text: "Brew Temperature",
+                        text: 'Brew Temperature',
+                    },
+                    legend: {
+                        display: false,
+                    },
+                    tooltip: {
+                        displayColors: false,
                     },
                 },
                 scales: {
                     x: {
-                        type: 'time',
-                        time: {
-                            unit: 'second',
-                        },
                         title: {
                             display: true,
-                            text: "Time",
+                            text: 'Time',
+                        },
+                        ticks: {
+                            callback: (value, index) => {
+                                return index % 10 === 0 ? value : '';
+                            },
                         },
                         spanGaps: true,
                     },
-                    y: {
+                    y1: {
                         title: {
                             display: true,
-                            text: "Temperature",
+                            text: 'Temperature',
                         },
                         position: 'left',
                     },
-                    y1: {
-                        suggestedMax: cycleTime,
+                    y2: {
+                        min: 0,
+                        max: cycleTime,
                         title: {
                             display: true,
-                            text: "Output",
+                            text: 'Output',
                         },
-                        position: "right",
+                        position: 'right',
                     },
                 },
             }
 
+            moment.relativeTimeThreshold('s', 200);
+            moment.relativeTimeThreshold('ss', 1);
+            moment.updateLocale('en', {
+                relativeTime: {
+                    's': 'a second',
+                    'm': 'a minute',
+                    'mm': '%d minutes'
+                }
+            })
+
             const actions = [{
-                name: "Brew Temps",
+                name: "Brew",
                 id: "brew",
                 handler() {
                     chart.options.plugins.title.text = "Brew Temperature";
-                    chart.data.datasets[1].data = outputData.brew;
-                    chart.data.datasets[2].data = targetData.brew;
-                    mode = 'brew';
-                    updateElements();
+                    chart.data.datasets[1].data = targetData.brew;
+                    chart.data.datasets[2].data = outputData.brew;
+                    currentMode = "brew";
+                    switchTab(currentMode);
+                    updateElements(currentMode);
                     chart.render();
                 },
             }, {
-                name: "Steam Temps",
+                name: "Steam",
                 id: "steam",
                 handler() {
                     chart.options.plugins.title.text = "Steam Temperature";
-                    chart.data.datasets[1].data = outputData.steam;
-                    chart.data.datasets[2].data = targetData.steam;
-                    mode = 'steam';
-                    updateElements();
+                    chart.data.datasets[1].data = targetData.steam;
+                    chart.data.datasets[2].data = outputData.steam;
+                    currentMode = "steam";
+                    switchTab(currentMode);
+                    updateElements(currentMode);
                     chart.render();
+                }
+            }, {
+                name: "Advanced",
+                id: "advanced",
+                handler() {
+                    switchTab("advanced");
                 }
             }];
             
-            function updateElements(){
-                var targetTemp = (mode == "brew") ? brewTarget : steamTarget;
+            function updateElements(mode){
+                let targetTemp;
+                if(mode == "brew") targetTemp = brewTarget;
+                else if (mode == "steam") targetTemp = steamTarget;
+                else targetTemp = tempOffset;
 
-                var targetLabel = document.getElementById("target_label");
-                targetLabel.innerHTML = "Target: " + targetTemp + " C";
+                if(targetTemp !== undefined) {
+                    let targetLabel = document.getElementById(mode + "_target_label");
+                    targetLabel.innerHTML = targetTemp + " C";
+                }
 
-                var switchButton = document.getElementById("switch_" + mode);
-                switchButton.classList.add("active");
-
-                var inactiveSwitch = (mode == "brew") ? document.getElementById("switch_steam") : document.getElementById("switch_brew");
-                inactiveSwitch.classList.remove("active");
-
-                var offsetLabel = document.getElementById("offset_label");
-                offsetLabel.innerHTML = "Offset: " + tempOffset + " C";
-
-                chart.options.scales.y.suggestedMin = targetTemp - 0.5;
-                chart.options.scales.y.suggestedMax = targetTemp + 0.5;
+                if(mode == "brew" || mode == "steam") {
+                    chart.options.scales.y1.suggestedMin = targetTemp % 5 === 0 ? Math.floor(targetTemp / 5 - 1) * 5 : Math.floor(targetTemp / 5) * 5;
+                    chart.options.scales.y1.suggestedMax = targetTemp % 5 === 0 ? Math.ceil(targetTemp / 5 + 1) * 5 : Math.ceil(targetTemp / 5) * 5;
+                }
 
                 chart.update();
             }
 
-            function incrementTarget(){
-                var maxTemp = (mode == "brew") ? 115 : 160;
-                if(mode == "brew") brewTarget = (brewTarget < maxTemp) ? brewTarget + 0.5 : maxTemp;
-                else steamTarget = (steamTarget < maxTemp) ? steamTarget + 1 : maxTemp;
+            function switchTab(mode) {
+                if(mode == "brew") {
+                    brewSwitch.classList.add("active");
+                    steamSwitch.classList.remove("active");
+                    advancedSwitch.classList.remove("active");
+
+                    brewCard.classList.add("show");
+                    steamCard.classList.remove("show");
+                    advancedCard.classList.remove("show");
+
+                    brewCard.classList.add("active");
+                    steamCard.classList.remove("active");
+                    advancedCard.classList.remove("active");
+                }
+                else if(mode == "steam"){
+                    steamSwitch.classList.add("active");
+                    brewSwitch.classList.remove("active");
+                    advancedSwitch.classList.remove("active");
+
+                    steamCard.classList.add("show");
+                    brewCard.classList.remove("show");
+                    advancedCard.classList.remove("show");
+
+                    steamCard.classList.add("active");
+                    brewCard.classList.remove("active");
+                    advancedCard.classList.remove("active");
+                }
+                else if(mode == "advanced"){
+                    advancedSwitch.classList.add("active");
+                    brewSwitch.classList.remove("active");
+                    steamSwitch.classList.remove("active");
+
+                    advancedCard.classList.add("show");
+                    brewCard.classList.remove("show");
+                    steamCard.classList.remove("active");
+
+                    advancedCard.classList.add("active");
+                    brewCard.classList.remove("active");
+                    steamCard.classList.remove("active");
+                }
+            }
+
+            function incrementTarget(mode){
+                let maxTemp;
+                if(mode == "brew") {
+                    maxTemp = 115;
+                    brewTarget = (brewTarget < maxTemp) ? brewTarget + 0.5 : maxTemp; 
+                }
+                else if(mode == "steam"){
+                    maxTemp = 160;
+                    steamTarget = (steamTarget < maxTemp) ? steamTarget + 1 : maxTemp;
+                }
+                else if(mode == "offset"){
+                    maxTemp = 15;
+                    tempOffset = (tempOffset < maxTemp) ? tempOffset + 0.5 : maxTemp;
+                }
                 callServer.post("/increment_target?mode=" + mode);
-                updateElements();
+                updateElements(mode);
             }
 
-            function decrementTarget(){
-                var minTemp = (mode == "brew") ? 85 : 140;
-                if(mode == "brew") brewTarget = (brewTarget > minTemp) ? brewTarget - 0.5 : minTemp;
-                else steamTarget = (steamTarget > minTemp) ? steamTarget - 1 : minTemp;
+            function decrementTarget(mode){
+                let minTemp;
+                if(mode == "brew") {
+                    minTemp = 85;
+                    brewTarget = (brewTarget > minTemp) ? brewTarget - 0.5 : minTemp; 
+                }
+                else if(mode == "steam"){
+                    minTemp = 140;
+                    steamTarget = (steamTarget > minTemp) ? steamTarget - 1 : minTemp;
+                }
+                else if(mode == "offset"){
+                    minTemp = -15;
+                    tempOffset = (tempOffset > minTemp) ? tempOffset - 0.5 : minTemp;
+                }
                 callServer.post("/decrement_target?mode=" + mode);
-                updateElements();
+                updateElements(mode);
             }
 
-            function incrementOffset(){
-                if(tempOffset < 15) tempOffset += 0.5;
-                callServer.post("/increment_target?mode=offset");
-                updateElements();
-            }
-
-            function decrementOffset(){
-                if(tempOffset > -15) tempOffset -= 0.5;
-                callServer.post("/decrement_target?mode=offset");
-                updateElements();
-            }
-
-            var isTuningsOpen = false;
+            let isTuningsOpen = false;
             function changeTunings() {
-                var button = this;
+                let button = this;
                 if(isTuningsOpen) {
                     button.classList.remove('active');
-                    button.innerHTML = "Setting Tunings...";
+                    button.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Tuning...';
                     button.disabled = true;
                     isTuningsOpen = false;
                     isTuned = false;
-                    var kp = document.getElementById("kp");
-                    var ki = document.getElementById("ki");
-                    var kd = document.getElementById("kd");
-                    var tunings = { "kp" : kp.value, "ki": ki.value, "kd": kd.value };
+                    let kp = document.getElementById("kp");
+                    let ki = document.getElementById("ki");
+                    let kd = document.getElementById("kd");
+                    let tunings = { "kp" : kp.value, "ki": ki.value, "kd": kd.value };
                     callServer.put("/set_tunings", JSON.stringify(tunings), function(){
                         isTuned = true;
                         button.disabled = false;
@@ -198,7 +284,7 @@
                 }
             }
 
-            var isTuned = true;
+            let isTuned = true;
             function changeTuningButtons() {
                 if(isTuned) {
                     tuningButton.disabled = false;
@@ -214,7 +300,7 @@
             }
 
             const ctx = document.getElementById('tempChart').getContext('2d');
-            var chart = new Chart(ctx, {
+            let chart = new Chart(ctx, {
                 data: data,
                 options: options,
             });
@@ -225,7 +311,7 @@
                 button.onclick = action.handler;
             });
 
-            var callServer = (function() {
+            let callServer = (function() {
                 async function request(url, method, data){
                     const response = await fetch(url, {
                         method: method,
@@ -255,19 +341,22 @@
 
             setInterval(function(){
                 callServer.get("/get_temps", function(response){
-                    var requestedLabels = [];
-                    var requestedTempData = [];
-                    var requestedBrewOutput = [];
-                    var requestedSteamOutput = [];
-                    var requestedBrewTargets = [];
-                    var requestedSteamTargets = [];
+                    let requestedLabels = [];
+                    let requestedTempData = [];
+                    let requestedBrewOutput = [];
+                    let requestedSteamOutput = [];
+                    let requestedBrewTargets = [];
+                    let requestedSteamTargets = [];
                     
-                    var sortedOutputs = response.sort((a, b) => a.time - b.time);
-                    var lastOutput = sortedOutputs[sortedOutputs.length - 1];
-                    if(brewTarget == null) [brewTarget, steamTarget, tempOffset] = [lastOutput.targets.brew, lastOutput.targets.steam, lastOutput.targets.offset];
+                    let sortedOutputs = response.sort((a, b) => a.time - b.time);
+                    let lastOutput = sortedOutputs[sortedOutputs.length - 1];
+                    if(brewTarget == null) {
+                        [brewTarget, steamTarget, tempOffset] = [lastOutput.targets.brew, lastOutput.targets.steam, lastOutput.targets.offset];
+                        updateElements('offset');
+                    }
                     
-                    sortedOutputs.forEach(output => {                        
-                        requestedLabels.push(output.time * 1000);
+                    sortedOutputs.forEach((output, index) => {             
+                        requestedLabels.push(moment(output.time * 1000).fromNow());
                         requestedTempData.push(output.temperature);
                         requestedBrewOutput.push(output.outputs.brew);
                         requestedSteamOutput.push(output.outputs.steam);
@@ -277,16 +366,16 @@
 
                     chart.data.labels = requestedLabels;
                     chart.data.datasets[0].data = tempData = requestedTempData;
-                    if(mode == 'brew') { 
-                        chart.data.datasets[1].data = outputData.brew = requestedBrewOutput;
-                        chart.data.datasets[2].data = targetData.brew = requestedBrewTargets;
+                    if(currentMode == 'brew') { 
+                        chart.data.datasets[1].data = targetData.brew = requestedBrewTargets;
+                        chart.data.datasets[2].data = outputData.brew = requestedBrewOutput;
                     }
                     else { 
-                        chart.data.datasets[1].data = outputData.steam = requestedSteamOutput;
-                        chart.data.datasets[2].data = targetData.steam = requestedSteamTargets;
+                        chart.data.datasets[1].data = targetData.steam = requestedSteamTargets;
+                        chart.data.datasets[2].data = outputData.steam = requestedSteamOutput;
                     }        
 
-                    updateElements();
+                    updateElements(currentMode);
                     if(!isTuned && !isTuningsOpen) refreshTunings();
                 });
             }, 1000);
@@ -297,7 +386,7 @@
                     if(response) {                        
                         Object.entries(response).forEach(entry => {
                             const [name, value] = entry;
-                            var input = document.getElementById(name);
+                            let input = document.getElementById(name);
                             input.value = value;
                         });
                         isTuned = true;
@@ -312,69 +401,147 @@
             }
 
             refreshTunings(true);
-            document.getElementById("targetplus").onclick = incrementTarget;
-            document.getElementById("targetminus").onclick = decrementTarget;
-            document.getElementById("offsetplus").onclick = incrementOffset;
-            document.getElementById("offsetminus").onclick = decrementOffset;
-            tuningButton = document.getElementById("tuning_button");
+
+            let steamSwitch = document.getElementById("switch_steam");
+            let brewSwitch = document.getElementById("switch_brew");
+            let advancedSwitch = document.getElementById("switch_advanced");
+            let brewCard = document.getElementById("brew_card");
+            let steamCard = document.getElementById("steam_card");
+            let advancedCard = document.getElementById("advanced_card");
+            let tuningButton = document.getElementById("tuning_button");
+            
+            document.getElementById("brew_increment").onclick = () => incrementTarget("brew");
+            document.getElementById("brew_decrement").onclick = () => decrementTarget("brew");
+            document.getElementById("steam_increment").onclick = () => incrementTarget("steam");
+            document.getElementById("steam_decrement").onclick = () => decrementTarget("steam");
+            document.getElementById("offset_increment").onclick = () => incrementTarget("offset");
+            document.getElementById("offset_decrement").onclick = () => decrementTarget("offset");
             tuningButton.onclick = changeTunings;
         }
     </script>
 </head>
-<body class="container-sm">
-    <div class="row p-2" id="chartContainer">
-        <canvas id="tempChart"></canvas>
-    </div>
-    <div class="row p-2 row-cols-2 row-cols-sm-4 align-items-center" id="tempContainer">
-        <div class="col order-1">
-            <button class="btn btn-outline-primary active" id="switch_brew"> Water Temp </button>
-        </div>
-        <div class=" col order-3 me-sm-auto">
-            <button class="btn btn-outline-primary" id="switch_steam"> Steam Temp </button>
-        </div>
-        <div class="col row row-cols-1 row-cols-xl-2 order-2 order-sm-3"> 
-            <label class="form-label col" id="target_label"> Target: 100 C</label>
-            <div class="col-2 btn-group">
-                <button class="btn btn-outline-danger" id="targetplus"> + </button>
-                <button class="btn btn-outline-secondary" id="targetminus"> - </button>
+<body>
+    <div class="container-sm p-2">
+        <div class="row row-cols-1" id="chartContainer">
+            <div class="w-100 d-block d-sm-none">
+                <div class="alert alert-info"> Rotate screen for chart! </div>
             </div>
-        </div>
-        <div class="col row row-cols-1 row-cols-xl-2 order-4"> 
-            <label class="form-label col" id="offset_label"> Offset: -8 C</label>
-            <div class="col-2 btn-group">
-                <button class="btn btn-outline-danger" id="offsetplus"> + </button>
-                <button class="btn btn-outline-secondary" id="offsetminus"> - </button>
+            <div class="col-sm d-none d-sm-flex">
+                <canvas id="tempChart"></canvas>
             </div>
-        </div>
-    </div>
-    <div class="row p-2" id="tunerContainer">
-        <p>
-            <button class="btn btn-outline-secondary" type="button" id="tuning_button" data-bs-toggle="collapse" data-bs-target="#tunings_tab">
-                Set Tunings:
-            </button>
-        </p>
-        <div class="collapse" id="tunings_tab">
-            <form class="accordion-body" id="tunings-form">
-                <div class="row">
-                    <div class="tuning-button input-group col">
-                        <span for="kp" class="input-group-text"> Kp: </span>
-                        <input class="tuning-input form-control" type="text" id="kp" value="" placeholder="Proportional" min="0">
+            <div class="col col-md-2 my-sm-5">
+                <div class="card">
+                    <div class="card-header" id="tempContainer">
+                        <ul class="nav nav-pills nav-justified card-header-pills">
+                            <li class="nav-item">
+                                <a class="nav-link active" id="switch_brew" href="#brew_card" data-toggle="pill">Brew</a>
+                              </li>
+                              <li class="nav-item">
+                                <a class="nav-link" id="switch_steam" href="#steam_card" data-toggle="pill">Steam</a>
+                              </li>
+                              <li class="nav-item">
+                                  <a class="nav-link" id="switch_advanced" href="#advanced_card" data-toggle="pill"> Advanced </a>
+                              </li>
+                        </ul>
                     </div>
-                    <div class="tuning-button input-group col">
-                        <span for="kp" class="input-group-text"> Ki: </span>
-                        <input class="tuning-input form-control" type="text" id="ki" value="" placeholder="Integral" min="0">
-                    </div>
-                    <div class="tuning-button input-group col">
-                        <span for="kp" class="input-group-text"> Kd: </span>
-                        <input class="tuning-input form-control" type="text" id="kd" value="" placeholder="Derivative" min="0">
+                    <div class="card-body tab-content">
+                        <div class="tab-pane fade show active" id="brew_card">
+                            <div> 
+                                <h6>Temperature:</h6>
+                                <div> 
+                                    <label class="form-label col-12"> Target: 
+                                        <span id="brew_target_label"><span class="placeholder placeholder-wave bg-primary w-100"></span></span>
+                                    </label>
+                                    <div class="btn-group">
+                                        <button class="btn btn-outline-danger" id="brew_increment"> + </button>
+                                        <button class="btn btn-outline-secondary" id="brew_decrement"> - </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div> 
+                                <h6>Pressure:</h6>
+                                <span class="placeholder placeholder-wave bg-primary w-100"></span>
+                            </div>
+                            <div> 
+                                <h6>Time:</h6>
+                                <span class="placeholder placeholder-wave bg-primary w-100"></span>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="steam_card">
+                            <div> 
+                                <h6>Temperature:</h6>
+                                <div> 
+                                    <label class="form-label col-12"> Target:
+                                        <span id="steam_target_label"><span class="placeholder placeholder-wave bg-primary w-100"></span></span>
+                                    </label>
+                                    <div class="btn-group">
+                                        <button class="btn btn-outline-danger" id="steam_increment"> + </button>
+                                        <button class="btn btn-outline-secondary" id="steam_decrement"> - </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div> 
+                                <h6>Time:</h6>
+                                <span class="placeholder placeholder-wave bg-primary w-100"></span>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="advanced_card">
+                            <div> 
+                                <label class="form-label col-12" for="offset_group"> Offset: 
+                                    <span id="offset_target_label"><span class="placeholder placeholder-wave bg-primary w-100"></span></span>
+                                </label>
+                                <div class="btn-group" id="offset_group">
+                                    <button class="btn btn-outline-danger" id="offset_increment"> + </button>
+                                    <button class="btn btn-outline-secondary" id="offset_decrement"> - </button>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="form-label col-12" id="degree_label" for="degree_group"> Degree:</label>
+                                <div class="btn-group" id="degree_group">
+                                    <button class="btn btn-outline-info active" type="button" id="F_button"> C </button>
+                                    <button class="btn btn-outline-info" type="button" id="C_button"> F </button>
+                                </div>
+                            </div>
+                            <div id="tunerContainer">
+                                <div class="my-2">
+                                    <button class="btn btn-secondary" type="button" id="tuning_button" data-bs-toggle="collapse" data-bs-target="#tunings_tab">
+                                        Set Tunings:
+                                    </button>
+                                </div>
+                                <div class="collapse" id="tunings_tab">
+                                    <form class="accordion-body" id="tunings-form">
+                                        <div class="row row-cols-1 row-cols-sm-3 row-cols-md-1">
+                                            <div class="col">
+                                                <div class="tuning-button input-group">
+                                                    <span for="kp" class="input-group-text"> Kp: </span>
+                                                    <input class="tuning-input form-control" type="text" id="kp" value="" placeholder="Proportional" min="0">
+                                                </div>
+                                            </div>
+                                            <div class="col">
+                                                <div class="tuning-button input-group">
+                                                    <span for="kp" class="input-group-text"> Ki: </span>
+                                                    <input class="tuning-input form-control" type="text" id="ki" value="" placeholder="Integral" min="0">
+                                                </div>
+                                            </div>
+                                            <div class="col">
+                                                <div class="tuning-button input-group">
+                                                    <span for="kp" class="input-group-text"> Kd: </span>
+                                                    <input class="tuning-input form-control" type="text" id="kd" value="" placeholder="Derivative" min="0">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </form>
+            </div>
         </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/moment@2.29.1/moment.js" integrity="sha256-8AdWdyRXkrETyAGla9NmgkYVlqw4MOHR6sJJmtFGAYQ=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js" integrity="sha256-cMPWkL3FzjuaFSfEYESYmjF25hCIL6mfRSPnW8OVvM4=" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js" integrity="sha256-Y26AMvaIfrZ1EQU49pf6H4QzVTrOI8m9wQYKkftBt4s=" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment@1.0.0/dist/chartjs-adapter-moment.min.js" integrity="sha256-sFB24K2xU2EOgWAtb3ySAGjhMqcUvUJGmwjDcTQa04k=" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js" integrity="sha256-cMPWkL3FzjuaFSfEYESYmjF25hCIL6mfRSPnW8OVvM4=" crossorigin="anonymous"></script>
 </body>
 </html>
