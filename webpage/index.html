@@ -11,16 +11,16 @@
     </style>
     <script>
         window.onload = function () {
-            var brewTarget;
-            var steamTarget;
-            var tempOffset;
-            var cycleTime = 1500;
-            var mode = 'brew';
-            var tempData = [];
-            var targetData = {};
-            var outputData = {};
-            var labels = [];
-            var data = {
+            let brewTarget;
+            let steamTarget;
+            let tempOffset;
+            let cycleTime = 1500;
+            let mode = 'brew';
+            let tempData = [];
+            let targetData = {};
+            let outputData = {};
+            let labels = [];
+            let data = {
                 labels: labels,
                 datasets: [{
                     type: 'line',
@@ -30,9 +30,9 @@
                     borderWidth: 2,
                     backgroundColor: function (context) {
                         if(context.dataset.data.length) {
-                            var pointTemp = context.dataset.data[context.dataIndex];
-                            var targetTemp = targetData[mode][context.dataIndex];
-                            var acceptableError = (mode == 'brew') ? 0.5 : 1.0;
+                            let pointTemp = context.dataset.data[context.dataIndex];
+                            let targetTemp = targetData[mode][context.dataIndex];
+                            let acceptableError = (mode == 'brew') ? 0.5 : 1.0;
                             if(pointTemp > (targetTemp + acceptableError)) return '#FF6384';
                             if(pointTemp < (targetTemp - acceptableError)) return '#331F2E';
                             else return '#63FF8F';
@@ -131,42 +131,44 @@
             })
 
             const actions = [{
-                name: "Brew Temps",
+                name: "Brew",
                 id: "brew",
                 handler() {
                     chart.options.plugins.title.text = "Brew Temperature";
                     chart.data.datasets[1].data = targetData.brew;
                     chart.data.datasets[2].data = outputData.brew;
                     mode = 'brew';
-                    updateElements();
+                    switchTab(mode);
+                    updateElements(mode);
                     chart.render();
                 },
             }, {
-                name: "Steam Temps",
+                name: "Steam",
                 id: "steam",
                 handler() {
                     chart.options.plugins.title.text = "Steam Temperature";
                     chart.data.datasets[1].data = targetData.steam;
                     chart.data.datasets[2].data = outputData.steam;
                     mode = 'steam';
-                    updateElements();
+                    switchTab(mode);
+                    updateElements(mode);
                     chart.render();
+                }
+            }, {
+                name: "Advanced",
+                id: "advanced",
+                handler() {
+                    switchTab("advanced");
                 }
             }];
             
-            function updateElements(){
-                var targetTemp = (mode == "brew") ? brewTarget : steamTarget;
+            function updateElements(mode){
+                let targetTemp = (mode == "brew") ? brewTarget : steamTarget;
 
-                var targetLabel = document.getElementById("target_label");
+                let targetLabel = document.getElementById("target_label");
                 targetLabel.innerHTML = "Target: " + targetTemp + " C";
 
-                var switchButton = document.getElementById("switch_" + mode);
-                switchButton.classList.add("active");
-
-                var inactiveSwitch = (mode == "brew") ? document.getElementById("switch_steam") : document.getElementById("switch_brew");
-                inactiveSwitch.classList.remove("active");
-
-                var offsetLabel = document.getElementById("offset_label");
+                let offsetLabel = document.getElementById("offset_label");
                 offsetLabel.innerHTML = "Offset: " + tempOffset + " C";
 
                 chart.options.scales.y1.suggestedMin = targetTemp % 5 === 0 ? Math.floor(targetTemp / 5 - 1) * 5 : Math.floor(targetTemp / 5) * 5;
@@ -175,47 +177,77 @@
                 chart.update();
             }
 
+            function switchTab(mode) {
+                if(mode == 'brew') {
+                    brewSwitch.classList.add("active");
+                    steamSwitch.classList.remove("active");
+                    advancedSwitch.classList.remove("active");
+                    brewCard.classList.add("show");
+                    advancedCard.classList.remove("show");
+                    brewCard.classList.add("active");
+                    advancedCard.classList.remove("active");
+                }
+                else if(mode == 'steam'){
+                    steamSwitch.classList.add("active");
+                    brewSwitch.classList.remove("active");
+                    advancedSwitch.classList.remove("active");
+                    brewCard.classList.add("show");
+                    advancedCard.classList.remove("show");
+                    brewCard.classList.add("active");
+                    advancedCard.classList.remove("active");
+                }
+                else {
+                    advancedSwitch.classList.add("active");
+                    steamSwitch.classList.remove("active");
+                    brewSwitch.classList.remove("active");
+                    advancedCard.classList.add("show");
+                    brewCard.classList.remove("show");
+                    advancedCard.classList.add("active");
+                    brewCard.classList.remove("active");
+                }
+            }
+
             function incrementTarget(){
-                var maxTemp = (mode == "brew") ? 115 : 160;
+                let maxTemp = (mode == "brew") ? 115 : 160;
                 if(mode == "brew") brewTarget = (brewTarget < maxTemp) ? brewTarget + 0.5 : maxTemp;
                 else steamTarget = (steamTarget < maxTemp) ? steamTarget + 1 : maxTemp;
                 callServer.post("/increment_target?mode=" + mode);
-                updateElements();
+                updateElements(mode);
             }
 
             function decrementTarget(){
-                var minTemp = (mode == "brew") ? 85 : 140;
+                let minTemp = (mode == "brew") ? 85 : 140;
                 if(mode == "brew") brewTarget = (brewTarget > minTemp) ? brewTarget - 0.5 : minTemp;
                 else steamTarget = (steamTarget > minTemp) ? steamTarget - 1 : minTemp;
                 callServer.post("/decrement_target?mode=" + mode);
-                updateElements();
+                updateElements(mode);
             }
 
             function incrementOffset(){
                 if(tempOffset < 15) tempOffset += 0.5;
                 callServer.post("/increment_target?mode=offset");
-                updateElements();
+                updateElements(mode);
             }
 
             function decrementOffset(){
                 if(tempOffset > -15) tempOffset -= 0.5;
                 callServer.post("/decrement_target?mode=offset");
-                updateElements();
+                updateElements(mode);
             }
 
-            var isTuningsOpen = false;
+            let isTuningsOpen = false;
             function changeTunings() {
-                var button = this;
+                let button = this;
                 if(isTuningsOpen) {
                     button.classList.remove('active');
-                    button.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>Setting Tunings...';
+                    button.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Tuning...';
                     button.disabled = true;
                     isTuningsOpen = false;
                     isTuned = false;
-                    var kp = document.getElementById("kp");
-                    var ki = document.getElementById("ki");
-                    var kd = document.getElementById("kd");
-                    var tunings = { "kp" : kp.value, "ki": ki.value, "kd": kd.value };
+                    let kp = document.getElementById("kp");
+                    let ki = document.getElementById("ki");
+                    let kd = document.getElementById("kd");
+                    let tunings = { "kp" : kp.value, "ki": ki.value, "kd": kd.value };
                     callServer.put("/set_tunings", JSON.stringify(tunings), function(){
                         isTuned = true;
                         button.disabled = false;
@@ -229,7 +261,7 @@
                 }
             }
 
-            var isTuned = true;
+            let isTuned = true;
             function changeTuningButtons() {
                 if(isTuned) {
                     tuningButton.disabled = false;
@@ -245,7 +277,7 @@
             }
 
             const ctx = document.getElementById('tempChart').getContext('2d');
-            var chart = new Chart(ctx, {
+            let chart = new Chart(ctx, {
                 data: data,
                 options: options,
             });
@@ -256,7 +288,7 @@
                 button.onclick = action.handler;
             });
 
-            var callServer = (function() {
+            let callServer = (function() {
                 async function request(url, method, data){
                     const response = await fetch(url, {
                         method: method,
@@ -286,15 +318,15 @@
 
             setInterval(function(){
                 callServer.get("/get_temps", function(response){
-                    var requestedLabels = [];
-                    var requestedTempData = [];
-                    var requestedBrewOutput = [];
-                    var requestedSteamOutput = [];
-                    var requestedBrewTargets = [];
-                    var requestedSteamTargets = [];
+                    let requestedLabels = [];
+                    let requestedTempData = [];
+                    let requestedBrewOutput = [];
+                    let requestedSteamOutput = [];
+                    let requestedBrewTargets = [];
+                    let requestedSteamTargets = [];
                     
-                    var sortedOutputs = response.sort((a, b) => a.time - b.time);
-                    var lastOutput = sortedOutputs[sortedOutputs.length - 1];
+                    let sortedOutputs = response.sort((a, b) => a.time - b.time);
+                    let lastOutput = sortedOutputs[sortedOutputs.length - 1];
                     if(brewTarget == null) [brewTarget, steamTarget, tempOffset] = [lastOutput.targets.brew, lastOutput.targets.steam, lastOutput.targets.offset];
                     
                     sortedOutputs.forEach((output, index) => {             
@@ -317,7 +349,7 @@
                         chart.data.datasets[2].data = outputData.steam = requestedSteamOutput;
                     }        
 
-                    updateElements();
+                    updateElements(mode);
                     if(!isTuned && !isTuningsOpen) refreshTunings();
                 });
             }, 1000);
@@ -328,7 +360,7 @@
                     if(response) {                        
                         Object.entries(response).forEach(entry => {
                             const [name, value] = entry;
-                            var input = document.getElementById(name);
+                            let input = document.getElementById(name);
                             input.value = value;
                         });
                         isTuned = true;
@@ -343,11 +375,19 @@
             }
 
             refreshTunings(true);
+
+            let steamSwitch = document.getElementById("switch_steam");
+            let brewSwitch = document.getElementById("switch_brew");
+            let advancedSwitch = document.getElementById("switch_advanced");
+            let brewCard = document.getElementById("brew_card");
+            let advancedCard = document.getElementById("advanced_card");
+            let tuningButton = document.getElementById("tuning_button");
+            
+
             document.getElementById("targetplus").onclick = incrementTarget;
             document.getElementById("targetminus").onclick = decrementTarget;
             document.getElementById("offsetplus").onclick = incrementOffset;
             document.getElementById("offsetminus").onclick = decrementOffset;
-            tuningButton = document.getElementById("tuning_button");
             tuningButton.onclick = changeTunings;
         }
     </script>
@@ -366,64 +406,77 @@
                     <div class="card-header" id="tempContainer">
                         <ul class="nav nav-pills nav-justified card-header-pills">
                             <li class="nav-item">
-                                <button class="nav-link active" id="switch_brew">Brew</button>
+                                <a class="nav-link active" id="switch_brew" href="#brew_card" data-toggle="pill">Brew</a>
                               </li>
                               <li class="nav-item">
-                                <button class="nav-link" id="switch_steam">Steam</button>
+                                <a class="nav-link" id="switch_steam" href="#brew_card" data-toggle="pill">Steam</a>
+                              </li>
+                              <li class="nav-item">
+                                  <a class="nav-link" id="switch_advanced" href="#advanced_card" data-toggle="pill"> Advanced </a>
                               </li>
                         </ul>
                     </div>
-                    <div class="card-body">
-                        <div> 
-                            Temperature: 
-                        </div>
-                        <div> 
-                            Pressure: 
-                        </div>
-                        <div> 
-                            Time: 
-                        </div>
-                        <div class="col-2 col-sm-1"> 
-                            <label class="form-label" id="target_label"> Target: 100 C</label>
-                            <div class="col-2 col-sm-1 btn-group">
-                                <button class="btn btn-outline-danger" id="targetplus"> + </button>
-                                <button class="btn btn-outline-secondary" id="targetminus"> - </button>
+                    <div class="card-body tab-content">
+                        <div class="tab-pane fade show active" id="brew_card">
+                            <div> 
+                                <h6>Temperature:</h6>
+                                <div class="col-2 col-sm-1"> 
+                                    <label class="form-label" id="target_label"> Target: 100 C</label>
+                                    <div class="btn-group">
+                                        <button class="btn btn-outline-danger" id="targetplus"> + </button>
+                                        <button class="btn btn-outline-secondary" id="targetminus"> - </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div> 
+                                <h6>Pressure:</h6>
+                            </div>
+                            <div> 
+                                <h6>Time:</h6>
                             </div>
                         </div>
-                        <div class="col-2 col-sm-1"> 
-                            <label class="form-label" id="offset_label"> Offset: -8 C</label>
-                            <div class="btn-group">
-                                <button class="btn btn-outline-danger" id="offsetplus"> + </button>
-                                <button class="btn btn-outline-secondary" id="offsetminus"> - </button>
+                        <div class="tab-pane fade" id="advanced_card">
+                            <div class="col-2 col-sm-1"> 
+                                <label class="form-label" id="offset_label"> Offset: -8 C</label>
+                                <div class="btn-group">
+                                    <button class="btn btn-outline-danger" id="offsetplus"> + </button>
+                                    <button class="btn btn-outline-secondary" id="offsetminus"> - </button>
+                                </div>
+                            </div>
+                            <div id="tunerContainer">
+                                <div class="my-2">
+                                    <button class="btn btn-secondary" type="button" id="tuning_button" data-bs-toggle="collapse" data-bs-target="#tunings_tab">
+                                        Set Tunings:
+                                    </button>
+                                </div>
+                                <div class="collapse" id="tunings_tab">
+                                    <form class="accordion-body" id="tunings-form">
+                                        <div class="row row-cols-1 row-cols-sm-3 row-cols-md-1">
+                                            <div class="col">
+                                                <div class="tuning-button input-group">
+                                                    <span for="kp" class="input-group-text"> Kp: </span>
+                                                    <input class="tuning-input form-control" type="text" id="kp" value="" placeholder="Proportional" min="0">
+                                                </div>
+                                            </div>
+                                            <div class="col">
+                                                <div class="tuning-button input-group">
+                                                    <span for="kp" class="input-group-text"> Ki: </span>
+                                                    <input class="tuning-input form-control" type="text" id="ki" value="" placeholder="Integral" min="0">
+                                                </div>
+                                            </div>
+                                            <div class="col">
+                                                <div class="tuning-button input-group">
+                                                    <span for="kp" class="input-group-text"> Kd: </span>
+                                                    <input class="tuning-input form-control" type="text" id="kd" value="" placeholder="Derivative" min="0">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
-        <div id="tunerContainer">
-            <div class="my-2">
-                <button class="btn btn-secondary" type="button" id="tuning_button" data-bs-toggle="collapse" data-bs-target="#tunings_tab">
-                    Set Tunings:
-                </button>
-            </div>
-            <div class="collapse" id="tunings_tab">
-                <form class="accordion-body" id="tunings-form">
-                    <div class="row">
-                        <div class="tuning-button input-group col">
-                            <span for="kp" class="input-group-text"> Kp: </span>
-                            <input class="tuning-input form-control" type="text" id="kp" value="" placeholder="Proportional" min="0">
-                        </div>
-                        <div class="tuning-button input-group col">
-                            <span for="kp" class="input-group-text"> Ki: </span>
-                            <input class="tuning-input form-control" type="text" id="ki" value="" placeholder="Integral" min="0">
-                        </div>
-                        <div class="tuning-button input-group col">
-                            <span for="kp" class="input-group-text"> Kd: </span>
-                            <input class="tuning-input form-control" type="text" id="kd" value="" placeholder="Derivative" min="0">
-                        </div>
-                    </div>
-                </form>
             </div>
         </div>
     </div>
