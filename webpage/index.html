@@ -15,6 +15,7 @@
             let tempOffset;
             let cycleTime = 1500;
             let currentMode = 'brew';
+            let degreeMode = 'C';
             let tempData = [];
             let targetData = {};
             let outputData = {};
@@ -169,7 +170,7 @@
 
                 if(targetTemp !== undefined) {
                     let targetLabel = document.getElementById(mode + "_target_label");
-                    targetLabel.innerHTML = targetTemp + " C";
+                    targetLabel.innerHTML = targetTemp + " " + degreeMode;
                 }
 
                 if(mode == "brew" || mode == "steam") {
@@ -366,13 +367,16 @@
 
                     chart.data.labels = requestedLabels;
                     chart.data.datasets[0].data = tempData = requestedTempData;
+                    let currentTemp = requestedTempData[requestedTempData.length - 1].toPrecision(4);
                     if(currentMode == 'brew') { 
                         chart.data.datasets[1].data = targetData.brew = requestedBrewTargets;
                         chart.data.datasets[2].data = outputData.brew = requestedBrewOutput;
+                        if(currentTemp !== undefined) document.getElementById("brew_current-temp").innerHTML = currentTemp + " " + degreeMode;
                     }
                     else { 
                         chart.data.datasets[1].data = targetData.steam = requestedSteamTargets;
                         chart.data.datasets[2].data = outputData.steam = requestedSteamOutput;
+                        if(currentTemp !== undefined) document.getElementById("steam_current-temp").innerHTML = currentTemp + " " + degreeMode;
                     }        
 
                     updateElements(currentMode);
@@ -448,10 +452,15 @@
                         <div class="tab-pane fade show active" id="brew_card">
                             <div> 
                                 <h6>Temperature:</h6>
+                                <div>
+                                    <div class="col-12"> Current Temp: 
+                                        <small class="text-muted" id="brew_current-temp"><span class="placeholder placeholder-wave bg-primary w-100"></span></small>
+                                    </div>
+                                </div>
                                 <div> 
-                                    <label class="form-label col-12"> Target: 
-                                        <span id="brew_target_label"><span class="placeholder placeholder-wave bg-primary w-100"></span></span>
-                                    </label>
+                                    <div class="col-12"> Target:
+                                        <small class="text-muted" id="brew_target_label"><span class="placeholder placeholder-wave bg-primary w-100"></span></small>
+                                    </div>
                                     <div class="btn-group">
                                         <button class="btn btn-outline-danger" id="brew_increment"> + </button>
                                         <button class="btn btn-outline-secondary" id="brew_decrement"> - </button>
@@ -470,10 +479,15 @@
                         <div class="tab-pane fade" id="steam_card">
                             <div> 
                                 <h6>Temperature:</h6>
+                                <div>
+                                    <div class="col-12"> Current Temp: 
+                                        <small class="text-muted" id="steam_current-temp"><span class="placeholder placeholder-wave bg-primary w-100"></span></small>
+                                    </div>
+                                </div>
                                 <div> 
-                                    <label class="form-label col-12"> Target:
-                                        <span id="steam_target_label"><span class="placeholder placeholder-wave bg-primary w-100"></span></span>
-                                    </label>
+                                    <div class="col-12"> Target:
+                                        <small class="text-muted" id="steam_target_label"><span class="placeholder placeholder-wave bg-primary w-100"></span></small>
+                                    </div>
                                     <div class="btn-group">
                                         <button class="btn btn-outline-danger" id="steam_increment"> + </button>
                                         <button class="btn btn-outline-secondary" id="steam_decrement"> - </button>
@@ -487,16 +501,16 @@
                         </div>
                         <div class="tab-pane fade" id="advanced_card">
                             <div> 
-                                <label class="form-label col-12" for="offset_group"> Offset: 
-                                    <span id="offset_target_label"><span class="placeholder placeholder-wave bg-primary w-100"></span></span>
-                                </label>
+                                <div class="col-12" for="offset_group"> Offset: 
+                                    <small class="text-muted" id="offset_target_label"><span class="placeholder placeholder-wave bg-primary w-100"></span></small>
+                                </div>
                                 <div class="btn-group" id="offset_group">
                                     <button class="btn btn-outline-danger" id="offset_increment"> + </button>
                                     <button class="btn btn-outline-secondary" id="offset_decrement"> - </button>
                                 </div>
                             </div>
                             <div>
-                                <label class="form-label col-12" id="degree_label" for="degree_group"> Degree:</label>
+                                <div class="col-12" id="degree_label" for="degree_group"> Degree:</div>
                                 <div class="btn-group" id="degree_group">
                                     <button class="btn btn-outline-info active" type="button" id="F_button"> C </button>
                                     <button class="btn btn-outline-info" type="button" id="C_button"> F </button>
