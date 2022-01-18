@@ -171,8 +171,10 @@
                 let targetLabel = document.getElementById(mode + "_target_label");
                 targetLabel.innerHTML = targetTemp + " C";
 
-                chart.options.scales.y1.suggestedMin = targetTemp % 5 === 0 ? Math.floor(targetTemp / 5 - 1) * 5 : Math.floor(targetTemp / 5) * 5;
-                chart.options.scales.y1.suggestedMax = targetTemp % 5 === 0 ? Math.ceil(targetTemp / 5 + 1) * 5 : Math.ceil(targetTemp / 5) * 5;
+                if(mode == "brew" || mode == "steam") {
+                    chart.options.scales.y1.suggestedMin = targetTemp % 5 === 0 ? Math.floor(targetTemp / 5 - 1) * 5 : Math.floor(targetTemp / 5) * 5;
+                    chart.options.scales.y1.suggestedMax = targetTemp % 5 === 0 ? Math.ceil(targetTemp / 5 + 1) * 5 : Math.ceil(targetTemp / 5) * 5;
+                }
 
                 chart.update();
             }
