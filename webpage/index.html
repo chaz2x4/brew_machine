@@ -79,7 +79,7 @@
                 plugins: {
                     title: {
                         display: true,
-                        text: "Brew Temperature",
+                        text: 'Brew Temperature',
                     },
                     legend: {
                         display: false,
@@ -92,7 +92,7 @@
                     x: {
                         title: {
                             display: true,
-                            text: "Time",
+                            text: 'Time',
                         },
                         ticks: {
                             callback: (value, index) => {
@@ -104,7 +104,7 @@
                     y1: {
                         title: {
                             display: true,
-                            text: "Temperature",
+                            text: 'Temperature',
                         },
                         position: 'left',
                     },
@@ -113,9 +113,9 @@
                         max: cycleTime,
                         title: {
                             display: true,
-                            text: "Output",
+                            text: 'Output',
                         },
-                        position: "right",
+                        position: 'right',
                     },
                 },
             }
@@ -137,7 +137,7 @@
                     chart.options.plugins.title.text = "Brew Temperature";
                     chart.data.datasets[1].data = targetData.brew;
                     chart.data.datasets[2].data = outputData.brew;
-                    mode = 'brew';
+                    mode = "brew";
                     switchTab(mode);
                     updateElements(mode);
                     chart.render();
@@ -149,7 +149,7 @@
                     chart.options.plugins.title.text = "Steam Temperature";
                     chart.data.datasets[1].data = targetData.steam;
                     chart.data.datasets[2].data = outputData.steam;
-                    mode = 'steam';
+                    mode = "steam";
                     switchTab(mode);
                     updateElements(mode);
                     chart.render();
@@ -163,10 +163,13 @@
             }];
             
             function updateElements(mode){
-                let targetTemp = (mode == "brew") ? brewTarget : steamTarget;
+                let targetTemp;
+                if(mode == "brew") targetTemp = brewTarget;
+                else if (mode == "steam") targetTemp = steamTarget;
+                else targetTemp = tempOffset;
 
                 let targetLabel = document.getElementById(mode + "_target_label");
-                targetLabel.innerHTML = "Target: " + targetTemp + " C";
+                targetLabel.innerHTML = targetTemp + " C";
 
                 chart.options.scales.y1.suggestedMin = targetTemp % 5 === 0 ? Math.floor(targetTemp / 5 - 1) * 5 : Math.floor(targetTemp / 5) * 5;
                 chart.options.scales.y1.suggestedMax = targetTemp % 5 === 0 ? Math.ceil(targetTemp / 5 + 1) * 5 : Math.ceil(targetTemp / 5) * 5;
@@ -175,7 +178,7 @@
             }
 
             function switchTab(mode) {
-                if(mode == 'brew') {
+                if(mode == "brew") {
                     brewSwitch.classList.add("active");
                     steamSwitch.classList.remove("active");
                     advancedSwitch.classList.remove("active");
@@ -188,7 +191,7 @@
                     steamCard.classList.remove("active");
                     advancedCard.classList.remove("active");
                 }
-                else if(mode == 'steam'){
+                else if(mode == "steam"){
                     steamSwitch.classList.add("active");
                     brewSwitch.classList.remove("active");
                     advancedSwitch.classList.remove("active");
@@ -201,7 +204,7 @@
                     brewCard.classList.remove("active");
                     advancedCard.classList.remove("active");
                 }
-                else {
+                else if(mode == "offset"){
                     advancedSwitch.classList.add("active");
                     brewSwitch.classList.remove("active");
                     steamSwitch.classList.remove("active");
@@ -217,33 +220,39 @@
             }
 
             function incrementTarget(mode){
-                let maxTemp = (mode == "brew") ? 115 : 160;
-                if(mode == "brew") brewTarget = (brewTarget < maxTemp) ? brewTarget + 0.5 : maxTemp;
-                else steamTarget = (steamTarget < maxTemp) ? steamTarget + 1 : maxTemp;
+                let maxTemp;
+                if(mode == "brew") {
+                    maxTemp = 115;
+                    brewTarget = (brewTarget < maxTemp) ? brewTarget + 0.5 : maxTemp; 
+                }
+                else if(mode == "steam"){
+                    maxTemp = 160;
+                    steamTarget = (steamTarget < maxTemp) ? steamTarget + 1 : maxTemp;
+                }
+                else if(mode == "offset"){
+                    maxTemp = 15;
+                    tempOffset = (tempOffset < maxTemp) ? tempOffset + 0.5 : maxTemp;
+                }
                 callServer.post("/increment_target?mode=" + mode);
                 updateElements(mode);
             }
 
             function decrementTarget(mode){
-                let minTemp = (mode == "brew") ? 85 : 140;
-                if(mode == "brew") brewTarget = (brewTarget > minTemp) ? brewTarget - 0.5 : minTemp;
-                else steamTarget = (steamTarget > minTemp) ? steamTarget - 1 : minTemp;
+                let minTemp;
+                if(mode == "brew") {
+                    minTemp = 85;
+                    brewTarget = (brewTarget > minTemp) ? brewTarget - 0.5 : minTemp; 
+                }
+                else if(mode == "steam"){
+                    minTemp = 140;
+                    steamTarget = (steamTarget > minTemp) ? steamTarget - 1 : minTemp;
+                }
+                else if(mode == "offset"){
+                    minTemp = -15;
+                    tempOffset = (tempOffset > minTemp) ? tempOffset - 0.5 : minTemp;
+                }
                 callServer.post("/decrement_target?mode=" + mode);
                 updateElements(mode);
-            }
-
-            function incrementOffset(){
-                if(tempOffset < 15) tempOffset += 0.5;
-                callServer.post("/increment_target?mode=offset");
-                let offsetLabel = document.getElementById("offset_label");
-                offsetLabel.innerHTML = "Offset: " + tempOffset + " C";
-            }
-
-            function decrementOffset(){
-                if(tempOffset > -15) tempOffset -= 0.5;
-                callServer.post("/decrement_target?mode=offset");
-                let offsetLabel = document.getElementById("offset_label");
-                offsetLabel.innerHTML = "Offset: " + tempOffset + " C";
             }
 
             let isTuningsOpen = false;
@@ -399,8 +408,8 @@
             document.getElementById("brew_decrement").onclick = () => decrementTarget("brew");
             document.getElementById("steam_increment").onclick = () => incrementTarget("steam");
             document.getElementById("steam_decrement").onclick = () => decrementTarget("steam");
-            document.getElementById("offset_increment").onclick = incrementOffset;
-            document.getElementById("offset_decrement").onclick = decrementOffset;
+            document.getElementById("offset_increment").onclick = () => incrementTarget("offset");
+            document.getElementById("offset_decrement").onclick = () => decrementTarget("offset");
             tuningButton.onclick = changeTunings;
         }
     </script>
@@ -434,7 +443,7 @@
                             <div> 
                                 <h6>Temperature:</h6>
                                 <div class="col-2 col-sm-1"> 
-                                    <label class="form-label" id="brew_target_label"> Target: 100 C</label>
+                                    <label class="form-label"> Target: <span id="brew_target_label">100 C</span></label>
                                     <div class="btn-group">
                                         <button class="btn btn-outline-danger" id="brew_increment"> + </button>
                                         <button class="btn btn-outline-secondary" id="brew_decrement"> - </button>
@@ -452,7 +461,7 @@
                             <div> 
                                 <h6>Temperature:</h6>
                                 <div class="col-2 col-sm-1"> 
-                                    <label class="form-label" id="steam_target_label"> Target: 160 C</label>
+                                    <label class="form-label"> <span id="steam_target_label">160 C</span></label>
                                     <div class="btn-group">
                                         <button class="btn btn-outline-danger" id="steam_increment"> + </button>
                                         <button class="btn btn-outline-secondary" id="steam_decrement"> - </button>
@@ -465,7 +474,7 @@
                         </div>
                         <div class="tab-pane fade" id="advanced_card">
                             <div class="col-2 col-sm-1"> 
-                                <label class="form-label" id="offset_label"> Offset: -8 C</label>
+                                <label class="form-label"> Offset: <span id="offset_target_label">-8 C</span></label>
                                 <div class="btn-group">
                                     <button class="btn btn-outline-danger" id="offset_increment"> + </button>
                                     <button class="btn btn-outline-secondary" id="offset_decrement"> - </button>
