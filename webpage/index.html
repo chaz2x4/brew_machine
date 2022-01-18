@@ -168,9 +168,6 @@
                 let targetLabel = document.getElementById(mode + "_target_label");
                 targetLabel.innerHTML = "Target: " + targetTemp + " C";
 
-                let offsetLabel = document.getElementById("offset_label");
-                offsetLabel.innerHTML = "Offset: " + tempOffset + " C";
-
                 chart.options.scales.y1.suggestedMin = targetTemp % 5 === 0 ? Math.floor(targetTemp / 5 - 1) * 5 : Math.floor(targetTemp / 5) * 5;
                 chart.options.scales.y1.suggestedMax = targetTemp % 5 === 0 ? Math.ceil(targetTemp / 5 + 1) * 5 : Math.ceil(targetTemp / 5) * 5;
 
@@ -219,7 +216,7 @@
                 }
             }
 
-            function incrementTarget(){
+            function incrementTarget(mode){
                 let maxTemp = (mode == "brew") ? 115 : 160;
                 if(mode == "brew") brewTarget = (brewTarget < maxTemp) ? brewTarget + 0.5 : maxTemp;
                 else steamTarget = (steamTarget < maxTemp) ? steamTarget + 1 : maxTemp;
@@ -227,7 +224,7 @@
                 updateElements(mode);
             }
 
-            function decrementTarget(){
+            function decrementTarget(mode){
                 let minTemp = (mode == "brew") ? 85 : 140;
                 if(mode == "brew") brewTarget = (brewTarget > minTemp) ? brewTarget - 0.5 : minTemp;
                 else steamTarget = (steamTarget > minTemp) ? steamTarget - 1 : minTemp;
@@ -238,13 +235,15 @@
             function incrementOffset(){
                 if(tempOffset < 15) tempOffset += 0.5;
                 callServer.post("/increment_target?mode=offset");
-                updateElements(mode);
+                let offsetLabel = document.getElementById("offset_label");
+                offsetLabel.innerHTML = "Offset: " + tempOffset + " C";
             }
 
             function decrementOffset(){
                 if(tempOffset > -15) tempOffset -= 0.5;
                 callServer.post("/decrement_target?mode=offset");
-                updateElements(mode);
+                let offsetLabel = document.getElementById("offset_label");
+                offsetLabel.innerHTML = "Offset: " + tempOffset + " C";
             }
 
             let isTuningsOpen = false;
@@ -396,10 +395,12 @@
             let advancedCard = document.getElementById("advanced_card");
             let tuningButton = document.getElementById("tuning_button");
             
-            document.getElementById("targetplus").onclick = incrementTarget;
-            document.getElementById("targetminus").onclick = decrementTarget;
-            document.getElementById("offsetplus").onclick = incrementOffset;
-            document.getElementById("offsetminus").onclick = decrementOffset;
+            document.getElementById("brew_increment").onclick = () => incrementTarget("brew");
+            document.getElementById("brew_decrement").onclick = () => decrementTarget("brew");
+            document.getElementById("steam_increment").onclick = () => incrementTarget("steam");
+            document.getElementById("steam_decrement").onclick = () => decrementTarget("steam");
+            document.getElementById("offset_increment").onclick = incrementOffset;
+            document.getElementById("offset_decrement").onclick = decrementOffset;
             tuningButton.onclick = changeTunings;
         }
     </script>
@@ -435,8 +436,8 @@
                                 <div class="col-2 col-sm-1"> 
                                     <label class="form-label" id="brew_target_label"> Target: 100 C</label>
                                     <div class="btn-group">
-                                        <button class="btn btn-outline-danger" id="targetplus"> + </button>
-                                        <button class="btn btn-outline-secondary" id="targetminus"> - </button>
+                                        <button class="btn btn-outline-danger" id="brew_increment"> + </button>
+                                        <button class="btn btn-outline-secondary" id="brew_decrement"> - </button>
                                     </div>
                                 </div>
                             </div>
@@ -453,8 +454,8 @@
                                 <div class="col-2 col-sm-1"> 
                                     <label class="form-label" id="steam_target_label"> Target: 160 C</label>
                                     <div class="btn-group">
-                                        <button class="btn btn-outline-danger" id="targetplus"> + </button>
-                                        <button class="btn btn-outline-secondary" id="targetminus"> - </button>
+                                        <button class="btn btn-outline-danger" id="steam_increment"> + </button>
+                                        <button class="btn btn-outline-secondary" id="steam_decrement"> - </button>
                                     </div>
                                 </div>
                             </div>
@@ -466,8 +467,8 @@
                             <div class="col-2 col-sm-1"> 
                                 <label class="form-label" id="offset_label"> Offset: -8 C</label>
                                 <div class="btn-group">
-                                    <button class="btn btn-outline-danger" id="offsetplus"> + </button>
-                                    <button class="btn btn-outline-secondary" id="offsetminus"> - </button>
+                                    <button class="btn btn-outline-danger" id="offset_increment"> + </button>
+                                    <button class="btn btn-outline-secondary" id="offset_decrement"> - </button>
                                 </div>
                             </div>
                             <div id="tunerContainer">
