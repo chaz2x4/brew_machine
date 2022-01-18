@@ -452,25 +452,29 @@
                         <div class="tab-pane fade show active" id="brew_card">
                             <div> 
                                 <h6>Temperature:</h6>
-                                <div>
+                                <div class="row">
                                     <div class="col-12"> Current Temp: 
                                         <small class="text-muted" id="brew_current-temp"><span class="placeholder placeholder-wave bg-primary w-100"></span></small>
                                     </div>
                                 </div>
-                                <div> 
+                                <div class="row"> 
                                     <div class="col-12"> Target:
                                         <small class="text-muted" id="brew_target_label"><span class="placeholder placeholder-wave bg-primary w-100"></span></small>
                                     </div>
-                                    <div class="btn-group">
-                                        <button class="btn btn-outline-danger" id="brew_increment"> + </button>
-                                        <button class="btn btn-outline-secondary" id="brew_decrement"> - </button>
+                                    <div class="my-2">
+                                        <div class="btn-group">
+                                            <button class="btn btn-outline-danger" id="brew_increment"> + </button>
+                                            <button class="btn btn-outline-secondary" id="brew_decrement"> - </button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
+                            <hr>
                             <div> 
                                 <h6>Pressure:</h6>
                                 <span class="placeholder placeholder-wave bg-primary w-100"></span>
                             </div>
+                            <hr>
                             <div> 
                                 <h6>Time:</h6>
                                 <span class="placeholder placeholder-wave bg-primary w-100"></span>
@@ -479,41 +483,48 @@
                         <div class="tab-pane fade" id="steam_card">
                             <div> 
                                 <h6>Temperature:</h6>
-                                <div>
+                                <div class="row">
                                     <div class="col-12"> Current Temp: 
                                         <small class="text-muted" id="steam_current-temp"><span class="placeholder placeholder-wave bg-primary w-100"></span></small>
                                     </div>
                                 </div>
-                                <div> 
+                                <div class="row"> 
                                     <div class="col-12"> Target:
                                         <small class="text-muted" id="steam_target_label"><span class="placeholder placeholder-wave bg-primary w-100"></span></small>
                                     </div>
-                                    <div class="btn-group">
-                                        <button class="btn btn-outline-danger" id="steam_increment"> + </button>
-                                        <button class="btn btn-outline-secondary" id="steam_decrement"> - </button>
+                                    <div class="my-2">
+                                        <div class="btn-group">
+                                            <button class="btn btn-outline-danger" id="steam_increment"> + </button>
+                                            <button class="btn btn-outline-secondary" id="steam_decrement"> - </button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
+                            <hr>
                             <div> 
                                 <h6>Time:</h6>
                                 <span class="placeholder placeholder-wave bg-primary w-100"></span>
                             </div>
                         </div>
                         <div class="tab-pane fade" id="advanced_card">
-                            <div> 
+                            <div class="row"> 
                                 <div class="col-12" for="offset_group"> Offset: 
                                     <small class="text-muted" id="offset_target_label"><span class="placeholder placeholder-wave bg-primary w-100"></span></small>
                                 </div>
-                                <div class="btn-group" id="offset_group">
-                                    <button class="btn btn-outline-danger" id="offset_increment"> + </button>
-                                    <button class="btn btn-outline-secondary" id="offset_decrement"> - </button>
+                                <div class="my-2">
+                                    <div class="btn-group" id="offset_group">
+                                        <button class="btn btn-outline-danger" id="offset_increment"> + </button>
+                                        <button class="btn btn-outline-secondary" id="offset_decrement"> - </button>
+                                    </div>
                                 </div>
                             </div>
-                            <div>
+                            <div class="row">
                                 <div class="col-12" id="degree_label" for="degree_group"> Degree:</div>
-                                <div class="btn-group" id="degree_group">
-                                    <button class="btn btn-outline-info active" type="button" id="F_button"> C </button>
-                                    <button class="btn btn-outline-info" type="button" id="C_button"> F </button>
+                                <div class="my-2">
+                                    <div class="btn-group" id="degree_group">
+                                        <button class="btn btn-outline-info active" type="button" id="C_button"> C </button>
+                                        <button class="btn btn-outline-info" type="button" id="F_button"> F </button>
+                                    </div>
                                 </div>
                             </div>
                             <div id="tunerContainer">
