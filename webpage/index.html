@@ -165,7 +165,7 @@
             function updateElements(mode){
                 let targetTemp = (mode == "brew") ? brewTarget : steamTarget;
 
-                let targetLabel = document.getElementById("target_label");
+                let targetLabel = document.getElementById(mode + "_target_label");
                 targetLabel.innerHTML = "Target: " + targetTemp + " C";
 
                 let offsetLabel = document.getElementById("offset_label");
@@ -182,28 +182,40 @@
                     brewSwitch.classList.add("active");
                     steamSwitch.classList.remove("active");
                     advancedSwitch.classList.remove("active");
+
                     brewCard.classList.add("show");
+                    steamCard.classList.remove("show");
                     advancedCard.classList.remove("show");
+
                     brewCard.classList.add("active");
+                    steamCard.classList.remove("active");
                     advancedCard.classList.remove("active");
                 }
                 else if(mode == 'steam'){
                     steamSwitch.classList.add("active");
                     brewSwitch.classList.remove("active");
                     advancedSwitch.classList.remove("active");
-                    brewCard.classList.add("show");
+
+                    steamCard.classList.add("show");
+                    brewCard.classList.remove("show");
                     advancedCard.classList.remove("show");
-                    brewCard.classList.add("active");
+
+                    steamCard.classList.add("active");
+                    brewCard.classList.remove("active");
                     advancedCard.classList.remove("active");
                 }
                 else {
                     advancedSwitch.classList.add("active");
-                    steamSwitch.classList.remove("active");
                     brewSwitch.classList.remove("active");
+                    steamSwitch.classList.remove("active");
+
                     advancedCard.classList.add("show");
                     brewCard.classList.remove("show");
+                    steamCard.classList.remove("active");
+
                     advancedCard.classList.add("active");
                     brewCard.classList.remove("active");
+                    steamCard.classList.remove("active");
                 }
             }
 
@@ -380,10 +392,10 @@
             let brewSwitch = document.getElementById("switch_brew");
             let advancedSwitch = document.getElementById("switch_advanced");
             let brewCard = document.getElementById("brew_card");
+            let steamCard = document.getElementById("steam_card");
             let advancedCard = document.getElementById("advanced_card");
             let tuningButton = document.getElementById("tuning_button");
             
-
             document.getElementById("targetplus").onclick = incrementTarget;
             document.getElementById("targetminus").onclick = decrementTarget;
             document.getElementById("offsetplus").onclick = incrementOffset;
@@ -421,7 +433,7 @@
                             <div> 
                                 <h6>Temperature:</h6>
                                 <div class="col-2 col-sm-1"> 
-                                    <label class="form-label" id="target_label"> Target: 100 C</label>
+                                    <label class="form-label" id="brew_target_label"> Target: 100 C</label>
                                     <div class="btn-group">
                                         <button class="btn btn-outline-danger" id="targetplus"> + </button>
                                         <button class="btn btn-outline-secondary" id="targetminus"> - </button>
@@ -430,6 +442,21 @@
                             </div>
                             <div> 
                                 <h6>Pressure:</h6>
+                            </div>
+                            <div> 
+                                <h6>Time:</h6>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="steam_card">
+                            <div> 
+                                <h6>Temperature:</h6>
+                                <div class="col-2 col-sm-1"> 
+                                    <label class="form-label" id="steam_target_label"> Target: 160 C</label>
+                                    <div class="btn-group">
+                                        <button class="btn btn-outline-danger" id="targetplus"> + </button>
+                                        <button class="btn btn-outline-secondary" id="targetminus"> - </button>
+                                    </div>
+                                </div>
                             </div>
                             <div> 
                                 <h6>Time:</h6>
