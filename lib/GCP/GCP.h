@@ -72,17 +72,17 @@ public:
     void refresh(ulong);
 private:
     Adafruit_MAX31865 tempProbe;
-    const double emergencyShutoffTemp;
-    const double maxBrewTemp;
-    const double minBrewTemp;
-    const double maxSteamTemp;
-    const double minSteamTemp;
-    const double maxOffset;
-    const double minOffset;
-    const int websiteQueueSize;
-    const ulong windowSize;
-    const ulong logInterval;
-    const int powerFrequency;
+    const double kEmergencyShutoffTemp;
+    const double kMaxBrewTemp;
+    const double kMinBrewTemp;
+    const double kMaxSteamTemp;
+    const double kMinSteamTemp;
+    const double kMaxOffset;
+    const double kMinOffset;
+    const int kWebsiteQueueSize;
+    const ulong kWindowSize;
+    const ulong kLogInterval;
+    const int kPowerFrequency;
 
     double currentTemp;
     double tempOffset;

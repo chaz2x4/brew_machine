@@ -41,8 +41,8 @@ private:
     bool flash;             // if true screen is on alternate screen
     int buttonState[3];     // records button state HIGH is unpressed
     int lastButtonState[3]; // checks if button was pressed by comparing state to buttonState
-    const int screenTimeout; // amount of milliseconds before screen goes blank
-    const int triggerTime;  // amount of time to hold button for settings change
+    const int kScreenTimeout; // amount of milliseconds before screen goes blank
+    const int kTriggerTime;  // amount of time to hold button for settings change
     bool checkedIfTimedout();
 };
 

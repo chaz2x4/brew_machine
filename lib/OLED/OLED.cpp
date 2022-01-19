@@ -10,8 +10,8 @@ OLED::OLED()
 , flash(false)
 , buttonState{HIGH, HIGH, HIGH}
 , lastButtonState{HIGH, HIGH, HIGH}
-, screenTimeout(900000)
-, triggerTime(1000)
+, kScreenTimeout(900000)
+, kTriggerTime(1000)
 {}
 
 OLED::~OLED(){
@@ -81,7 +81,7 @@ void OLED::eventListener(){
             }
         }
         else if(buttonState[2] == HIGH && lastButtonState[2] == LOW) downTime = -1; 
-        if(buttonState[2] == LOW && (now - downTime) >= triggerTime) this->isEditable = true;
+        if(buttonState[2] == LOW && (now - downTime) >= kTriggerTime) this->isEditable = true;
         lastButtonState[2] = buttonState[2];
         display.clearDisplay();
     }
@@ -89,7 +89,7 @@ void OLED::eventListener(){
 
 bool OLED::checkedIfTimedout(){
     ulong now = millis();
-    if((now - timeLastButton) >= screenTimeout) {
+    if((now - timeLastButton) >= kScreenTimeout) {
         this->isEditable = false;
         display.clearDisplay();
         display.display();
