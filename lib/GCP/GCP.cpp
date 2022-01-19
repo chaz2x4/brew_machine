@@ -275,8 +275,8 @@ void GCP::refresh(ulong realTime) {
 		lastBrewOutput = regulateOutput(brew_output);
 		lastSteamOutput = regulateOutput(steam_output);
 
-		if(targetSteamTemp - currentTemp > 10) lastSteamOutput = windowSize;
-		if(targetTemp - currentTemp > 10) lastBrewOutput = windowSize;
+		if(targetSteamTemp - currentTemp > 4) lastSteamOutput = windowSize;
+		if(targetTemp - currentTemp > 4) lastBrewOutput = windowSize;
 		if(targetSteamTemp - currentTemp < -1) lastSteamOutput = 0;
 		if(targetTemp - currentTemp < -1) lastBrewOutput = 0;
 	}
