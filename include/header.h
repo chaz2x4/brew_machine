@@ -2,12 +2,6 @@
     #include <Arduino.h>
 #endif
 
-#include "passwords.h"
-#include "websites.h"
-
-#include "GCP.h"
-#include "OLED.h"
-
 #include <WiFi.h>
 #include <WiFiClient.h>
 #include <ESPAsyncWebServer.h>
@@ -18,3 +12,8 @@
 #include <WiFiUdp.h>
 #include <ArduinoOTA.h>
 #include <NTPClient.h>
+
+#include "passwords.h"
+#include "websites.h"
+#include "gcp.h"
+#include "oled.h"

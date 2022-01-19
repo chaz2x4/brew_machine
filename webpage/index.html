@@ -10,15 +10,15 @@
     </style>
     <script>
         window.onload = function () {
-            let brewTarget;
-            let steamTarget;
-            let tempOffset;
-            let cycleTime = 1500;
-            let currentMode = 'brew';
-            let degreeMode = 'C';
-            let tempData = [];
-            let targetData = {};
-            let outputData = {};
+            let brew_target;
+            let steam_target;
+            let temp_offset;
+            let cycle_time = 1500;
+            let current_mode = 'brew';
+            let degree_mode = 'C';
+            let temp_data = [];
+            let target_data = {};
+            let output_data = {};
             let labels = [];
             let data = {
                 labels: labels,
@@ -29,12 +29,12 @@
                     borderColor: '#4285F4',
                     borderWidth: 2,
                     backgroundColor: function (context) {
-                        if(context.dataset.data.length && targetData.length) {
+                        if(context.dataset.data.length && target_data.length) {
                             let pointTemp = context.dataset.data[context.dataIndex];
-                            let targetTemp = targetData[currentMode][context.dataIndex];
-                            let acceptableError = (currentMode == 'brew') ? 0.5 : 1.0;
-                            if(pointTemp > (targetTemp + acceptableError)) return '#FF6384';
-                            if(pointTemp < (targetTemp - acceptableError)) return '#331F2E';
+                            let target_temp = target_data[current_mode][context.dataIndex];
+                            let acceptableError = (current_mode == 'brew') ? 0.5 : 1.0;
+                            if(pointTemp > (target_temp + acceptableError)) return '#FF6384';
+                            if(pointTemp < (target_temp - acceptableError)) return '#331F2E';
                             else return '#63FF8F';
                         }
                         else return '#4285F4';
@@ -49,7 +49,7 @@
                 }, {
                     type: 'line',
                     label: 'Target',
-                    data: targetData,
+                    data: target_data,
                     borderColor: '#4285F4',
                     borderWidth: 2,
                     borderDash: [5, 5],
@@ -63,7 +63,7 @@
                 }, {
                     type: 'bar',
                     label: 'Output',
-                    data: outputData.brew,
+                    data: output_data.brew,
                     backgroundColor: '#63FFDD',
                     yAxisID: 'y2',
                 }],
@@ -110,7 +110,7 @@
                     },
                     y2: {
                         min: 0,
-                        max: cycleTime,
+                        max: cycle_time,
                         title: {
                             display: true,
                             text: 'Output',
@@ -135,11 +135,11 @@
                 id: "brew",
                 handler() {
                     chart.options.plugins.title.text = "Brew Temperature";
-                    chart.data.datasets[1].data = targetData.brew;
-                    chart.data.datasets[2].data = outputData.brew;
-                    currentMode = "brew";
-                    switchTab(currentMode);
-                    updateElements(currentMode);
+                    chart.data.datasets[1].data = target_data.brew;
+                    chart.data.datasets[2].data = output_data.brew;
+                    current_mode = "brew";
+                    switchTab(current_mode);
+                    updateElements(current_mode);
                     chart.render();
                 },
             }, {
@@ -147,11 +147,11 @@
                 id: "steam",
                 handler() {
                     chart.options.plugins.title.text = "Steam Temperature";
-                    chart.data.datasets[1].data = targetData.steam;
-                    chart.data.datasets[2].data = outputData.steam;
-                    currentMode = "steam";
-                    switchTab(currentMode);
-                    updateElements(currentMode);
+                    chart.data.datasets[1].data = target_data.steam;
+                    chart.data.datasets[2].data = output_data.steam;
+                    current_mode = "steam";
+                    switchTab(current_mode);
+                    updateElements(current_mode);
                     chart.render();
                 }
             }, {
@@ -164,61 +164,61 @@
             }];
             
             function updateElements(mode){
-                let targetTemp;
-                if(mode == "brew") targetTemp = brewTarget;
-                else if (mode == "steam") targetTemp = steamTarget;
-                else targetTemp = tempOffset;
+                let target_temp;
+                if(mode == "brew") target_temp = brew_target;
+                else if (mode == "steam") target_temp = steam_target;
+                else target_temp = temp_offset;
 
-                if(targetTemp !== undefined) {
+                if(target_temp !== undefined) {
                     let targetLabel = document.getElementById(mode + "_target_label");
-                    targetLabel.innerHTML = targetTemp + " " + degreeMode;
+                    targetLabel.innerHTML = target_temp + " " + degree_mode;
                 }
 
                 if(mode == "brew" || mode == "steam") {
-                    chart.options.scales.y1.suggestedMin = targetTemp % 5 === 0 ? Math.floor(targetTemp / 5 - 1) * 5 : Math.floor(targetTemp / 5) * 5;
-                    chart.options.scales.y1.suggestedMax = targetTemp % 5 === 0 ? Math.ceil(targetTemp / 5 + 1) * 5 : Math.ceil(targetTemp / 5) * 5;
+                    chart.options.scales.y1.suggestedMin = target_temp % 5 === 0 ? Math.floor(target_temp / 5 - 1) * 5 : Math.floor(target_temp / 5) * 5;
+                    chart.options.scales.y1.suggestedMax = target_temp % 5 === 0 ? Math.ceil(target_temp / 5 + 1) * 5 : Math.ceil(target_temp / 5) * 5;
                 }
 
                 chart.update();
             }
 
             function switchTab(mode) {
-                brewSwitch.classList.toggle("active", mode === "brew");
-                steamSwitch.classList.toggle("active", mode === "steam");
-                advancedSwitch.classList.toggle("active", mode === "advanced");
+                brew_switch.classList.toggle("active", mode === "brew");
+                steam_switch.classList.toggle("active", mode === "steam");
+                advanced_switch.classList.toggle("active", mode === "advanced");
 
-                brewCard.classList.toggle("show", mode === "brew");
-                steamCard.classList.toggle("show", mode === "steam");
-                advancedCard.classList.toggle("show", mode === "advanced");
+                brew_card.classList.toggle("show", mode === "brew");
+                steam_card.classList.toggle("show", mode === "steam");
+                advanced_card.classList.toggle("show", mode === "advanced");
 
-                brewCard.classList.toggle("active", mode === "brew");
-                steamCard.classList.toggle("active", mode === "steam");
-                advancedCard.classList.toggle("active", mode === "advanced");
+                brew_card.classList.toggle("active", mode === "brew");
+                steam_card.classList.toggle("active", mode === "steam");
+                advanced_card.classList.toggle("active", mode === "advanced");
 
                 if(mode == "brew") {
-                    steamTempElement.innerHTML = placeholder.outerHTML;
+                    steam_temp_element.innerHTML = placeholder.outerHTML;
                 }
                 else if(mode == "steam"){
-                    brewTempElement.innerHTML = placeholder.outerHTML;
+                    brew_temp_element.innerHTML = placeholder.outerHTML;
                 }
                 else if(mode == "advanced"){
-                    brewTempElement.innerHTML = placeholder.outerHTML;
-                    steamTempElement.innerHTML = placeholder.outerHTML;                }
+                    brew_temp_element.innerHTML = placeholder.outerHTML;
+                    steam_temp_element.innerHTML = placeholder.outerHTML;                }
             }
 
             function incrementTarget(mode){
                 let maxTemp;
                 if(mode == "brew") {
                     maxTemp = 115;
-                    brewTarget = (brewTarget < maxTemp) ? brewTarget + 0.5 : maxTemp; 
+                    brew_target = (brew_target < maxTemp) ? brew_target + 0.5 : maxTemp; 
                 }
                 else if(mode == "steam"){
                     maxTemp = 160;
-                    steamTarget = (steamTarget < maxTemp) ? steamTarget + 1 : maxTemp;
+                    steam_target = (steam_target < maxTemp) ? steam_target + 1 : maxTemp;
                 }
                 else if(mode == "offset"){
                     maxTemp = 15;
-                    tempOffset = (tempOffset < maxTemp) ? tempOffset + 0.5 : maxTemp;
+                    temp_offset = (temp_offset < maxTemp) ? temp_offset + 0.5 : maxTemp;
                 }
                 callServer.post("/increment_target?mode=" + mode);
                 updateElements(mode);
@@ -228,23 +228,23 @@
                 let minTemp;
                 if(mode == "brew") {
                     minTemp = 85;
-                    brewTarget = (brewTarget > minTemp) ? brewTarget - 0.5 : minTemp; 
+                    brew_target = (brew_target > minTemp) ? brew_target - 0.5 : minTemp; 
                 }
                 else if(mode == "steam"){
                     minTemp = 140;
-                    steamTarget = (steamTarget > minTemp) ? steamTarget - 1 : minTemp;
+                    steam_target = (steam_target > minTemp) ? steam_target - 1 : minTemp;
                 }
                 else if(mode == "offset"){
                     minTemp = -15;
-                    tempOffset = (tempOffset > minTemp) ? tempOffset - 0.5 : minTemp;
+                    temp_offset = (temp_offset > minTemp) ? temp_offset - 0.5 : minTemp;
                 }
                 callServer.post("/decrement_target?mode=" + mode);
                 updateElements(mode);
             }
 
             function changeTunings() {
-                new bootstrap.Collapse(tuningsTab);
-                tuningButton.classList.toggle('active');
+                new bootstrap.Collapse(tunings_tab);
+                tuning_button.classList.toggle('active');
             }
 
             const ctx = document.getElementById('tempChart').getContext('2d');
@@ -298,8 +298,8 @@
                     
                     let sortedOutputs = response.sort((a, b) => a.time - b.time);
                     let lastOutput = sortedOutputs[sortedOutputs.length - 1];
-                    if(brewTarget == null) {
-                        [brewTarget, steamTarget, tempOffset] = [lastOutput.targets.brew, lastOutput.targets.steam, lastOutput.targets.offset];
+                    if(brew_target == null) {
+                        [brew_target, steam_target, temp_offset] = [lastOutput.targets.brew, lastOutput.targets.steam, lastOutput.targets.offset];
                         updateElements('offset');
                     }
                     
@@ -313,20 +313,20 @@
                     })
 
                     chart.data.labels = requestedLabels;
-                    chart.data.datasets[0].data = tempData = requestedTempData;
-                    let currentTemp = requestedTempData[requestedTempData.length - 1].toPrecision(4);
-                    if(currentMode == 'brew') { 
-                        chart.data.datasets[1].data = targetData.brew = requestedBrewTargets;
-                        chart.data.datasets[2].data = outputData.brew = requestedBrewOutput;
-                        if(currentTemp !== undefined) brewTempElement.innerHTML = currentTemp + " " + degreeMode;
+                    chart.data.datasets[0].data = temp_data = requestedTempData;
+                    let current_temp = requestedTempData[requestedTempData.length - 1].toPrecision(4);
+                    if(current_mode == 'brew') { 
+                        chart.data.datasets[1].data = target_data.brew = requestedBrewTargets;
+                        chart.data.datasets[2].data = output_data.brew = requestedBrewOutput;
+                        if(current_temp !== undefined) brew_temp_element.innerHTML = current_temp + " " + degree_mode;
                     }
                     else { 
-                        chart.data.datasets[1].data = targetData.steam = requestedSteamTargets;
-                        chart.data.datasets[2].data = outputData.steam = requestedSteamOutput;
-                        if(currentTemp !== undefined) steamTempElement.innerHTML = currentTemp + " " + degreeMode;
+                        chart.data.datasets[1].data = target_data.steam = requestedSteamTargets;
+                        chart.data.datasets[2].data = output_data.steam = requestedSteamOutput;
+                        if(current_temp !== undefined) steam_temp_element.innerHTML = current_temp + " " + degree_mode;
                     }        
 
-                    updateElements(currentMode);
+                    updateElements(current_mode);
                 });
             }, 1000);
 
@@ -343,16 +343,16 @@
                 });
             }
 
-            let steamSwitch = document.getElementById("switch_steam");
-            let brewSwitch = document.getElementById("switch_brew");
-            let advancedSwitch = document.getElementById("switch_advanced");
-            let brewCard = document.getElementById("brew_card");
-            let steamCard = document.getElementById("steam_card");
-            let advancedCard = document.getElementById("advanced_card");
-            let steamTempElement = document.getElementById("steam_current-temp");
-            let brewTempElement = document.getElementById("brew_current-temp");
-            let tuningsTab = document.getElementById("tunings_tab");
-            let tuningButton = document.getElementById("tuning_button");
+            let steam_switch = document.getElementById("switch_steam");
+            let brew_switch = document.getElementById("switch_brew");
+            let advanced_switch = document.getElementById("switch_advanced");
+            let brew_card = document.getElementById("brew_card");
+            let steam_card = document.getElementById("steam_card");
+            let advanced_card = document.getElementById("advanced_card");
+            let steam_temp_element = document.getElementById("steam_current-temp");
+            let brew_temp_element = document.getElementById("brew_current-temp");
+            let tunings_tab = document.getElementById("tunings_tab");
+            let tuning_button = document.getElementById("tuning_button");
             
             document.getElementById("brew_increment").addEventListener('click', () => incrementTarget("brew"));
             document.getElementById("brew_decrement").addEventListener('click', () => decrementTarget("brew"));
@@ -361,21 +361,21 @@
             document.getElementById("offset_increment").addEventListener('click', () => incrementTarget("offset"));
             document.getElementById("offset_decrement").addEventListener('click', () => decrementTarget("offset"));
             
-            tuningButton.addEventListener('click', changeTunings);
-            tuningsTab.addEventListener('hide.bs.collapse', function() {
-                tuningButton.disabled = true;
-                tuningButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Tuning...';
+            tuning_button.addEventListener('click', changeTunings);
+            tunings_tab.addEventListener('hide.bs.collapse', function() {
+                tuning_button.disabled = true;
+                tuning_button.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Tuning...';
                 let kp = document.getElementById("kp");
                 let ki = document.getElementById("ki");
                 let kd = document.getElementById("kd");
                 let tunings = { "kp" : kp.value, "ki": ki.value, "kd": kd.value };
                 callServer.put("/set_tunings", JSON.stringify(tunings), function(){
-                    tuningButton.disabled = false;
-                    tuningButton.innerHTML = "Set Tunings:";
+                    tuning_button.disabled = false;
+                    tuning_button.innerHTML = "Set Tunings:";
                 })
             })
-            tuningsTab.addEventListener('show.bs.collapse', function() {
-                tuningButton.innerHTML = "Submit";
+            tunings_tab.addEventListener('show.bs.collapse', function() {
+                tuning_button.innerHTML = "Submit";
             });
 
             let placeholder = document.createElement("span");

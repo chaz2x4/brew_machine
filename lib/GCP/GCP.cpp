@@ -1,4 +1,4 @@
-#include "GCP.h"
+#include "gcp.h"
 
 GCP::GCP()
 : tempProbe(Adafruit_MAX31865(THERMOPROBE_PIN))
@@ -13,16 +13,16 @@ GCP::GCP()
 , kWindowSize(1500)
 , kLogInterval(500)
 , kPowerFrequency(60)
-, tempOffset(-8)
-, targetTemp(92)
-, targetSteamTemp(150)
-, lastTime(-1)
+, temp_offset(-8)
+, target_temp(92)
+, target_steam_temp(150)
+, last_time(-1)
 , Kp(127.5)
 , Ki(15.55)
 , Kd(392.06)
 , outputQueue(Queue(kWebsiteQueueSize))
-, brewTempManager(PID(&currentTemp, &brew_output, &targetTemp, Kp, Ki, Kd, P_ON_M, DIRECT))
-, steamTempManager(PID(&currentTemp, &steam_output, &targetSteamTemp, Kp, Ki, Kd, P_ON_M, DIRECT))
+, brewTempManager(PID(&current_temp, &brew_output, &target_temp, Kp, Ki, Kd, P_ON_M, DIRECT))
+, steamTempManager(PID(&current_temp, &steam_output, &target_steam_temp, Kp, Ki, Kd, P_ON_M, DIRECT))
 {}
 
 GCP::~GCP(){
@@ -47,16 +47,16 @@ void GCP::start() {
 	steamTempManager.SetSampleTime(kLogInterval);
 }
 
-void GCP::setTargetTemp(String currentMode, double temp) {
+void GCP::setTargetTemp(String current_mode, double temp) {
 	double minTemp;
 	double maxTemp;
 	int tempAddress;
-	if(currentMode == "offset") {
+	if(current_mode == "offset") {
 		minTemp = kMinOffset;
 		maxTemp = kMaxOffset;
 		tempAddress = OFFSET_ADDRESS;
 	}
-	else if(currentMode == "steam") {
+	else if(current_mode == "steam") {
 		minTemp = kMinSteamTemp;
 		maxTemp = kMaxSteamTemp;
 		tempAddress = STEAM_TEMP_ADDRESS;
@@ -70,44 +70,44 @@ void GCP::setTargetTemp(String currentMode, double temp) {
 	if (temp < minTemp) temp = minTemp;
 	else if (temp > maxTemp) temp = maxTemp;
 
-	if(currentMode == "offset") this->tempOffset = temp;
-	else if(currentMode == "steam") this->targetSteamTemp = temp;
-	else this->targetTemp = temp;
+	if(current_mode == "offset") this->temp_offset = temp;
+	else if(current_mode == "steam") this->target_steam_temp = temp;
+	else this->target_temp = temp;
 
 	EEPROM.put(tempAddress, temp);
 	EEPROM.commit();
 }
 
-void GCP::incrementTemp(String currentMode) {
+void GCP::incrementTemp(String current_mode) {
 	double temp;
 	double i = 0.5;
-	if(currentMode == "offset") temp = tempOffset;
-	else if(currentMode == "steam") { 
-		temp = targetSteamTemp;
+	if(current_mode == "offset") temp = temp_offset;
+	else if(current_mode == "steam") { 
+		temp = target_steam_temp;
 		i = 1;
 	}
-	else temp = targetTemp;
+	else temp = target_temp;
 	temp += i;
-	this->setTargetTemp(currentMode, temp);
+	this->setTargetTemp(current_mode, temp);
 }
 
-void GCP::decrementTemp(String currentMode) {
+void GCP::decrementTemp(String current_mode) {
 	double temp;
 	double i = 0.5;
-	if(currentMode == "offset") temp = tempOffset;
-	else if(currentMode == "steam") {
-		temp = targetSteamTemp;
+	if(current_mode == "offset") temp = temp_offset;
+	else if(current_mode == "steam") {
+		temp = target_steam_temp;
 		i = 1;
 	}
-	else temp = targetTemp;
+	else temp = target_temp;
 	temp -= i;
-	this->setTargetTemp(currentMode, temp);
+	this->setTargetTemp(current_mode, temp);
 }
 
-double GCP::getTargetTemp(String currentMode) {
-	if(currentMode == "steam") return this->targetSteamTemp;
-	else if(currentMode == "offset") return this->tempOffset;
-	else return this->targetTemp;
+double GCP::getTargetTemp(String current_mode) {
+	if(current_mode == "steam") return this->target_steam_temp;
+	else if(current_mode == "offset") return this->temp_offset;
+	else return this->target_temp;
 }
 
 double GCP::getActualTemp() {
@@ -128,8 +128,8 @@ double GCP::getActualTemp() {
 
 double GCP::getCurrentTemp() {
 	double temp = this->getActualTemp();
-	temp += tempOffset;
-	this->currentTemp = temp;
+	temp += temp_offset;
+	this->current_temp = temp;
 	return temp;
 }
 
@@ -157,12 +157,12 @@ String GCP::getTunings(){
     return output;
 }
 
-void GCP::startTimer(ulong realTime){
-	this->timerStartTime = realTime;
+void GCP::startTimer(ulong real_time){
+	this->timer_start_time = real_time;
 }
 
 double GCP::getCurrentTimer(ulong now){
-	if(brewSwitchOn) return (now - timerStartTime) / 1000;
+	if(is_brew_switch_on) return (now - timer_start_time) / 1000;
 	else return 0;
 }
 
@@ -188,30 +188,30 @@ void GCP::parseQueue(ulong time){
     outputs += "{ \"time\": ";
     outputs += time;
     outputs += ", \"temperature\": ";
-    outputs += this->currentTemp;
+    outputs += this->current_temp;
     outputs += ", \"outputs\": { \"brew\": ";
-    outputs += this->lastBrewOutput;
+    outputs += this->last_brew_output;
     outputs += ", \"steam\": ";
-    outputs += this->lastSteamOutput;
+    outputs += this->last_steam_output;
 	outputs += "}, \"targets\": { \"brew\": ";
-    outputs += this->targetTemp;
+    outputs += this->target_temp;
     outputs += ", \"steam\": ";
-    outputs += this->targetSteamTemp;
+    outputs += this->target_steam_temp;
 	outputs += ", \"offset\": ";
-    outputs += this->tempOffset;
+    outputs += this->temp_offset;
     outputs += " }}";
 	outputQueue.push(outputs);
 }
 
 void GCP::loadParameters(){
-	double brewTemp, steamTemp, offset;
-	EEPROM.get(BREW_TEMP_ADDRESS, brewTemp);
-	EEPROM.get(STEAM_TEMP_ADDRESS, steamTemp);
+	double brew_temp, steam_temp, offset;
+	EEPROM.get(BREW_TEMP_ADDRESS, brew_temp);
+	EEPROM.get(STEAM_TEMP_ADDRESS, steam_temp);
 	EEPROM.get(OFFSET_ADDRESS, offset);
 
-	if(!isnan(brewTemp) && brewTemp >= kMinBrewTemp && brewTemp <= kMaxBrewTemp) targetTemp = brewTemp;
-	if(!isnan(steamTemp) && steamTemp >= kMinSteamTemp && steamTemp <= kMaxSteamTemp) targetSteamTemp = steamTemp;
-	if(!isnan(offset) && offset >= kMinOffset && offset <= kMaxOffset) tempOffset = offset;
+	if(!isnan(brew_temp) && brew_temp >= kMinBrewTemp && brew_temp <= kMaxBrewTemp) target_temp = brew_temp;
+	if(!isnan(steam_temp) && steam_temp >= kMinSteamTemp && steam_temp <= kMaxSteamTemp) target_steam_temp = steam_temp;
+	if(!isnan(offset) && offset >= kMinOffset && offset <= kMaxOffset) temp_offset = offset;
 
 	double tunings[3];
 	bool tuningsValid = true;
@@ -237,7 +237,7 @@ int GCP::regulateOutput(double output) {
 	return roundedOutput + powerPeriod - remainder;
 }
 
-void GCP::refresh(ulong realTime) {
+void GCP::refresh(ulong real_time) {
 	/* 
 		Brew Relay and Steam Relay will always be calculating
 		When power switch is on the heater will heat until it gets to targetBrewtemp
@@ -253,38 +253,38 @@ void GCP::refresh(ulong realTime) {
 	*/
 
 	double currentCurrent = sensedCurrent();
-	double currentTemp;
-	if(!brewSwitchOn && currentCurrent > 0) {
-		brewSwitchOn = true;
-		this->startTimer(realTime);
-	} else if(currentCurrent == 0) brewSwitchOn = false;
+	double current_temp;
+	if(!is_brew_switch_on && currentCurrent > 0) {
+		is_brew_switch_on = true;
+		this->startTimer(real_time);
+	} else if(currentCurrent == 0) is_brew_switch_on = false;
 
 	ulong now = millis();
-	if(now - logStartTime > kLogInterval) {
-		currentTemp = this->getCurrentTemp();
+	if(now - log_start_time > kLogInterval) {
+		current_temp = this->getCurrentTemp();
    		brewTempManager.Compute();
 		steamTempManager.Compute();
 
-		if(lastTime < realTime) parseQueue(realTime);
-		lastTime = realTime;
-		logStartTime += kLogInterval;
+		if(last_time < real_time) parseQueue(real_time);
+		last_time = real_time;
+		log_start_time += kLogInterval;
 	}
 	
-	if(now - windowStartTime > kWindowSize) {
-		windowStartTime += kWindowSize;
-		lastBrewOutput = regulateOutput(brew_output);
-		lastSteamOutput = regulateOutput(steam_output);
+	if(now - window_start_time > kWindowSize) {
+		window_start_time += kWindowSize;
+		last_brew_output = regulateOutput(brew_output);
+		last_steam_output = regulateOutput(steam_output);
 
-		if(targetSteamTemp - currentTemp > 4) lastSteamOutput = kWindowSize;
-		if(targetTemp - currentTemp > 4) lastBrewOutput = kWindowSize;
-		if(targetSteamTemp - currentTemp < -1) lastSteamOutput = 0;
-		if(targetTemp - currentTemp < -1) lastBrewOutput = 0;
+		if(target_steam_temp - current_temp > 4) last_steam_output = kWindowSize;
+		if(target_temp - current_temp > 4) last_brew_output = kWindowSize;
+		if(target_steam_temp - current_temp < -1) last_steam_output = 0;
+		if(target_temp - current_temp < -1) last_brew_output = 0;
 	}
 
-	if(lastBrewOutput > now - windowStartTime) digitalWrite(HEATER_PIN, HIGH);
+	if(last_brew_output > now - window_start_time) digitalWrite(HEATER_PIN, HIGH);
 	else digitalWrite(HEATER_PIN, LOW);
 
-	if(lastSteamOutput > now - windowStartTime) digitalWrite(STEAM_PIN, HIGH);
+	if(last_steam_output > now - window_start_time) digitalWrite(STEAM_PIN, HIGH);
 	else digitalWrite(STEAM_PIN, LOW);
 	
 	double actualTemp = this->getActualTemp();

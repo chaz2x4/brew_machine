@@ -1,15 +1,15 @@
-#include "OLED.h"
+#include "oled.h"
 
 OLED::OLED()
 : display(Adafruit_SSD1306(OLED_WIDTH, OLED_HEIGHT, &Wire))
-, currentMode("brew")
-, timeLastButton(-1)
-, lastTime(-1)
-, downTime(-1)
-, isEditable(false)
+, current_mode("brew")
+, time_last_button(-1)
+, last_time(-1)
+, downtime(-1)
+, is_editable(false)
 , flash(false)
-, buttonState{HIGH, HIGH, HIGH}
-, lastButtonState{HIGH, HIGH, HIGH}
+, button_state{HIGH, HIGH, HIGH}
+, last_button_state{HIGH, HIGH, HIGH}
 , kScreenTimeout(900000)
 , kTriggerTime(1000)
 {}
@@ -27,70 +27,70 @@ void OLED::start(GCP* brew_machine){
     pinMode(BUTTON_A, INPUT_PULLUP);
     pinMode(BUTTON_B, INPUT_PULLUP);
     pinMode(BUTTON_C, INPUT_PULLUP);
-    timeLastButton = millis();
+    time_last_button = millis();
 
     gcp = brew_machine;
 }
 
 void OLED::eventListener(){
-    buttonState[0] = digitalRead(BUTTON_A);
-    buttonState[1] = digitalRead(BUTTON_B);
-    buttonState[2] = digitalRead(BUTTON_C);
+    button_state[0] = digitalRead(BUTTON_A);
+    button_state[1] = digitalRead(BUTTON_B);
+    button_state[2] = digitalRead(BUTTON_C);
 
     ulong now = millis();
 
     if(checkedIfTimedout()) { //on any button press immediately turn screen on, but dont do anything else
-        if((buttonState[0] == LOW && lastButtonState[0] == HIGH) ||
-            (buttonState[1] == LOW && lastButtonState[1] == HIGH) ||
-            (buttonState[2] == LOW && lastButtonState[2] == HIGH)) {
-                timeLastButton = now;
-                lastButtonState[0] = buttonState[0];
-                lastButtonState[1] = buttonState[1];
-                lastButtonState[2] = buttonState[2];
+        if((button_state[0] == LOW && last_button_state[0] == HIGH) ||
+            (button_state[1] == LOW && last_button_state[1] == HIGH) ||
+            (button_state[2] == LOW && last_button_state[2] == HIGH)) {
+                time_last_button = now;
+                last_button_state[0] = button_state[0];
+                last_button_state[1] = button_state[1];
+                last_button_state[2] = button_state[2];
         }
     }
     else {
         //Increase temperature when editable on button A
-        if(buttonState[0] == LOW && lastButtonState[0] == HIGH) {
-            downTime = now;
-            timeLastButton = now;
-            if(this->isEditable) this->incrementTemp();
+        if(button_state[0] == LOW && last_button_state[0] == HIGH) {
+            downtime = now;
+            time_last_button = now;
+            if(this->is_editable) this->incrementTemp();
             else this->changeMode();
         }
-        else if(buttonState[0] == HIGH && lastButtonState[0] == LOW) downTime = -1 ;
-        lastButtonState[0] = buttonState[0];
+        else if(button_state[0] == HIGH && last_button_state[0] == LOW) downtime = -1 ;
+        last_button_state[0] = button_state[0];
 
         //Decrease temperature when editable on button B
-        if(buttonState[1] == LOW && lastButtonState[1] == HIGH) {
-            downTime = now;
-            timeLastButton = now;
-            if(this->isEditable) this->decrementTemp();
+        if(button_state[1] == LOW && last_button_state[1] == HIGH) {
+            downtime = now;
+            time_last_button = now;
+            if(this->is_editable) this->decrementTemp();
             else this->changeMode();
         }
-        else if(buttonState[1] == HIGH && lastButtonState[1] == LOW) downTime = -1 ;
-        lastButtonState[1] = buttonState[1];
+        else if(button_state[1] == HIGH && last_button_state[1] == LOW) downtime = -1 ;
+        last_button_state[1] = button_state[1];
 
         //Change mode if button C is pressed
-        if(buttonState[2] == LOW && lastButtonState[2] == HIGH) {
-            downTime = now;
-            timeLastButton = now;
-            if(this->isEditable) {
-                this->isEditable = false;
-                lastTime = now;
+        if(button_state[2] == LOW && last_button_state[2] == HIGH) {
+            downtime = now;
+            time_last_button = now;
+            if(this->is_editable) {
+                this->is_editable = false;
+                last_time = now;
                 flash = true;
             }
         }
-        else if(buttonState[2] == HIGH && lastButtonState[2] == LOW) downTime = -1; 
-        if(buttonState[2] == LOW && (now - downTime) >= kTriggerTime) this->isEditable = true;
-        lastButtonState[2] = buttonState[2];
+        else if(button_state[2] == HIGH && last_button_state[2] == LOW) downtime = -1; 
+        if(button_state[2] == LOW && (now - downtime) >= kTriggerTime) this->is_editable = true;
+        last_button_state[2] = button_state[2];
         display.clearDisplay();
     }
 }
 
 bool OLED::checkedIfTimedout(){
     ulong now = millis();
-    if((now - timeLastButton) >= kScreenTimeout) {
-        this->isEditable = false;
+    if((now - time_last_button) >= kScreenTimeout) {
+        this->is_editable = false;
         display.clearDisplay();
         display.display();
         return true;
@@ -98,8 +98,8 @@ bool OLED::checkedIfTimedout(){
     return false;
 }
 
-void OLED::refresh(ulong realTime){
-    this->realTime = realTime;
+void OLED::refresh(ulong real_time){
+    this->real_time = real_time;
     this->eventListener();
     if(checkedIfTimedout()) return;
     display.setTextSize(2);
@@ -110,25 +110,25 @@ void OLED::refresh(ulong realTime){
     ulong wait;
     ulong now = millis();
     char* modeTitle = "Brew";
-    double targetTemp = gcp->getTargetTemp("brew");
-    double currentTemp = gcp->getCurrentTemp();
-    if(this->currentMode == "steam") {
+    double target_temp = gcp->getTargetTemp("brew");
+    double current_temp = gcp->getCurrentTemp();
+    if(this->current_mode == "steam") {
         modeTitle = "Steam";
-        targetTemp = gcp->getTargetTemp("steam");
+        target_temp = gcp->getTargetTemp("steam");
     }
-    if(this->isEditable) {
-        if(flash) display.printf("Set %s\n %#.1f C", modeTitle, targetTemp);
+    if(this->is_editable) {
+        if(flash) display.printf("Set %s\n %#.1f C", modeTitle, target_temp);
         else display.printf("Set %s", modeTitle);
         wait = 500;
     }
     else {
-        if(flash) display.printf("%sing\n %#0.1f C", modeTitle, targetTemp);
-        else display.printf("Temp:\n %#.1f C", currentTemp);
+        if(flash) display.printf("%sing\n %#0.1f C", modeTitle, target_temp);
+        else display.printf("Temp:\n %#.1f C", current_temp);
         wait = 2000;
     }
 
-    if((now - lastTime) > wait) {
-        lastTime = now;
+    if((now - last_time) > wait) {
+        last_time = now;
         flash = !flash;
     }
     display.display();
@@ -136,19 +136,19 @@ void OLED::refresh(ulong realTime){
 
 void OLED::changeMode(){
     display.clearDisplay();
-    lastTime = millis();
+    last_time = millis();
     flash = true;
-    this->currentMode = this->currentMode == "brew" ? "steam" : "brew";
+    this->current_mode = this->current_mode == "brew" ? "steam" : "brew";
 }
 
 String OLED::getCurrentMode(){
-    return this->currentMode;;
+    return this->current_mode;;
 }
 
 void OLED::incrementTemp(){
-    gcp->incrementTemp(this->currentMode);
+    gcp->incrementTemp(this->current_mode);
 }
 
 void OLED::decrementTemp(){
-    gcp->decrementTemp(this->currentMode);
+    gcp->decrementTemp(this->current_mode);
 }

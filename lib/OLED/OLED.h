@@ -7,7 +7,7 @@
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
-#include "GCP.h"
+#include "gcp.h"
 
 #define BUTTON_A 15 //pin 15; cycle modes; increment temeperature
 #define BUTTON_B 32 //pin 32; cycle modes; decrement temperature 
@@ -31,16 +31,16 @@ public:
 private:
     Adafruit_SSD1306 display;
     GCP *gcp;
-    String currentMode;
+    String current_mode;
     
-    ulong realTime;
-    ulong timeLastButton;   //records the last time a button was pressed
-    ulong lastTime;         // records time of event
-    ulong downTime;         // records when button was pressed and held for hold functionality
-    bool isEditable;        // is screen on the setTemperature method
+    ulong real_time;
+    ulong time_last_button;   //records the last time a button was pressed
+    ulong last_time;         // records time of event
+    ulong downtime;         // records when button was pressed and held for hold functionality
+    bool is_editable;        // is screen on the setTemperature method
     bool flash;             // if true screen is on alternate screen
-    int buttonState[3];     // records button state HIGH is unpressed
-    int lastButtonState[3]; // checks if button was pressed by comparing state to buttonState
+    int button_state[3];     // records button state HIGH is unpressed
+    int last_button_state[3]; // checks if button was pressed by comparing state to button_state
     const int kScreenTimeout; // amount of milliseconds before screen goes blank
     const int kTriggerTime;  // amount of time to hold button for settings change
     bool checkedIfTimedout();

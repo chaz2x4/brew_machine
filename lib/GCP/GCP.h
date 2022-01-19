@@ -84,22 +84,22 @@ private:
     const ulong kLogInterval;
     const int kPowerFrequency;
 
-    double currentTemp;
-    double tempOffset;
-    double targetTemp;
-    double targetSteamTemp;
+    double current_temp;
+    double temp_offset;
+    double target_temp;
+    double target_steam_temp;
 
     double brew_output;
     double steam_output;
-    int lastBrewOutput;
-    int lastSteamOutput;
+    int last_brew_output;
+    int last_steam_output;
 
-    ulong windowStartTime;
-    ulong logStartTime;
-    ulong timerStartTime;
-    ulong lastTime;
+    ulong window_start_time;
+    ulong log_start_time;
+    ulong timer_start_time;
+    ulong last_time;
 
-    bool brewSwitchOn;
+    bool is_brew_switch_on;
 
     double Kp;
     double Ki;
