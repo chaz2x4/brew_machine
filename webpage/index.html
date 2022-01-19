@@ -196,15 +196,14 @@
                 advancedCard.classList.toggle("active", mode === "advanced");
 
                 if(mode == "brew") {
-                    steamTempElement.replaceChild(placeholder, steamTempElement.childNodes[0]);
+                    steamTempElement.innerHTML = placeholder.outerHTML;
                 }
                 else if(mode == "steam"){
-                    brewTempElement.replaceChild(placeholder, brewTempElement.childNodes[0]);
+                    brewTempElement.innerHTML = placeholder.outerHTML;
                 }
                 else if(mode == "advanced"){
-                    brewTempElement.replaceChild(placeholder, brewTempElement.childNodes[0]);
-                    steamTempElement.replaceChild(placeholder, steamTempElement.childNodes[0]);
-                }
+                    brewTempElement.innerHTML = placeholder.outerHTML;
+                    steamTempElement.innerHTML = placeholder.outerHTML;                }
             }
 
             function incrementTarget(mode){
@@ -380,7 +379,7 @@
             });
 
             let placeholder = document.createElement("span");
-            placeholder.classList.add("placeholder", "placeholder-wave", "bg-primary", "w-100");
+            placeholder.classList.add("spinner-border", "spinner-border-sm");
         }   
     </script>
 </head>
@@ -414,12 +413,12 @@
                                 <h6>Temperature:</h6>
                                 <div class="row">
                                     <div class="col-12"> Current Temp: 
-                                        <small class="text-muted" id="brew_current-temp"><span class="placeholder placeholder-wave bg-primary w-100"></span></small>
+                                        <small class="text-muted" id="brew_current-temp"><span class="spinner-border spinner-border-sm"></span></small>
                                     </div>
                                 </div>
                                 <div class="row"> 
                                     <div class="col-12"> Target:
-                                        <small class="text-muted" id="brew_target_label"><span class="placeholder placeholder-wave bg-primary w-100"></span></small>
+                                        <small class="text-muted" id="brew_target_label"><span class="spinner-border spinner-border-sm"></span></small>
                                     </div>
                                     <div class="my-2">
                                         <div class="btn-group">
@@ -445,12 +444,12 @@
                                 <h6>Temperature:</h6>
                                 <div class="row">
                                     <div class="col-12"> Current Temp: 
-                                        <small class="text-muted" id="steam_current-temp"><span class="placeholder placeholder-wave bg-primary w-100"></span></small>
+                                        <small class="text-muted" id="steam_current-temp"><span class="spinner-border spinner-border-sm"></span></small>
                                     </div>
                                 </div>
                                 <div class="row"> 
                                     <div class="col-12"> Target:
-                                        <small class="text-muted" id="steam_target_label"><span class="placeholder placeholder-wave bg-primary w-100"></span></small>
+                                        <small class="text-muted" id="steam_target_label"><span class="spinner-border spinner-border-sm"></span></small>
                                     </div>
                                     <div class="my-2">
                                         <div class="btn-group">
@@ -469,7 +468,7 @@
                         <div class="tab-pane fade" id="advanced_card">
                             <div class="row"> 
                                 <div class="col-12" for="offset_group"> Offset: 
-                                    <small class="text-muted" id="offset_target_label"><span class="placeholder placeholder-wave bg-primary w-100"></span></small>
+                                    <small class="text-muted" id="offset_target_label"><span class="spinner-border spinner-border-sm"></span></small>
                                 </div>
                                 <div class="my-2">
                                     <div class="btn-group" id="offset_group">
@@ -504,13 +503,13 @@
                                             </div>
                                             <div class="col">
                                                 <div class="tuning-button input-group">
-                                                    <span for="kp" class="input-group-text"> Ki: </span>
+                                                    <span for="ki" class="input-group-text"> Ki: </span>
                                                     <input class="tuning-input form-control" type="text" id="ki" value="" placeholder="Integral" min="0">
                                                 </div>
                                             </div>
                                             <div class="col">
                                                 <div class="tuning-button input-group">
-                                                    <span for="kp" class="input-group-text"> Kd: </span>
+                                                    <span for="kd" class="input-group-text"> Kd: </span>
                                                     <input class="tuning-input form-control" type="text" id="kd" value="" placeholder="Derivative" min="0">
                                                 </div>
                                             </div>
