@@ -2,6 +2,7 @@
 
 GCP::GCP()
 : tempProbe(Adafruit_MAX31865(THERMOPROBE_PIN))
+, currentSensor(ACS712(ACS_VERSION, CURRENT_PIN))
 , kEmergencyShutoffTemp(165.0)
 , kMaxBrewTemp(115.0)
 , kMinBrewTemp(85.0)
@@ -34,6 +35,7 @@ void GCP::start() {
 	loadParameters();
 
 	this->tempProbe.begin(MAX31865_3WIRE);
+	this->currentSensor.calibrate();
 	this->getCurrentTemp();
 
 	pinMode(HEATER_PIN, OUTPUT);
@@ -223,7 +225,8 @@ void GCP::loadParameters(){
 }
 
 bool GCP::isBrewing() {
-	return 1;
+	double currentAC = currentSensor.getCurrentAC();
+	return currentAC > 1;
 }
 
 ulong GCP::getBrewStartTime() {

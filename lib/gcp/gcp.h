@@ -4,19 +4,26 @@
 #define _GCP_h
 
 #include <Adafruit_MAX31865.h>
+#include <ACS712.h>
 #include <EEPROM.h>
 #include <PID_v1.h>
 
+/* PINS */
 #define HEATER_PIN 13
 #define STEAM_PIN 27
 #define THERMOPROBE_PIN A5
-#define TRANSDUCER_PIN A3
-#define RREF 430
+#define TRANSDUCER_PIN A4
+#define CURRENT_PIN A3
 
+/* EEPROM ADDRESSES */
 #define BREW_TEMP_ADDRESS 0
 #define STEAM_TEMP_ADDRESS 8
 #define OFFSET_ADDRESS 16
 #define TUNING_ADDRESS 24
+
+/* HARDWARE VERSIONS */
+#define ACS_VERSION ACS712_20A
+#define RREF 430
 
 struct Queue {
     int front, rear, capacity, count;
@@ -74,6 +81,7 @@ public:
     void refresh(ulong);
 private:
     Adafruit_MAX31865 tempProbe;
+    ACS712 currentSensor;
     const double kEmergencyShutoffTemp;
     const double kMaxBrewTemp;
     const double kMinBrewTemp;
