@@ -225,7 +225,7 @@ void GCP::loadParameters(){
 }
 
 bool GCP::isBrewing() {
-	double currentAC = currentSensor.getCurrentAC();
+	double currentAC = currentSensor.getCurrentAC(kPowerFrequency);
 	return currentAC > 1;
 }
 
