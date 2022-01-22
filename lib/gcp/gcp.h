@@ -5,12 +5,15 @@
 
 #include <Adafruit_MAX31865.h>
 #include <ACS712.h>
+#include <RBDdimmer.h>
 #include <EEPROM.h>
 #include <PID_v1.h>
 
 /* PINS */
 #define HEATER_PIN 13
 #define STEAM_PIN 27
+#define PUMP_PIN 28
+#define ZERO_CROSS_PIN 29
 #define THERMOPROBE_PIN A5
 #define TRANSDUCER_PIN A4
 #define CURRENT_PIN A3
@@ -67,21 +70,25 @@ public:
     void start();
     void incrementTemp(String);
     void decrementTemp(String);
+    double getTargetPressure();
     double getTargetTemp(String);
-    double getActualTemp();
     double getPressure();
+    double getActualTemp();
     double getCurrentTemp();
     String getOutput();
     String getTunings();
+    void setTargetPressure(double);
     void setTargetTemp(String, double);
     void setTunings(double, double, double);
     bool isBrewing();
     ulong getBrewStartTime();
     ulong getBrewStopTime();
+    void runBrewProfile(ulong);
     void refresh(ulong);
 private:
     Adafruit_MAX31865 tempProbe;
     ACS712 currentSensor;
+    dimmerLamp pumpDimmer;
     const double kEmergencyShutoffTemp;
     const double kMaxBrewTemp;
     const double kMinBrewTemp;
@@ -100,8 +107,12 @@ private:
     double target_temp;
     double target_steam_temp;
 
+    double current_pressure;
+    double target_pressure;
+
     double brew_output;
     double steam_output;
+    double pump_output;
     int last_brew_output;
     int last_steam_output;
 
@@ -109,14 +120,20 @@ private:
     ulong log_start_time;
     ulong brew_start_time;
     ulong brew_stop_time;
+    ulong preinfusion_time;
 
-    double Kp;
-    double Ki;
-    double Kd;
+    double temp_kp;
+    double temp_ki;
+    double temp_kd;
+
+    double px_kp;
+    double px_ki;
+    double px_kd;
 
     Queue outputQueue;
     PID brewTempManager;
     PID steamTempManager;
+    PID pumpPressureManager;
 
     int regulateOutput(double);
     void parseQueue(ulong);

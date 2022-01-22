@@ -3,6 +3,7 @@
 GCP::GCP()
 : tempProbe(Adafruit_MAX31865(THERMOPROBE_PIN))
 , currentSensor(ACS712(ACS_VERSION, CURRENT_PIN))
+, pumpDimmer(dimmerLamp(PUMP_PIN, ZERO_CROSS_PIN))
 , kEmergencyShutoffTemp(165.0)
 , kMaxBrewTemp(115.0)
 , kMinBrewTemp(85.0)
@@ -18,12 +19,17 @@ GCP::GCP()
 , temp_offset(-8)
 , target_temp(92)
 , target_steam_temp(140)
-, Kp(127.5)
-, Ki(15.55)
-, Kd(392.06)
+, preinfusion_time(2000)
+, temp_kp(127.5)
+, temp_ki(15.55)
+, temp_kd(392.06)
+, px_kp(1)
+, px_ki(1)
+, px_kd(1)
 , outputQueue(Queue(kWebsiteQueueSize))
-, brewTempManager(PID(&current_temp, &brew_output, &target_temp, Kp, Ki, Kd, P_ON_M, DIRECT))
-, steamTempManager(PID(&current_temp, &steam_output, &target_steam_temp, Kp, Ki, Kd, P_ON_M, DIRECT))
+, brewTempManager(PID(&current_temp, &brew_output, &target_temp, temp_kp, temp_ki, temp_kd, P_ON_M, DIRECT))
+, steamTempManager(PID(&current_temp, &steam_output, &target_steam_temp, temp_kp, temp_ki, temp_kd, P_ON_M, DIRECT))
+, pumpPressureManager(PID(&current_pressure, &pump_output, &target_pressure, px_kp, px_ki, px_kd, P_ON_M, DIRECT))
 {}
 
 GCP::~GCP(){
@@ -36,17 +42,27 @@ void GCP::start() {
 
 	this->tempProbe.begin(MAX31865_3WIRE);
 	this->currentSensor.calibrate();
+	this->pumpDimmer.begin(NORMAL_MODE, ON);
 	this->getCurrentTemp();
 
 	pinMode(HEATER_PIN, OUTPUT);
 	pinMode(STEAM_PIN, OUTPUT);
+	pinMode(TRANSDUCER_PIN, INPUT);
 
 	brewTempManager.SetMode(AUTOMATIC);
 	steamTempManager.SetMode(AUTOMATIC);
+	pumpPressureManager.SetMode(AUTOMATIC);
+
 	brewTempManager.SetOutputLimits(0, kWindowSize);
 	steamTempManager.SetOutputLimits(0, kWindowSize);
 	brewTempManager.SetSampleTime(kLogInterval);
 	steamTempManager.SetSampleTime(kLogInterval);
+}
+
+void GCP::setTargetPressure(double px){
+	if(px < 0) target_pressure = 0;
+	else if(px > 9) target_pressure = 9;
+	else target_pressure = px;
 }
 
 void GCP::setTargetTemp(String current_mode, double temp) {
@@ -106,10 +122,21 @@ void GCP::decrementTemp(String current_mode) {
 	this->setTargetTemp(current_mode, temp);
 }
 
+double GCP::getTargetPressure() {
+	return this->target_pressure;
+}
+
 double GCP::getTargetTemp(String current_mode) {
 	if(current_mode == "steam") return this->target_steam_temp;
 	else if(current_mode == "offset") return this->temp_offset;
 	else return this->target_temp;
+}
+
+double GCP::getPressure() {
+	double pxRead = analogRead(TRANSDUCER_PIN);
+	double px = (pxRead / 4096) * kTranducerLimit;
+	this->current_pressure = px;
+	return px;
 }
 
 double GCP::getActualTemp() {
@@ -126,12 +153,6 @@ double GCP::getActualTemp() {
 		tempProbe.clearFault();
 	}
 	return temp;
-}
-
-double GCP::getPressure() {
-	double pxRead = analogRead(TRANSDUCER_PIN);
-	double px = (pxRead / 4096) * kTranducerLimit;
-	return px;
 }
 
 double GCP::getCurrentTemp() {
@@ -156,19 +177,19 @@ String GCP::getOutput(){
 String GCP::getTunings(){
 	String output;
     output += "{ \"kp\": ";
-    output += Kp;
+    output += temp_kp;
     output += ", \"ki\": ";
-    output += Ki;
+    output += temp_ki;
     output +=  ", \"kd\": ";
-    output += Kd;
+    output += temp_kd;
     output += " }";
     return output;
 }
 
 void GCP::setTunings(double kp, double ki, double kd){
-	this->Kp = kp;
-	this->Ki = ki;
-	this->Kd = kd;
+	this->temp_kp = kp;
+	this->temp_ki = ki;
+	this->temp_kd = kd;
 
 	brewTempManager.SetTunings(kp, ki, kd, P_ON_M);
 	brewTempManager.SetMode(AUTOMATIC);
@@ -237,6 +258,21 @@ ulong GCP::getBrewStopTime() {
 		return brew_stop_time;
 }
 
+void GCP::runBrewProfile(ulong real_time) {
+	if(brew_start_time) {
+		if (real_time - brew_start_time < preinfusion_time) {
+			this->setTargetPressure(2.0);
+		}
+		else {
+			this->setTargetPressure(9.0);
+		}
+	}
+	this->getPressure();
+	if(!isBrewing()) pump_output = 0;
+	else pumpPressureManager.Compute();
+	pumpDimmer.setPower(pump_output);
+}
+
 int GCP::regulateOutput(double output) {
 	int roundedOutput = int(output);
 	int powerPeriod = int(1000/kPowerFrequency);
@@ -260,16 +296,18 @@ void GCP::refresh(ulong real_time) {
 		If temperature rises above maximum safe temperature turn off relay
 	*/
 
-	if(isBrewing() && brew_start_time == 0) brew_start_time = real_time;
+	if(isBrewing() && brew_start_time == 0) {
+		brew_start_time = real_time;
+	}
 	else if(!isBrewing() && brew_start_time > 0) {
 		brew_start_time = 0;
 		brew_stop_time = real_time;
 	}
+	this->runBrewProfile(real_time);
 
-	double current_temp;
+	this->getCurrentTemp();;
 	ulong now = millis();
 	if(now - log_start_time > kLogInterval) {
-		current_temp = this->getCurrentTemp();
 		brewTempManager.Compute();
 		steamTempManager.Compute();
 		parseQueue(real_time);
