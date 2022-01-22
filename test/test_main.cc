@@ -11,7 +11,7 @@ double saved_tunings[3];
 ulong timer_start_time;
 
 int current_loop = 0;
-int max_loops = 10;
+int max_loops = 30;
 
 void loadParameters(){
     EEPROM.get(BREW_TEMP_ADDRESS, saved_target_brew_temp);
@@ -240,15 +240,14 @@ void test_function_oled_decrement_steam(){
     }
 }
 
-void test_function_gcp_timer_running(){
-    ulong now = millis();
-    double timer = brew_machine.getCurrentTimer(now);
-    TEST_ASSERT_EQUAL((now - timer_start_time) / 1000, timer);
-}
-
 void test_function_gcp_output(){
     ulong now = millis();
     brew_machine.refresh(now);
+}
+
+void test_function_gcp_get_pressure(){
+    double px = brew_machine.getPressure();
+    TEST_ASSERT_GREATER_OR_EQUAL(px, 1);
 }
 
 void setup(){
@@ -299,8 +298,8 @@ void setup(){
 
 void loop(){
     if(current_loop < max_loops) {
-        RUN_TEST(test_function_gcp_timer_running);
         RUN_TEST(test_function_gcp_output);
+        // RUN_TEST(test_function_gcp_get_pressure);
         delay(1000);
         current_loop++;
     }

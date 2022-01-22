@@ -5,18 +5,18 @@ GCP::GCP()
 , kEmergencyShutoffTemp(165.0)
 , kMaxBrewTemp(115.0)
 , kMinBrewTemp(85.0)
-, kMaxSteamTemp(160.0)
-, kMinSteamTemp(140.0)
+, kMaxSteamTemp(150.0)
+, kMinSteamTemp(130.0)
 , kMaxOffset(15)
 , kMinOffset(-15)
 , kWebsiteQueueSize(69)
 , kWindowSize(1500)
 , kLogInterval(500)
 , kPowerFrequency(60)
+, kTranducerLimit(12)
 , temp_offset(-8)
 , target_temp(92)
-, target_steam_temp(150)
-, last_time(-1)
+, target_steam_temp(140)
 , Kp(127.5)
 , Ki(15.55)
 , Kd(392.06)
@@ -126,6 +126,12 @@ double GCP::getActualTemp() {
 	return temp;
 }
 
+double GCP::getPressure() {
+	double pxRead = analogRead(TRANSDUCER_PIN);
+	double px = (pxRead / 4096) * kTranducerLimit;
+	return px;
+}
+
 double GCP::getCurrentTemp() {
 	double temp = this->getActualTemp();
 	temp += temp_offset;
@@ -155,15 +161,6 @@ String GCP::getTunings(){
     output += Kd;
     output += " }";
     return output;
-}
-
-void GCP::startTimer(ulong real_time){
-	this->timer_start_time = real_time;
-}
-
-double GCP::getCurrentTimer(ulong now){
-	if(is_brew_switch_on) return (now - timer_start_time) / 1000;
-	else return 0;
 }
 
 void GCP::setTunings(double kp, double ki, double kd){
@@ -225,8 +222,16 @@ void GCP::loadParameters(){
 	if(tuningsValid) setTunings(tunings[0], tunings[1], tunings[2]);
 }
 
-double GCP::sensedCurrent() {
+bool GCP::isBrewing() {
 	return 1;
+}
+
+ulong GCP::getBrewStartTime() {
+	return brew_start_time;
+}
+
+ulong GCP::getBrewStopTime() {
+		return brew_stop_time;
 }
 
 int GCP::regulateOutput(double output) {
@@ -252,21 +257,19 @@ void GCP::refresh(ulong real_time) {
 		If temperature rises above maximum safe temperature turn off relay
 	*/
 
-	double currentCurrent = sensedCurrent();
-	double current_temp;
-	if(!is_brew_switch_on && currentCurrent > 0) {
-		is_brew_switch_on = true;
-		this->startTimer(real_time);
-	} else if(currentCurrent == 0) is_brew_switch_on = false;
+	if(isBrewing() && brew_start_time == 0) brew_start_time = real_time;
+	else if(!isBrewing() && brew_start_time > 0) {
+		brew_start_time = 0;
+		brew_stop_time = real_time;
+	}
 
+	double current_temp;
 	ulong now = millis();
 	if(now - log_start_time > kLogInterval) {
 		current_temp = this->getCurrentTemp();
-   		brewTempManager.Compute();
+		brewTempManager.Compute();
 		steamTempManager.Compute();
-
-		if(last_time < real_time) parseQueue(real_time);
-		last_time = real_time;
+		parseQueue(real_time);
 		log_start_time += kLogInterval;
 	}
 	
@@ -275,10 +278,28 @@ void GCP::refresh(ulong real_time) {
 		last_brew_output = regulateOutput(brew_output);
 		last_steam_output = regulateOutput(steam_output);
 
-		if(target_steam_temp - current_temp > 4) last_steam_output = kWindowSize;
-		if(target_temp - current_temp > 4) last_brew_output = kWindowSize;
-		if(target_steam_temp - current_temp < -1) last_steam_output = 0;
-		if(target_temp - current_temp < -1) last_brew_output = 0;
+		if(target_steam_temp - current_temp > 5) {
+			steamTempManager.SetMode(MANUAL);
+			last_steam_output = kWindowSize;
+		}
+		else if(target_steam_temp - current_temp < -1) { 
+			steamTempManager.SetMode(MANUAL);
+			last_steam_output = 0;
+		}
+		else {
+			steamTempManager.SetMode(AUTOMATIC);
+		}
+		
+		if(target_temp - current_temp > 5)  {
+			brewTempManager.SetMode(MANUAL);
+			last_brew_output = kWindowSize;
+		}
+		else if(target_temp - current_temp < -1) {
+			brewTempManager.SetMode(MANUAL);
+			last_brew_output = 0;
+		} else {
+			brewTempManager.SetMode(AUTOMATIC);
+		}
 	}
 
 	if(last_brew_output > now - window_start_time) digitalWrite(HEATER_PIN, HIGH);

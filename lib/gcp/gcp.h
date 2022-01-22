@@ -10,6 +10,7 @@
 #define HEATER_PIN 13
 #define STEAM_PIN 27
 #define THERMOPROBE_PIN A5
+#define TRANSDUCER_PIN A3
 #define RREF 430
 
 #define BREW_TEMP_ADDRESS 0
@@ -61,14 +62,15 @@ public:
     void decrementTemp(String);
     double getTargetTemp(String);
     double getActualTemp();
+    double getPressure();
     double getCurrentTemp();
     String getOutput();
     String getTunings();
-    double getCurrentTimer(ulong);
     void setTargetTemp(String, double);
     void setTunings(double, double, double);
-    void startTimer(ulong);
-    void stopTimer();
+    bool isBrewing();
+    ulong getBrewStartTime();
+    ulong getBrewStopTime();
     void refresh(ulong);
 private:
     Adafruit_MAX31865 tempProbe;
@@ -83,6 +85,7 @@ private:
     const ulong kWindowSize;
     const ulong kLogInterval;
     const int kPowerFrequency;
+    const double kTranducerLimit; // In bars, ie, 1.2Mpa = 12 bars
 
     double current_temp;
     double temp_offset;
@@ -96,10 +99,8 @@ private:
 
     ulong window_start_time;
     ulong log_start_time;
-    ulong timer_start_time;
-    ulong last_time;
-
-    bool is_brew_switch_on;
+    ulong brew_start_time;
+    ulong brew_stop_time;
 
     double Kp;
     double Ki;
@@ -109,7 +110,6 @@ private:
     PID brewTempManager;
     PID steamTempManager;
 
-    double sensedCurrent();
     int regulateOutput(double);
     void parseQueue(ulong);
     void loadParameters();
