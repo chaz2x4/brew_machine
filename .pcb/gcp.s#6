@@ -1126,14 +1126,13 @@ Source: www.irf.com .. ir2520.pdf</description>
 <wire x1="-177.8" y1="-22.86" x2="-157.48" y2="-22.86" width="0.1524" layer="91"/>
 <junction x="-177.8" y="-22.86"/>
 <pinref part="IC1" gate="A" pin="I+_0"/>
-<portref moduleinst="RBDDIMMER1" port="N"/>
-<wire x1="-157.48" y1="7.62" x2="-177.8" y2="7.62" width="0.1524" layer="91"/>
-<wire x1="-177.8" y1="7.62" x2="-177.8" y2="3.556" width="0.1524" layer="91"/>
+<wire x1="-177.8" y1="3.556" x2="-177.8" y2="-7.62" width="0.1524" layer="91"/>
 <junction x="-177.8" y="-7.62"/>
 <pinref part="PUMP" gate="G$1" pin="P$1"/>
-<wire x1="-177.8" y1="2.54" x2="-177.8" y2="-7.62" width="0.1524" layer="91"/>
-<wire x1="-177.8" y1="2.54" x2="-177.8" y2="3.556" width="0.1524" layer="91"/>
-<wire x1="-177.8" y1="3.556" x2="-180.848" y2="3.556" width="0.1524" layer="91"/>
+<wire x1="-180.848" y1="3.556" x2="-177.8" y2="3.556" width="0.1524" layer="91"/>
+<wire x1="-177.8" y1="3.556" x2="-177.8" y2="5.08" width="0.1524" layer="91"/>
+<wire x1="-177.8" y1="5.08" x2="-177.8" y2="7.62" width="0.1524" layer="91"/>
+<wire x1="-177.8" y1="7.62" x2="-154.94" y2="7.62" width="0.1524" layer="91"/>
 </segment>
 <segment>
 <pinref part="STEAM_LAMP" gate="G$1" pin="1"/>

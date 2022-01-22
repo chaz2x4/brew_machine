@@ -904,6 +904,7 @@ Source: www.irf.com .. ir2520.pdf</description>
 <port name="GND" side="right" coord="7.62" direction="io"/>
 <port name="VCC" side="right" coord="2.54" direction="io"/>
 <port name="Z-C" side="right" coord="-2.54" direction="io"/>
+<port name="DIM" side="right" coord="-7.62" direction="io"/>
 </ports>
 <variantdefs>
 </variantdefs>
