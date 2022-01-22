@@ -901,9 +901,6 @@ Source: www.irf.com .. ir2520.pdf</description>
 <port name="IN" side="left" coord="5.08" direction="io"/>
 <port name="N" side="left" coord="0" direction="io"/>
 <port name="OUT" side="left" coord="-5.08" direction="io"/>
-<port name="GND" side="right" coord="7.62" direction="io"/>
-<port name="VCC" side="right" coord="2.54" direction="io"/>
-<port name="Z-C" side="right" coord="-2.54" direction="io"/>
 </ports>
 <variantdefs>
 </variantdefs>
@@ -1136,7 +1133,6 @@ Source: www.irf.com .. ir2520.pdf</description>
 <wire x1="-177.8" y1="3.556" x2="-177.8" y2="5.08" width="0.1524" layer="91"/>
 <wire x1="-177.8" y1="5.08" x2="-177.8" y2="7.62" width="0.1524" layer="91"/>
 <wire x1="-177.8" y1="7.62" x2="-154.94" y2="7.62" width="0.1524" layer="91"/>
-<label x="-175.26" y="-2.54" size="1.778" layer="95"/>
 </segment>
 <segment>
 <pinref part="STEAM_LAMP" gate="G$1" pin="1"/>
@@ -1228,7 +1224,6 @@ Source: www.irf.com .. ir2520.pdf</description>
 <label x="-276.86" y="40.64" size="1.778" layer="95"/>
 <label x="-266.7" y="40.64" size="1.778" layer="95"/>
 <wire x1="-177.8" y1="12.7" x2="-154.94" y2="12.7" width="0.1524" layer="91"/>
-<label x="-172.72" y="15.24" size="1.778" layer="95"/>
 </segment>
 </net>
 <net name="N$1" class="0">
@@ -1262,7 +1257,6 @@ Source: www.irf.com .. ir2520.pdf</description>
 <portref moduleinst="RBDDIMMER1" port="OUT"/>
 <wire x1="-180.848" y1="6.604" x2="-157.48" y2="6.604" width="0.1524" layer="91"/>
 <wire x1="-157.48" y1="6.604" x2="-157.48" y2="2.54" width="0.1524" layer="91"/>
-<label x="-170.18" y="2.54" size="1.778" layer="95"/>
 </segment>
 </net>
 </nets>
