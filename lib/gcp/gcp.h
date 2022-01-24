@@ -11,9 +11,9 @@
 
 /* PINS */
 #define HEATER_PIN 13
-#define STEAM_PIN 27
-#define PUMP_PIN 28
-#define ZERO_CROSS_PIN 29
+#define STEAM_PIN 12
+#define PUMP_PIN 27
+#define ZERO_CROSS_PIN 33
 #define THERMOPROBE_PIN A5
 #define TRANSDUCER_PIN A4
 #define CURRENT_PIN A3
