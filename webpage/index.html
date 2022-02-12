@@ -10,6 +10,12 @@
     </style>
     <script>
         window.onload = function () {
+            const min_steam_temp = 130;
+            const max_steam_temp = 150;
+            const min_brew_temp = 85;
+            const max_brew_temp = 105;
+            const max_offset = 15;
+            const min_offset = -15;
             let brew_target;
             let steam_target;
             let temp_offset;
@@ -209,15 +215,15 @@
             function incrementTarget(mode){
                 let maxTemp;
                 if(mode == "brew") {
-                    maxTemp = 115;
+                    maxTemp = max_brew_temp;
                     brew_target = (brew_target < maxTemp) ? brew_target + 0.5 : maxTemp; 
                 }
                 else if(mode == "steam"){
-                    maxTemp = 160;
+                    maxTemp = max_steam_temp;
                     steam_target = (steam_target < maxTemp) ? steam_target + 1 : maxTemp;
                 }
                 else if(mode == "offset"){
-                    maxTemp = 15;
+                    maxTemp = max_offset;
                     temp_offset = (temp_offset < maxTemp) ? temp_offset + 0.5 : maxTemp;
                 }
                 callServer.post("/increment_target?mode=" + mode);
@@ -227,15 +233,15 @@
             function decrementTarget(mode){
                 let minTemp;
                 if(mode == "brew") {
-                    minTemp = 85;
+                    minTemp = min_brew_temp;
                     brew_target = (brew_target > minTemp) ? brew_target - 0.5 : minTemp; 
                 }
                 else if(mode == "steam"){
-                    minTemp = 140;
+                    minTemp = min_steam_temp;
                     steam_target = (steam_target > minTemp) ? steam_target - 1 : minTemp;
                 }
                 else if(mode == "offset"){
-                    minTemp = -15;
+                    minTemp = min_offset;
                     temp_offset = (temp_offset > minTemp) ? temp_offset - 0.5 : minTemp;
                 }
                 callServer.post("/decrement_target?mode=" + mode);
