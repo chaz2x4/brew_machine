@@ -141,7 +141,7 @@ double GCP::getPressure() {
 
 double GCP::getActualTemp() {
 	double temp =  tempProbe.temperature(100, RREF);
- 	probe_fault = tempProbe.readFault();
+ 	uint8_t probe_fault = tempProbe.readFault();
 	if (probe_fault) {
 		Serial.print("Fault 0x"); Serial.println(probe_fault, HEX);
 		if (probe_fault & MAX31865_FAULT_HIGHTHRESH) Serial.println("RTD High Threshold");
@@ -150,6 +150,7 @@ double GCP::getActualTemp() {
 		if (probe_fault & MAX31865_FAULT_REFINHIGH) Serial.println("REFIN- < 0.85 x Bias - FORCE- open");
 		if (probe_fault & MAX31865_FAULT_RTDINLOW) Serial.println("RTDIN- < 0.85 x Bias - FORCE- open");
 		if (probe_fault & MAX31865_FAULT_OVUV) Serial.println("Under/Over voltage");
+		tempProbe.clearFault();
 	}
 	return temp;
 }
@@ -295,6 +296,13 @@ void GCP::refresh(ulong real_time) {
 		If temperature rises above maximum safe temperature turn off relay
 	*/
 
+	double actual_temp = this->getActualTemp();
+	if(actual_temp >= kEmergencyShutoffTemp || actual_temp < 0) {
+		digitalWrite(HEATER_PIN, LOW);
+		digitalWrite(STEAM_PIN, LOW);
+		return;
+	}
+
 	if(isBrewing() && brew_start_time == 0) {
 		brew_start_time = real_time;
 	}
@@ -340,13 +348,6 @@ void GCP::refresh(ulong real_time) {
 		} else {
 			brewTempManager.SetMode(AUTOMATIC);
 		}
-	}
-
-	double actual_temp = this->getActualTemp();
-	if(actual_temp >= kEmergencyShutoffTemp || probe_fault) {
-		digitalWrite(HEATER_PIN, LOW);
-		digitalWrite(STEAM_PIN, LOW);
-		return;
 	}
 
 	if(last_brew_output > now - window_start_time) digitalWrite(HEATER_PIN, HIGH);

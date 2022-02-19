@@ -87,7 +87,6 @@ public:
     void refresh(ulong);
 private:
     Adafruit_MAX31865 tempProbe;
-    uint8_t probe_fault;
     ACS712 currentSensor;
     dimmerLamp pumpDimmer;
     const double kEmergencyShutoffTemp;
