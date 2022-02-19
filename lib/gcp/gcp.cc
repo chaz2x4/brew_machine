@@ -150,7 +150,6 @@ double GCP::getActualTemp() {
 		if (probe_fault & MAX31865_FAULT_REFINHIGH) Serial.println("REFIN- < 0.85 x Bias - FORCE- open");
 		if (probe_fault & MAX31865_FAULT_RTDINLOW) Serial.println("RTDIN- < 0.85 x Bias - FORCE- open");
 		if (probe_fault & MAX31865_FAULT_OVUV) Serial.println("Under/Over voltage");
-		tempProbe.clearFault();
 	}
 	return temp;
 }
