@@ -141,17 +141,15 @@ double GCP::getPressure() {
 
 double GCP::getActualTemp() {
 	double temp =  tempProbe.temperature(100, RREF);
-	uint8_t fault = tempProbe.readFault();
-	if (fault) {
-		digitalWrite(HEATER_PIN, LOW);
-		digitalWrite(STEAM_PIN, LOW);
-		Serial.print("Fault 0x"); Serial.println(fault, HEX);
-		if (fault & MAX31865_FAULT_HIGHTHRESH) Serial.println("RTD High Threshold");
-		if (fault & MAX31865_FAULT_LOWTHRESH) Serial.println("RTD Low Threshold"); 
-		if (fault & MAX31865_FAULT_REFINLOW) Serial.println("REFIN- > 0.85 x Bias");
-		if (fault & MAX31865_FAULT_REFINHIGH) Serial.println("REFIN- < 0.85 x Bias - FORCE- open");
-		if (fault & MAX31865_FAULT_RTDINLOW) Serial.println("RTDIN- < 0.85 x Bias - FORCE- open");
-		if (fault & MAX31865_FAULT_OVUV) Serial.println("Under/Over voltage");
+ 	probe_fault = tempProbe.readFault();
+	if (probe_fault) {
+		Serial.print("Fault 0x"); Serial.println(probe_fault, HEX);
+		if (probe_fault & MAX31865_FAULT_HIGHTHRESH) Serial.println("RTD High Threshold");
+		if (probe_fault & MAX31865_FAULT_LOWTHRESH) Serial.println("RTD Low Threshold"); 
+		if (probe_fault & MAX31865_FAULT_REFINLOW) Serial.println("REFIN- > 0.85 x Bias");
+		if (probe_fault & MAX31865_FAULT_REFINHIGH) Serial.println("REFIN- < 0.85 x Bias - FORCE- open");
+		if (probe_fault & MAX31865_FAULT_RTDINLOW) Serial.println("RTDIN- < 0.85 x Bias - FORCE- open");
+		if (probe_fault & MAX31865_FAULT_OVUV) Serial.println("Under/Over voltage");
 		tempProbe.clearFault();
 	}
 	return temp;
@@ -345,15 +343,17 @@ void GCP::refresh(ulong real_time) {
 		}
 	}
 
+	double actual_temp = this->getActualTemp();
+	if(actual_temp >= kEmergencyShutoffTemp || probe_fault) {
+		digitalWrite(HEATER_PIN, LOW);
+		digitalWrite(STEAM_PIN, LOW);
+		return;
+	}
+
 	if(last_brew_output > now - window_start_time) digitalWrite(HEATER_PIN, HIGH);
 	else digitalWrite(HEATER_PIN, LOW);
 
 	if(last_steam_output > now - window_start_time) digitalWrite(STEAM_PIN, HIGH);
 	else digitalWrite(STEAM_PIN, LOW);
 	
-	double actualTemp = this->getActualTemp();
-	if(actualTemp >= kEmergencyShutoffTemp) {
-		digitalWrite(HEATER_PIN, LOW);
-		digitalWrite(STEAM_PIN, LOW);
-	}
 }
