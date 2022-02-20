@@ -111,7 +111,7 @@ void GCP::incrementTemp(TempMode current_mode) {
 	double temp;
 	double i = 0.5;
 
-	if(outputQueue.current_scale == F) i = 5/9;
+	if(outputQueue.current_scale == F) i = (5.0/9.0);
 	else if (current_mode == STEAM) i = 1;
 
 	switch(current_mode) {
@@ -134,7 +134,7 @@ void GCP::decrementTemp(TempMode current_mode) {
 	double temp;
 	double i = 0.5;
 
-	if(outputQueue.current_scale == F) i = 5/9;
+	if(outputQueue.current_scale == F) i = (5.0/9.0);
 	else if (current_mode == STEAM) i = 1;
 
 	switch(current_mode) {
