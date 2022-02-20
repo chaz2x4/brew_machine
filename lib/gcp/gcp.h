@@ -144,16 +144,24 @@ private:
             for(int i=0;i<3;i++) {
                 delete[] targets[i];
             }
-            delete[] outputs;
-            delete[] targets;
         }
 
         double sanitize(double t) {
-            return sanitize(t, 0);
+            return sanitize(t, false, false);
         }
 
         double sanitize(double t, bool getUnrounded) {
-            double result = current_scale == F ? t * 9/5 + 32 : t;
+            return sanitize(t, getUnrounded, false);
+        }
+
+        double sanitize(double t, bool getUnrounded, bool getOffset) {
+            double result;
+            if(current_scale == F) {
+                result = t * 9 / 5;
+                if(!getOffset) result += 32;
+            }
+            else result = t;
+    
             if(getUnrounded) return result;
             else {
                 if(current_scale == C) {
@@ -221,7 +229,7 @@ private:
             results += ", \"steam\": ";
             results += sanitize(targets[STEAM][i]);
             results += ", \"offset\": ";
-            results += sanitize(targets[OFFSET][i]);
+            results += sanitize(targets[OFFSET][i], false, true);
             results += " }}";
             return results;
         }

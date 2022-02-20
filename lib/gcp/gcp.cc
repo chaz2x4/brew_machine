@@ -9,8 +9,8 @@ GCP::GCP()
 , kMinBrewTemp(85.0)
 , kMaxSteamTemp(150.0)
 , kMinSteamTemp(130.0)
-, kMaxOffset(15)
-, kMinOffset(-15)
+, kMaxOffset(11.5)
+, kMinOffset(-11.5)
 , kWindowSize(1500)
 , kLogInterval(500)
 , kPowerFrequency(60)
@@ -245,9 +245,9 @@ void GCP::changeScale(String scale) {
 }
 
 TempMode GCP::modeToEnum(String mode) {
-	if(mode == "brew") return BREW;
+	if(mode == "offset") return OFFSET;
 	else if(mode == "steam") return STEAM;
-	else if(mode == "offset") return OFFSET;
+	else return BREW;
 }
 
 void GCP::loadParameters(){
