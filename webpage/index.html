@@ -179,8 +179,8 @@
                 else target_temp = temp_offset;
 
                 if(target_temp !== undefined) {
-                    let targetLabel = document.getElementById(mode + "_target_label");
-                    targetLabel.innerHTML = target_temp + " °" + temp_scale;
+                    let target_label = document.getElementById(mode + "_target_label");
+                    target_label.innerHTML = target_temp + " °" + temp_scale;
                 }
 
                 scale_c_button.classList.toggle("active", temp_scale == "C");
@@ -227,38 +227,38 @@
             }
 
             function incrementTarget(mode){
-                let maxTemp;
+                let max_temp;
                 let i = 0.5;
                 if(temp_scale == "F" || mode == "steam") i = 1;
                 switch(mode) {
                     case "offset":
-                        maxTemp = convertScales(max_offset, true);
-                        temp_offset = (temp_offset < maxTemp) ? temp_offset + i : maxTemp;
+                        max_temp = convertScales(max_offset, true);
+                        temp_offset = (temp_offset < max_temp) ? temp_offset + i : max_temp;
                     case "steam":
-                        maxTemp = convertScales(max_steam_temp);
-                        steam_target = (steam_target < maxTemp) ? steam_target + i : maxTemp;
+                        max_temp = convertScales(max_steam_temp);
+                        steam_target = (steam_target < max_temp) ? steam_target + i : max_temp;
                     default:
-                        maxTemp = convertScales(max_brew_temp);
-                        brew_target = (brew_target < maxTemp) ? brew_target + i: maxTemp; 
+                        max_temp = convertScales(max_brew_temp);
+                        brew_target = (brew_target < max_temp) ? brew_target + i: max_temp; 
                 }
                 callServer.post("/increment_target?mode=" + mode);
                 updateElements(mode);
             }
 
             function decrementTarget(mode){
-                let minTemp;
+                let min_temp;
                 let i = 0.5;
                 if(temp_scale == "F" || mode == "steam") i = 1;
                 switch(mode) {
                     case "offset":
-                        minTemp = convertScales(min_offset, true);
-                        temp_offset = (temp_offset > minTemp) ? temp_offset - i : minTemp;
+                        min_temp = convertScales(min_offset, true);
+                        temp_offset = (temp_offset > min_temp) ? temp_offset - i : min_temp;
                     case "steam":
-                        minTemp = convertScales(min_steam_temp);
-                        steam_target = (steam_target > minTemp) ? steam_target - i: minTemp;
+                        min_temp = convertScales(min_steam_temp);
+                        steam_target = (steam_target > min_temp) ? steam_target - i: min_temp;
                     default:
-                        minTemp = convertScales(min_brew_temp);
-                        brew_target = (brew_target > minTemp) ? brew_target - i : minTemp; 
+                        min_temp = convertScales(min_brew_temp);
+                        brew_target = (brew_target > min_temp) ? brew_target - i : min_temp; 
                 }
                 callServer.post("/decrement_target?mode=" + mode);
                 updateElements(mode);
@@ -312,41 +312,41 @@
             function refreshTemps() {
                 refresh_temps_id = setInterval(function(){
                     callServer.get("/get_temps", function(response){
-                        let requestedLabels = [];
-                        let requestedTempData = [];
-                        let requestedBrewOutput = [];
-                        let requestedSteamOutput = [];
-                        let requestedBrewTargets = [];
-                        let requestedSteamTargets = [];
+                        let requested_labels = [];
+                        let requested_temp_data = [];
+                        let requested_brew_output = [];
+                        let requested_steam_output = [];
+                        let requested_brew_targets = [];
+                        let requested_steam_targets = [];
                         
-                        let sortedOutputs = response.sort((a, b) => a.time - b.time);
-                        let lastOutput = sortedOutputs[sortedOutputs.length - 1];
+                        let sorted_outputs = response.sort((a, b) => a.time - b.time);
+                        let last_output = sorted_outputs[sorted_outputs.length - 1];
                         if(!is_target_loaded) {
-                            [temp_scale, brew_target, steam_target, temp_offset] = [lastOutput.scale, lastOutput.targets.brew, lastOutput.targets.steam, lastOutput.targets.offset];
+                            [temp_scale, brew_target, steam_target, temp_offset] = [last_output.scale, last_output.targets.brew, last_output.targets.steam, last_output.targets.offset];
                             updateElements('offset');
                             is_target_loaded = true;
                         }
                         
-                        sortedOutputs.forEach((output, index) => {             
-                            requestedLabels.push(moment(output.time * 1000).fromNow());
-                            requestedTempData.push(output.temperature);
-                            requestedBrewOutput.push(output.outputs.brew);
-                            requestedSteamOutput.push(output.outputs.steam);
-                            requestedBrewTargets.push(output.targets.brew);
-                            requestedSteamTargets.push(output.targets.steam);
+                        sorted_outputs.forEach((output, index) => {             
+                            requested_labels.push(moment(output.time * 1000).fromNow());
+                            requested_temp_data.push(output.temperature);
+                            requested_brew_output.push(output.outputs.brew);
+                            requested_steam_output.push(output.outputs.steam);
+                            requested_brew_targets.push(output.targets.brew);
+                            requested_steam_targets.push(output.targets.steam);
                         })
 
-                        chart.data.labels = requestedLabels;
-                        chart.data.datasets[0].data = temp_data = requestedTempData;
-                        let current_temp = requestedTempData[requestedTempData.length - 1].toPrecision(4);
+                        chart.data.labels = requested_labels;
+                        chart.data.datasets[0].data = temp_data = requested_temp_data;
+                        let current_temp = requested_temp_data[requested_temp_data.length - 1].toPrecision(4);
                         if(current_mode == 'brew') { 
-                            chart.data.datasets[1].data = target_data.brew = requestedBrewTargets;
-                            chart.data.datasets[2].data = output_data.brew = requestedBrewOutput;
+                            chart.data.datasets[1].data = target_data.brew = requested_brew_targets;
+                            chart.data.datasets[2].data = output_data.brew = requested_brew_output;
                             if(current_temp !== undefined) brew_temp_element.innerHTML = current_temp + " °" + temp_scale;
                         }
                         else { 
-                            chart.data.datasets[1].data = target_data.steam = requestedSteamTargets;
-                            chart.data.datasets[2].data = output_data.steam = requestedSteamOutput;
+                            chart.data.datasets[1].data = target_data.steam = requested_steam_targets;
+                            chart.data.datasets[2].data = output_data.steam = requested_steam_output;
                             if(current_temp !== undefined) steam_temp_element.innerHTML = current_temp + " °" + temp_scale;
                         }        
 
