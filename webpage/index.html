@@ -16,7 +16,8 @@
             const max_brew_temp = 105;
             const max_offset = 11;
             const min_offset = -11;
-            let refresh_interval_id;
+            let refresh_temps_id;
+            let refresh_targets_id;
             let is_target_loaded = false;
             let brew_target;
             let steam_target;
@@ -309,7 +310,7 @@
             })();
 
             function refreshTemps() {
-                refresh_interval_id = setInterval(function(){
+                refresh_temps_id = setInterval(function(){
                     callServer.get("/get_temps", function(response){
                         let requestedLabels = [];
                         let requestedTempData = [];
@@ -359,7 +360,6 @@
                 callServer.post("/change_scale?scale=" + scale);
                 
                 temp_scale = scale;
-                is_target_loaded = false;
                 
                 document.getElementById("brew_target_label").innerHTML = placeholder.outerHTML;
                 document.getElementById("steam_target_label").innerHTML = placeholder.outerHTML;
@@ -368,8 +368,10 @@
                 scale_c_button.classList.toggle("active", scale == "C");
                 scale_f_button.classList.toggle("active", scale == "F");
                 
-                clearInterval(refresh_interval_id);
+                clearInterval(refresh_temps_id);
+                clearInterval(refresh_targets_id);
                 refreshTemps();
+                refreshTargets();
             }
 
             function refreshTunings() {
@@ -426,6 +428,12 @@
 
             let placeholder = document.createElement("span");
             placeholder.classList.add("spinner-border", "spinner-border-sm");
+
+            function refreshTargets() {
+                refresh_targets_id = setInterval(function() {
+                    is_target_loaded = false;
+                }, 15000);
+            }
         }   
     </script>
 </head>
