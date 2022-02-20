@@ -109,21 +109,26 @@ void OLED::refresh(ulong real_time){
 
     ulong wait;
     ulong now = millis();
-    char* modeTitle = "Brew";
+    String modeTitle = "Brew";
     double target_temp = gcp->getTargetTemp(BREW);
     double current_temp = gcp->getCurrentTemp();
     if(this->current_mode == STEAM) {
         modeTitle = "Steam";
         target_temp = gcp->getTargetTemp(STEAM);
     }
+    if(gcp->getScale() == "F") {
+        target_temp = round(target_temp * (9.0/5.0)) + 32;
+        current_temp = current_temp * (9.0/5.0) + 32;
+    }
+    else target_temp = round(current_temp * 2.0) / 2.0;
     if(this->is_editable) {
-        if(flash) display.printf("Set %s\n %#.1f °", modeTitle, target_temp);
+        if(flash) display.printf("Set %s\n %#0.1f %s", modeTitle, target_temp, gcp->getScale());
         else display.printf("Set %s", modeTitle);
         wait = 500;
     }
     else {
-        if(flash) display.printf("%sing\n %#0.1f °", modeTitle, target_temp);
-        else display.printf("Temp:\n %#.1f C", current_temp);
+        if(flash) display.printf("%sing\n %#0.1f %s", modeTitle, target_temp, gcp->getScale());
+        else display.printf("Temp:\n %#0.1f %s", current_temp, gcp->getScale());
         wait = 2000;
     }
 
