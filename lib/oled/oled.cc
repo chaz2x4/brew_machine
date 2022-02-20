@@ -121,13 +121,13 @@ void OLED::refresh(ulong real_time){
         current_temp = current_temp * (9.0/5.0) + 32;
     }
     if(this->is_editable) {
-        if(flash) display.printf("Set %s\n %#.1f %s", modeTitle, target_temp, gcp->getScale());
+        if(flash) display.printf("Set %s\n %#0.1f %s", modeTitle, target_temp, gcp->getScale());
         else display.printf("Set %s", modeTitle);
         wait = 500;
     }
     else {
         if(flash) display.printf("%sing\n %#0.1f %s", modeTitle, target_temp, gcp->getScale());
-        else display.printf("Temp:\n %#.1f %s", current_temp, gcp->getScale());
+        else display.printf("Temp:\n %#0.1f %s", current_temp, gcp->getScale());
         wait = 2000;
     }
 
