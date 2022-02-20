@@ -4,8 +4,6 @@
 #define _GCP_h
 
 #include <Adafruit_MAX31865.h>
-#include <ACS712.h>
-#include <RBDdimmer.h>
 #include <EEPROM.h>
 #include <PID_v1.h>
 
@@ -45,23 +43,15 @@ public:
     void decrementTemp(TempMode);
     double getTargetPressure();
     double getTargetTemp(TempMode);
-    double getPressure();
     double getActualTemp();
     double getCurrentTemp();
     String getOutput();
     String getTunings();
-    void setTargetPressure(double);
     void setTunings(double, double, double);
     void changeScale(String);
-    bool isBrewing();
-    ulong getBrewStartTime();
-    ulong getBrewStopTime();
-    void runBrewProfile(ulong);
     void refresh(ulong);
 private:
     Adafruit_MAX31865 tempProbe;
-    ACS712 currentSensor;
-    dimmerLamp pumpDimmer;
     const double kEmergencyShutoffTemp;
     const double kMaxBrewTemp;
     const double kMinBrewTemp;
@@ -72,7 +62,6 @@ private:
     const ulong kWindowSize;
     const ulong kLogInterval;
     const int kPowerFrequency;
-    const double kTranducerLimit; // In bars, ie, 1.2Mpa = 12 bars
     typedef enum {C, F} TempScale;
 
     double current_temp;
@@ -99,13 +88,8 @@ private:
     double temp_ki;
     double temp_kd;
 
-    double px_kp;
-    double px_ki;
-    double px_kd;
-
     PID brewTempManager;
     PID steamTempManager;
-    PID pumpPressureManager;
 
     int regulateOutput(double);
     void loadParameters();
