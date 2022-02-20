@@ -25,14 +25,14 @@ public:
     void eventListener();
     void refresh(ulong);
     void changeMode();
-    String getCurrentMode();
+    TempMode getCurrentMode();
     void incrementTemp();
     void decrementTemp();
 private:
     Adafruit_SSD1306 display;
     GCP *gcp;
-    String current_mode;
     
+    TempMode current_mode;
     ulong real_time;
     ulong time_last_button;   //records the last time a button was pressed
     ulong last_time;         // records time of event

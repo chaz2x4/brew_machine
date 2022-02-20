@@ -28,6 +28,12 @@
 #define ACS_VERSION ACS712_30A
 #define RREF 430
 
+typedef enum {
+    BREW,
+    STEAM,
+    OFFSET
+} TempMode;
+
 class GCP {
 public:
     GCP();
@@ -35,15 +41,16 @@ public:
     void start();
     void incrementTemp(String);
     void decrementTemp(String);
+    void incrementTemp(TempMode);
+    void decrementTemp(TempMode);
     double getTargetPressure();
-    double getTargetTemp(String);
+    double getTargetTemp(TempMode);
     double getPressure();
     double getActualTemp();
     double getCurrentTemp();
     String getOutput();
     String getTunings();
     void setTargetPressure(double);
-    void setTargetTemp(String, double);
     void setTunings(double, double, double);
     void changeScale(String);
     bool isBrewing();
@@ -102,11 +109,11 @@ private:
 
     int regulateOutput(double);
     void loadParameters();
-    double convertScale(double, TempScale);
+    TempMode modeToEnum(String);
+    void setTargetTemp(TempMode, double);
 
     struct Queue {
         int front, rear, capacity, count;
-        typedef enum {brew, steam, offset} Mode;
 
         TempScale current_scale;
         ulong *times;
@@ -170,11 +177,11 @@ private:
             if(count == 0) {
                 times[0] = time;
                 temps[0] = temp;
-                outputs[brew][0] = brew_output;
-                outputs[steam][0] = steam_output;
-                targets[brew][0] = brew_target;
-                targets[steam][0] = steam_target;
-                targets[offset][0] = offset_target;
+                outputs[BREW][0] = brew_output;
+                outputs[STEAM][0] = steam_output;
+                targets[BREW][0] = brew_target;
+                targets[STEAM][0] = steam_target;
+                targets[OFFSET][0] = offset_target;
             }
             else {
                 ++rear;
@@ -206,15 +213,15 @@ private:
             results += ", \"temperature\": ";
             results += sanitize(temps[i], 1);
             results += ", \"outputs\": { \"brew\": ";
-            results += outputs[brew][i];
+            results += outputs[BREW][i];
             results += ", \"steam\": ";
-            results += outputs[steam][i];
+            results += outputs[STEAM][i];
             results += "}, \"targets\": { \"brew\": ";
-            results += sanitize(targets[brew][i]);
+            results += sanitize(targets[BREW][i]);
             results += ", \"steam\": ";
-            results += sanitize(targets[steam][i]);
+            results += sanitize(targets[STEAM][i]);
             results += ", \"offset\": ";
-            results += sanitize(targets[offset][i]);
+            results += sanitize(targets[OFFSET][i]);
             results += " }}";
             return results;
         }

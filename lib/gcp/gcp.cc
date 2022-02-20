@@ -64,59 +64,87 @@ void GCP::setTargetPressure(double px){
 	else target_pressure = px;
 }
 
-void GCP::setTargetTemp(String current_mode, double temp) {
+void GCP::setTargetTemp(TempMode current_mode, double temp) {
 	double minTemp;
 	double maxTemp;
 	int tempAddress;
-	if(current_mode == "offset") {
-		minTemp = kMinOffset;
-		maxTemp = kMaxOffset;
-		tempAddress = OFFSET_ADDRESS;
-	}
-	else if(current_mode == "steam") {
-		minTemp = kMinSteamTemp;
-		maxTemp = kMaxSteamTemp;
-		tempAddress = STEAM_TEMP_ADDRESS;
-	}
-	else {
-		minTemp = kMinBrewTemp;
-		maxTemp = kMaxBrewTemp;
-		tempAddress = BREW_TEMP_ADDRESS;
+	switch(current_mode) {
+		case OFFSET:
+			minTemp = kMinOffset;
+			maxTemp = kMaxOffset;
+			tempAddress = OFFSET_ADDRESS;
+			break;
+		case STEAM:
+			minTemp = kMinSteamTemp;
+			maxTemp = kMaxSteamTemp;
+			tempAddress = STEAM_TEMP_ADDRESS;
+			break;
+		default:
+			minTemp = kMinBrewTemp;
+			maxTemp = kMaxBrewTemp;
+			tempAddress = BREW_TEMP_ADDRESS;
 	}
 
 	if (temp < minTemp) temp = minTemp;
 	else if (temp > maxTemp) temp = maxTemp;
 
-	if(current_mode == "offset") this->temp_offset = temp;
-	else if(current_mode == "steam") this->target_steam_temp = temp;
-	else this->target_temp = temp;
+	switch(current_mode) {
+		case OFFSET:
+			this->temp_offset = temp;
+			break;
+		case STEAM:
+			this->target_steam_temp = temp;
+			break;
+		default:
+			this->target_temp = temp;
+	}
 
 	EEPROM.put(tempAddress, temp);
 	EEPROM.commit();
 }
 
 void GCP::incrementTemp(String current_mode) {
+	incrementTemp(modeToEnum(current_mode));
+}
+
+void GCP::incrementTemp(TempMode current_mode) {
 	double temp;
 	double i = 0.5;
-	if(current_mode == "offset") temp = temp_offset;
-	else if(current_mode == "steam") { 
-		temp = target_steam_temp;
-		i = 1;
+
+	if(outputQueue.current_scale == F) i = 5/9;
+	else if (current_mode == STEAM) i = 1;
+
+	switch(current_mode) {
+		case OFFSET: temp = temp_offset;
+			break;
+		case STEAM: temp = target_steam_temp;
+			break;
+		default: temp = target_temp;
 	}
-	else temp = target_temp;
+
 	temp += i;
 	this->setTargetTemp(current_mode, temp);
 }
 
 void GCP::decrementTemp(String current_mode) {
+	decrementTemp(modeToEnum(current_mode));
+}
+
+void GCP::decrementTemp(TempMode current_mode) {
 	double temp;
 	double i = 0.5;
-	if(current_mode == "offset") temp = temp_offset;
-	else if(current_mode == "steam") {
-		temp = target_steam_temp;
-		i = 1;
+
+	if(outputQueue.current_scale == F) i = 5/9;
+	else if (current_mode == STEAM) i = 1;
+
+	switch(current_mode) {
+		case OFFSET: temp = temp_offset;
+			break;
+		case STEAM: temp = target_steam_temp;
+			break;
+		default: temp = target_temp;
 	}
-	else temp = target_temp;
+
 	temp -= i;
 	this->setTargetTemp(current_mode, temp);
 }
@@ -125,10 +153,14 @@ double GCP::getTargetPressure() {
 	return this->target_pressure;
 }
 
-double GCP::getTargetTemp(String current_mode) {
-	if(current_mode == "steam") return this->target_steam_temp;
-	else if(current_mode == "offset") return this->temp_offset;
-	else return this->target_temp;
+double GCP::getTargetTemp(TempMode current_mode) {
+	switch(current_mode) {
+		case OFFSET: 
+			return this->temp_offset;
+		case STEAM:
+			return this->target_steam_temp;
+			default: return this->target_temp;
+	}
 }
 
 double GCP::getPressure() {
@@ -210,6 +242,12 @@ void GCP::changeScale(String scale) {
 	else if(scale == "C") { 
 		outputQueue.setScale(C); 
 	};
+}
+
+TempMode GCP::modeToEnum(String mode) {
+	if(mode == "brew") return BREW;
+	else if(mode == "steam") return STEAM;
+	else if(mode == "offset") return OFFSET;
 }
 
 void GCP::loadParameters(){

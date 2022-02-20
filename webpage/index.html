@@ -338,7 +338,7 @@
 
             function changeScale(scale) {
                 callServer.post("/change_scale?scale=" + scale);
-
+                temp_scale = scale;
             }
 
             function refreshTunings() {

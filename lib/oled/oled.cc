@@ -2,7 +2,7 @@
 
 OLED::OLED()
 : display(Adafruit_SSD1306(OLED_WIDTH, OLED_HEIGHT, &Wire))
-, current_mode("brew")
+, current_mode(BREW)
 , time_last_button(-1)
 , last_time(-1)
 , downtime(-1)
@@ -110,11 +110,11 @@ void OLED::refresh(ulong real_time){
     ulong wait;
     ulong now = millis();
     char* modeTitle = "Brew";
-    double target_temp = gcp->getTargetTemp("brew");
+    double target_temp = gcp->getTargetTemp(BREW);
     double current_temp = gcp->getCurrentTemp();
-    if(this->current_mode == "steam") {
+    if(this->current_mode == STEAM) {
         modeTitle = "Steam";
-        target_temp = gcp->getTargetTemp("steam");
+        target_temp = gcp->getTargetTemp(STEAM);
     }
     if(this->is_editable) {
         if(flash) display.printf("Set %s\n %#.1f C", modeTitle, target_temp);
@@ -138,10 +138,10 @@ void OLED::changeMode(){
     display.clearDisplay();
     last_time = millis();
     flash = true;
-    this->current_mode = this->current_mode == "brew" ? "steam" : "brew";
+    this->current_mode = this->current_mode == BREW ? STEAM : BREW;
 }
 
-String OLED::getCurrentMode(){
+TempMode OLED::getCurrentMode(){
     return this->current_mode;;
 }
 
