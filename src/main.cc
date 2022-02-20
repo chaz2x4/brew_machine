@@ -89,6 +89,14 @@ void setup() {
 		else request->send(400);
 	});
 
+	server.on("/change_scale", HTTP_POST, [](AsyncWebServerRequest *request){
+		if(request->hasArg("scale")) {
+			brew_machine.changeScale(request->arg("scale"));
+			request->send(200);
+		}
+		else request->send(400);
+	});
+
 	server.onNotFound([](AsyncWebServerRequest *request) {
 		request->send(404);
 	});

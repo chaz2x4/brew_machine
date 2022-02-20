@@ -895,6 +895,35 @@ Source: www.irf.com .. ir2520.pdf</description>
 <class number="0" name="default" width="0" drill="0">
 </class>
 </classes>
+<modules>
+<module name="RBDDIMMER" prefix="" dx="30.48" dy="20.32">
+<ports>
+<port name="IN" side="left" coord="5.08" direction="io"/>
+<port name="N" side="left" coord="0" direction="io"/>
+<port name="OUT" side="left" coord="-5.08" direction="io"/>
+<port name="GND" side="right" coord="7.62" direction="io"/>
+<port name="VCC" side="right" coord="2.54" direction="io"/>
+<port name="Z-C" side="right" coord="-2.54" direction="io"/>
+<port name="DIM" side="right" coord="-7.62" direction="io"/>
+</ports>
+<variantdefs>
+</variantdefs>
+<parts>
+</parts>
+<sheets>
+<sheet>
+<plain>
+</plain>
+<instances>
+</instances>
+<busses>
+</busses>
+<nets>
+</nets>
+</sheet>
+</sheets>
+</module>
+</modules>
 <parts>
 <part name="ON-OFF_LAMP" library="special" library_urn="urn:adsk.eagle:library:367" deviceset="NEON" device="" package3d_urn="urn:adsk.eagle:package:26652/1"/>
 <part name="COFFEE_LAMP" library="special" library_urn="urn:adsk.eagle:library:367" deviceset="NEON" device="" package3d_urn="urn:adsk.eagle:package:26652/1"/>
@@ -922,6 +951,11 @@ Source: www.irf.com .. ir2520.pdf</description>
 <sheet>
 <plain>
 </plain>
+<moduleinsts>
+<moduleinst name="RBDDIMMER1" module="RBDDIMMER" x="-137.16" y="7.62">
+<attribute name="NAME" x="-137.16" y="7.62" size="2.032" layer="95" align="bottom-center"/>
+</moduleinst>
+</moduleinsts>
 <instances>
 <instance part="ON-OFF_LAMP" gate="G$1" x="-289.56" y="17.78" smashed="yes" rot="R90">
 <attribute name="NAME" x="-294.005" y="15.24" size="1.778" layer="95" rot="R90"/>
@@ -966,8 +1000,8 @@ Source: www.irf.com .. ir2520.pdf</description>
 <instance part="SW1_ON/OFF" gate="SW$1" x="-317.5" y="48.26" smashed="yes">
 <attribute name="NAME" x="-325.12" y="55.88" size="1.778" layer="95"/>
 </instance>
-<instance part="SW3_COFFEE" gate="SW$1" x="-180.445559375" y="-28.957515625" smashed="yes" rot="R90">
-<attribute name="NAME" x="-172.825559375" y="-36.577515625" size="1.778" layer="95" rot="R90"/>
+<instance part="SW3_COFFEE" gate="SW$1" x="-180.445559375" y="-51.817515625" smashed="yes" rot="R90">
+<attribute name="NAME" x="-172.825559375" y="-59.437515625" size="1.778" layer="95" rot="R90"/>
 </instance>
 <instance part="SW2_STEAM" gate="G$1" x="-203.2" y="40.64" smashed="yes" rot="R90">
 <attribute name="NAME" x="-198.12" y="55.88" size="1.778" layer="95" rot="R180"/>
@@ -1023,8 +1057,8 @@ Source: www.irf.com .. ir2520.pdf</description>
 <junction x="-254" y="-68.58"/>
 <wire x1="-177.905559375" y1="-68.58" x2="-254" y2="-68.58" width="0.1524" layer="91"/>
 <pinref part="SW3_COFFEE" gate="SW$1" pin="5"/>
-<wire x1="-177.905559375" y1="-36.577515625" x2="-177.905559375" y2="-68.58" width="0.1524" layer="91"/>
-<label x="-182.88" y="-40.64" size="1.778" layer="95"/>
+<wire x1="-177.905559375" y1="-59.437515625" x2="-177.905559375" y2="-68.58" width="0.1524" layer="91"/>
+<label x="-172.72" y="-66.04" size="1.778" layer="95"/>
 </segment>
 </net>
 <net name="GND" class="0">
@@ -1088,22 +1122,22 @@ Source: www.irf.com .. ir2520.pdf</description>
 </net>
 <net name="GRAY" class="0">
 <segment>
-<pinref part="SW3_COFFEE" gate="SW$1" pin="4"/>
-<wire x1="-177.8" y1="-21.337515625" x2="-177.905559375" y2="-21.337515625" width="0.1524" layer="91"/>
 <pinref part="NORMALLY_OPEN" gate="G$1" pin="P$2"/>
 <wire x1="-177.8" y1="-7.62" x2="-182.88" y2="-7.62" width="0.1524" layer="91"/>
-<wire x1="-177.8" y1="-7.62" x2="-177.8" y2="-12.7" width="0.1524" layer="91"/>
-<junction x="-177.8" y="-7.62"/>
-<wire x1="-177.8" y1="-12.7" x2="-177.8" y2="-21.337515625" width="0.1524" layer="91"/>
-<wire x1="-177.8" y1="2.54" x2="-177.8" y2="-7.62" width="0.1524" layer="91"/>
-<pinref part="PUMP" gate="G$1" pin="P$1"/>
-<wire x1="-180.848" y1="3.556" x2="-180.848" y2="2.54" width="0.1524" layer="91"/>
-<wire x1="-180.848" y1="2.54" x2="-177.8" y2="2.54" width="0.1524" layer="91"/>
-<label x="-180.34" y="-5.08" size="1.778" layer="95"/>
-<wire x1="-177.8" y1="-12.7" x2="-157.48" y2="-12.7" width="0.1524" layer="91"/>
-<junction x="-177.8" y="-12.7"/>
+<wire x1="-177.8" y1="-7.62" x2="-177.8" y2="-22.86" width="0.1524" layer="91"/>
+<wire x1="-177.8" y1="-22.86" x2="-177.8" y2="-21.337515625" width="0.1524" layer="91"/>
+<label x="-185.42" y="-17.78" size="1.778" layer="95"/>
+<wire x1="-177.8" y1="-22.86" x2="-157.48" y2="-22.86" width="0.1524" layer="91"/>
+<junction x="-177.8" y="-22.86"/>
 <pinref part="IC1" gate="A" pin="I+_0"/>
-<wire x1="-157.48" y1="-12.7" x2="-157.48" y2="-22.86" width="0.1524" layer="91"/>
+<wire x1="-177.8" y1="3.556" x2="-177.8" y2="-7.62" width="0.1524" layer="91"/>
+<junction x="-177.8" y="-7.62"/>
+<pinref part="PUMP" gate="G$1" pin="P$1"/>
+<wire x1="-180.848" y1="3.556" x2="-177.8" y2="3.556" width="0.1524" layer="91"/>
+<wire x1="-177.8" y1="3.556" x2="-177.8" y2="5.08" width="0.1524" layer="91"/>
+<wire x1="-177.8" y1="5.08" x2="-177.8" y2="7.62" width="0.1524" layer="91"/>
+<wire x1="-177.8" y1="7.62" x2="-154.94" y2="7.62" width="0.1524" layer="91"/>
+<label x="-175.26" y="-2.54" size="1.778" layer="95"/>
 </segment>
 <segment>
 <pinref part="STEAM_LAMP" gate="G$1" pin="1"/>
@@ -1188,24 +1222,24 @@ Source: www.irf.com .. ir2520.pdf</description>
 <wire x1="-205.74" y1="33.02" x2="-213.36" y2="33.02" width="0.1524" layer="91"/>
 <wire x1="-213.36" y1="33.02" x2="-213.36" y2="50.8" width="0.1524" layer="91"/>
 <junction x="-213.36" y="50.8"/>
-<wire x1="-177.8" y1="50.8" x2="-177.8" y2="7.62" width="0.1524" layer="91"/>
-<pinref part="PUMP" gate="G$1" pin="P$2"/>
-<wire x1="-177.8" y1="7.62" x2="-180.848" y2="7.62" width="0.1524" layer="91"/>
-<wire x1="-180.848" y1="7.62" x2="-180.848" y2="6.604" width="0.1524" layer="91"/>
+<wire x1="-177.8" y1="50.8" x2="-177.8" y2="12.7" width="0.1524" layer="91"/>
 <label x="-304.8" y="50.8" size="1.778" layer="95"/>
 <label x="-215.9" y="33.02" size="1.778" layer="95"/>
 <label x="-198.12" y="33.02" size="1.778" layer="95"/>
-<label x="-180.34" y="10.16" size="1.778" layer="95"/>
 <label x="-276.86" y="40.64" size="1.778" layer="95"/>
 <label x="-266.7" y="40.64" size="1.778" layer="95"/>
+<wire x1="-177.8" y1="12.7" x2="-154.94" y2="12.7" width="0.1524" layer="91"/>
+<label x="-172.72" y="15.24" size="1.778" layer="95"/>
 </segment>
 </net>
 <net name="N$1" class="0">
 <segment>
 <pinref part="IC1" gate="A" pin="I-_1"/>
-<wire x1="-157.48" y1="-33.02" x2="-157.48" y2="-48.26" width="0.1524" layer="91"/>
-<wire x1="-157.48" y1="-48.26" x2="-177.8" y2="-48.26" width="0.1524" layer="91"/>
-<junction x="-177.8" y="-48.26"/>
+<wire x1="-157.48" y1="-33.02" x2="-177.8" y2="-33.02" width="0.1524" layer="91"/>
+<junction x="-177.8" y="-33.02"/>
+<pinref part="SW3_COFFEE" gate="SW$1" pin="4"/>
+<wire x1="-177.905559375" y1="-44.197515625" x2="-177.8" y2="-44.197515625" width="0.1524" layer="91"/>
+<wire x1="-177.8" y1="-44.197515625" x2="-177.8" y2="-33.02" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="ARDUINO5V" class="0">
@@ -1221,6 +1255,15 @@ Source: www.irf.com .. ir2520.pdf</description>
 <pinref part="IC1" gate="A" pin="VOUT"/>
 <wire x1="-127" y1="-25.4" x2="-119.38" y2="-25.4" width="0.1524" layer="91"/>
 <label x="-124.46" y="-22.86" size="1.778" layer="95"/>
+</segment>
+</net>
+<net name="N$2" class="0">
+<segment>
+<pinref part="PUMP" gate="G$1" pin="P$2"/>
+<portref moduleinst="RBDDIMMER1" port="OUT"/>
+<wire x1="-180.848" y1="6.604" x2="-157.48" y2="6.604" width="0.1524" layer="91"/>
+<wire x1="-157.48" y1="6.604" x2="-157.48" y2="2.54" width="0.1524" layer="91"/>
+<label x="-170.18" y="2.54" size="1.778" layer="95"/>
 </segment>
 </net>
 </nets>

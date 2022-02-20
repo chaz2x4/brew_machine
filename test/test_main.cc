@@ -4,29 +4,29 @@
 
 GCP brew_machine;
 OLED screen;
-double savedTargetBrewTemp;
-double savedTargetSteamTemp;
-double savedTargetOffset;
-double savedTunings[3];
-ulong timerStartTime;
+double saved_target_brew_temp;
+double saved_target_steam_temp;
+double saved_target_offset;
+double saved_tunings[3];
+ulong timer_start_time;
 
-int currentLoop = 0;
-int maxLoops = 10;
+int current_loop = 0;
+int max_loops = 30;
 
 void loadParameters(){
-    EEPROM.get(BREW_TEMP_ADDRESS, savedTargetBrewTemp);
-    EEPROM.get(STEAM_TEMP_ADDRESS, savedTargetSteamTemp);
-    EEPROM.get(OFFSET_ADDRESS, savedTargetOffset);
+    EEPROM.get(BREW_TEMP_ADDRESS, saved_target_brew_temp);
+    EEPROM.get(STEAM_TEMP_ADDRESS, saved_target_steam_temp);
+    EEPROM.get(OFFSET_ADDRESS, saved_target_offset);
     for(int i=0;i<3;i++) {
-        EEPROM.get(TUNING_ADDRESS + i*8, savedTunings[i]);
+        EEPROM.get(TUNING_ADDRESS + i*8, saved_tunings[i]);
     }
 }
 
 void saveParameters(){
-    brew_machine.setTargetTemp("brew", savedTargetBrewTemp);
-    brew_machine.setTargetTemp("steam", savedTargetSteamTemp);
-    brew_machine.setTargetTemp("offset", savedTargetOffset);
-    brew_machine.setTunings(savedTunings[0], savedTunings[1], savedTunings[2]);
+    brew_machine.setTargetTemp("brew", saved_target_brew_temp);
+    brew_machine.setTargetTemp("steam", saved_target_steam_temp);
+    brew_machine.setTargetTemp("offset", saved_target_offset);
+    brew_machine.setTunings(saved_tunings[0], saved_tunings[1], saved_tunings[2]);
 }
 
 void test_function_gcp_set_brew_temp(){
@@ -189,9 +189,9 @@ void test_function_gcp_eeprom_tunings(){
 }
 
 void test_function_oled_increment_brew(){
-    String currentMode = screen.getCurrentMode();
+    String current_mode = screen.getCurrentMode();
     double target = brew_machine.getTargetTemp("brew");
-    if(currentMode == "brew") {
+    if(current_mode == "brew") {
         screen.incrementTemp();
         TEST_ASSERT_EQUAL(target + 0.5, brew_machine.getTargetTemp("brew"));
     }
@@ -202,9 +202,9 @@ void test_function_oled_increment_brew(){
 }
 
 void test_function_oled_decrement_brew(){
-    String currentMode = screen.getCurrentMode();
+    String current_mode = screen.getCurrentMode();
     double target = brew_machine.getTargetTemp("brew");
-    if(currentMode == "brew") {
+    if(current_mode == "brew") {
         screen.decrementTemp();
         TEST_ASSERT_EQUAL(target - 0.5, brew_machine.getTargetTemp("brew"));
     }
@@ -215,9 +215,9 @@ void test_function_oled_decrement_brew(){
 }
 
 void test_function_oled_increment_steam(){
-    String currentMode = screen.getCurrentMode();
+    String current_mode = screen.getCurrentMode();
     double target = brew_machine.getTargetTemp("steam");
-    if(currentMode == "steam") {
+    if(current_mode == "steam") {
         screen.incrementTemp();
         TEST_ASSERT_EQUAL(target + 1, brew_machine.getTargetTemp("steam"));
     }
@@ -228,9 +228,9 @@ void test_function_oled_increment_steam(){
 }
 
 void test_function_oled_decrement_steam(){
-    String currentMode = screen.getCurrentMode();
+    String current_mode = screen.getCurrentMode();
     double target = brew_machine.getTargetTemp("steam");
-    if(currentMode == "steam") {
+    if(current_mode == "steam") {
         screen.decrementTemp();
         TEST_ASSERT_EQUAL(target - 1, brew_machine.getTargetTemp("steam"));
     }
@@ -240,15 +240,14 @@ void test_function_oled_decrement_steam(){
     }
 }
 
-void test_function_gcp_timer_running(){
-    ulong now = millis();
-    double timer = brew_machine.getCurrentTimer(now);
-    TEST_ASSERT_EQUAL((now - timerStartTime) / 1000, timer);
-}
-
 void test_function_gcp_output(){
     ulong now = millis();
     brew_machine.refresh(now);
+}
+
+void test_function_gcp_get_pressure(){
+    double px = brew_machine.getPressure();
+    TEST_ASSERT_GREATER_OR_EQUAL(px, 1);
 }
 
 void setup(){
@@ -294,15 +293,15 @@ void setup(){
     RUN_TEST(test_function_oled_decrement_steam);
     // RUN_TEST(test_function_oled_decrement_offset);
 
-    timerStartTime = millis();
+    timer_start_time = millis();
 }
 
 void loop(){
-    if(currentLoop < maxLoops) {
-        RUN_TEST(test_function_gcp_timer_running);
+    if(current_loop < max_loops) {
         RUN_TEST(test_function_gcp_output);
+        // RUN_TEST(test_function_gcp_get_pressure);
         delay(1000);
-        currentLoop++;
+        current_loop++;
     }
     else {
         saveParameters();
