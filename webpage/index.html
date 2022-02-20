@@ -14,13 +14,14 @@
             const max_steam_temp = 150;
             const min_brew_temp = 85;
             const max_brew_temp = 105;
-            const max_offset = 11.5;
-            const min_offset = -11.5;
+            const max_offset = 11;
+            const min_offset = -11;
+            let refresh_interval_id;
             let is_target_loaded = false;
             let brew_target;
             let steam_target;
             let temp_offset;
-            let temp_scale;
+            let temp_scale = "C";
             let cycle_time = 1500;
             let current_mode = 'brew';
             let temp_data = [];
@@ -307,61 +308,68 @@
                 }
             })();
 
-            setInterval(function(){
-                callServer.get("/get_temps", function(response){
-                    let requestedLabels = [];
-                    let requestedTempData = [];
-                    let requestedBrewOutput = [];
-                    let requestedSteamOutput = [];
-                    let requestedBrewTargets = [];
-                    let requestedSteamTargets = [];
-                    
-                    let sortedOutputs = response.sort((a, b) => a.time - b.time);
-                    let lastOutput = sortedOutputs[sortedOutputs.length - 1];
-                    if(!is_target_loaded) {
-                        [temp_scale, brew_target, steam_target, temp_offset] = [lastOutput.scale, lastOutput.targets.brew, lastOutput.targets.steam, lastOutput.targets.offset];
-                        updateElements('offset');
-                        is_target_loaded = true;
-                    }
-                    
-                    sortedOutputs.forEach((output, index) => {             
-                        requestedLabels.push(moment(output.time * 1000).fromNow());
-                        requestedTempData.push(output.temperature);
-                        requestedBrewOutput.push(output.outputs.brew);
-                        requestedSteamOutput.push(output.outputs.steam);
-                        requestedBrewTargets.push(output.targets.brew);
-                        requestedSteamTargets.push(output.targets.steam);
-                    })
+            function refreshTemps() {
+                refresh_interval_id = setInterval(function(){
+                    callServer.get("/get_temps", function(response){
+                        let requestedLabels = [];
+                        let requestedTempData = [];
+                        let requestedBrewOutput = [];
+                        let requestedSteamOutput = [];
+                        let requestedBrewTargets = [];
+                        let requestedSteamTargets = [];
+                        
+                        let sortedOutputs = response.sort((a, b) => a.time - b.time);
+                        let lastOutput = sortedOutputs[sortedOutputs.length - 1];
+                        if(!is_target_loaded) {
+                            [temp_scale, brew_target, steam_target, temp_offset] = [lastOutput.scale, lastOutput.targets.brew, lastOutput.targets.steam, lastOutput.targets.offset];
+                            updateElements('offset');
+                            is_target_loaded = true;
+                        }
+                        
+                        sortedOutputs.forEach((output, index) => {             
+                            requestedLabels.push(moment(output.time * 1000).fromNow());
+                            requestedTempData.push(output.temperature);
+                            requestedBrewOutput.push(output.outputs.brew);
+                            requestedSteamOutput.push(output.outputs.steam);
+                            requestedBrewTargets.push(output.targets.brew);
+                            requestedSteamTargets.push(output.targets.steam);
+                        })
 
-                    chart.data.labels = requestedLabels;
-                    chart.data.datasets[0].data = temp_data = requestedTempData;
-                    let current_temp = requestedTempData[requestedTempData.length - 1].toPrecision(4);
-                    if(current_mode == 'brew') { 
-                        chart.data.datasets[1].data = target_data.brew = requestedBrewTargets;
-                        chart.data.datasets[2].data = output_data.brew = requestedBrewOutput;
-                        if(current_temp !== undefined) brew_temp_element.innerHTML = current_temp + " " + temp_scale;
-                    }
-                    else { 
-                        chart.data.datasets[1].data = target_data.steam = requestedSteamTargets;
-                        chart.data.datasets[2].data = output_data.steam = requestedSteamOutput;
-                        if(current_temp !== undefined) steam_temp_element.innerHTML = current_temp + " " + temp_scale;
-                    }        
+                        chart.data.labels = requestedLabels;
+                        chart.data.datasets[0].data = temp_data = requestedTempData;
+                        let current_temp = requestedTempData[requestedTempData.length - 1].toPrecision(4);
+                        if(current_mode == 'brew') { 
+                            chart.data.datasets[1].data = target_data.brew = requestedBrewTargets;
+                            chart.data.datasets[2].data = output_data.brew = requestedBrewOutput;
+                            if(current_temp !== undefined) brew_temp_element.innerHTML = current_temp + " " + temp_scale;
+                        }
+                        else { 
+                            chart.data.datasets[1].data = target_data.steam = requestedSteamTargets;
+                            chart.data.datasets[2].data = output_data.steam = requestedSteamOutput;
+                            if(current_temp !== undefined) steam_temp_element.innerHTML = current_temp + " " + temp_scale;
+                        }        
 
-                    updateElements(current_mode);
-                });
-            }, 1000);
+                        updateElements(current_mode);
+                    });
+                }, 1000);
+            }
+            refreshTemps();
 
             function changeScale(scale) {
                 callServer.post("/change_scale?scale=" + scale);
+                
                 temp_scale = scale;
                 is_target_loaded = false;
-
+                
                 document.getElementById("brew_target_label").innerHTML = placeholder.outerHTML;
                 document.getElementById("steam_target_label").innerHTML = placeholder.outerHTML;
                 document.getElementById("offset_target_label").innerHTML = placeholder.outerHTML;
-
+                
                 scale_c_button.classList.toggle("active", scale == "C");
                 scale_f_button.classList.toggle("active", scale == "F");
+                
+                clearInterval(refresh_interval_id);
+                refreshTemps();
             }
 
             function refreshTunings() {
