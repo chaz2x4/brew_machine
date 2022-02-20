@@ -117,9 +117,10 @@ void OLED::refresh(ulong real_time){
         target_temp = gcp->getTargetTemp(STEAM);
     }
     if(gcp->getScale() == "F") {
-        target_temp = target_temp * (9.0/5.0) + 32;
+        target_temp = round(target_temp * (9.0/5.0)) + 32;
         current_temp = current_temp * (9.0/5.0) + 32;
     }
+    else target_temp = round(current_temp * 2.0) / 2.0;
     if(this->is_editable) {
         if(flash) display.printf("Set %s\n %#0.1f %s", modeTitle, target_temp, gcp->getScale());
         else display.printf("Set %s", modeTitle);
