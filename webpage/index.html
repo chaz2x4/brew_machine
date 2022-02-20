@@ -35,7 +35,7 @@
                     borderColor: '#4285F4',
                     borderWidth: 2,
                     backgroundColor: function (context) {
-                        if(context.dataset.data.length && target_data.length) {
+                        if(context.dataset.data.length && target_data[current_mode].length) {
                             let pointTemp = context.dataset.data[context.dataIndex];
                             let target_temp = target_data[current_mode][context.dataIndex];
                             let acceptableError = (current_mode == 'brew') ? 0.5 : 1.0;
@@ -47,7 +47,7 @@
                     },
                     elements: {
                         point: {
-                            radius: 0.5,
+                            radius: 0.75,
                         },
                     },
                     tension: 0.1,
