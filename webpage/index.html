@@ -181,6 +181,9 @@
                     targetLabel.innerHTML = target_temp + " " + temp_scale;
                 }
 
+                scale_c_button.classList.toggle("active", temp_scale == "C");
+                scale_f_button.classList.toggle("active", temp_scale == "F");
+
                 if(mode == "brew" || mode == "steam") {
                     chart.options.scales.y1.suggestedMin = target_temp % 5 === 0 ? Math.floor(target_temp / 5 - 1) * 5 : Math.floor(target_temp / 5) * 5;
                     chart.options.scales.y1.suggestedMax = target_temp % 5 === 0 ? Math.ceil(target_temp / 5 + 1) * 5 : Math.ceil(target_temp / 5) * 5;
@@ -350,12 +353,15 @@
 
             function changeScale(scale) {
                 callServer.post("/change_scale?scale=" + scale);
+                temp_scale = scale;
                 is_target_loaded = false;
 
+                document.getElementById("brew_target_label").innerHTML = placeholder.outerHTML;
+                document.getElementById("steam_target_label").innerHTML = placeholder.outerHTML;
                 document.getElementById("offset_target_label").innerHTML = placeholder.outerHTML;
+
                 scale_c_button.classList.toggle("active", scale == "C");
                 scale_f_button.classList.toggle("active", scale == "F");
-                updateElements(current_mode);
             }
 
             function refreshTunings() {
