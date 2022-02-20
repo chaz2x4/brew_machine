@@ -46,6 +46,7 @@ public:
     double getTargetTemp(TempMode);
     double getActualTemp();
     double getCurrentTemp();
+    String getScale();
     String getOutput();
     String getTunings();
     void setTunings(double, double, double);

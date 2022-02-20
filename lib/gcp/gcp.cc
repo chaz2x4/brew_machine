@@ -182,6 +182,10 @@ String GCP::getOutput(){
 	return outputString;
 }
 
+String GCP::getScale(){
+	return outputQueue.getScale();
+}
+
 String GCP::getTunings(){
 	String output;
     output += "{ \"kp\": ";
