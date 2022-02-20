@@ -220,6 +220,8 @@ private:
             results += times[i];
             results += ", \"temperature\": ";
             results += sanitize(temps[i], 1);
+            results += ", \"scale\": ";
+            results += getScale();
             results += ", \"outputs\": { \"brew\": ";
             results += outputs[BREW][i];
             results += ", \"steam\": ";
