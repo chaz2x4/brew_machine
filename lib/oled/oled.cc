@@ -117,12 +117,12 @@ void OLED::refresh(ulong real_time){
         target_temp = gcp->getTargetTemp(STEAM);
     }
     if(this->is_editable) {
-        if(flash) display.printf("Set %s\n %#.1f C", modeTitle, target_temp);
+        if(flash) display.printf("Set %s\n %#.1f °", modeTitle, target_temp);
         else display.printf("Set %s", modeTitle);
         wait = 500;
     }
     else {
-        if(flash) display.printf("%sing\n %#0.1f C", modeTitle, target_temp);
+        if(flash) display.printf("%sing\n %#0.1f °", modeTitle, target_temp);
         else display.printf("Temp:\n %#.1f C", current_temp);
         wait = 2000;
     }

@@ -179,7 +179,7 @@
 
                 if(target_temp !== undefined) {
                     let targetLabel = document.getElementById(mode + "_target_label");
-                    targetLabel.innerHTML = target_temp + " " + temp_scale;
+                    targetLabel.innerHTML = target_temp + " °" + temp_scale;
                 }
 
                 scale_c_button.classList.toggle("active", temp_scale == "C");
@@ -341,12 +341,12 @@
                         if(current_mode == 'brew') { 
                             chart.data.datasets[1].data = target_data.brew = requestedBrewTargets;
                             chart.data.datasets[2].data = output_data.brew = requestedBrewOutput;
-                            if(current_temp !== undefined) brew_temp_element.innerHTML = current_temp + " " + temp_scale;
+                            if(current_temp !== undefined) brew_temp_element.innerHTML = current_temp + " °" + temp_scale;
                         }
                         else { 
                             chart.data.datasets[1].data = target_data.steam = requestedSteamTargets;
                             chart.data.datasets[2].data = output_data.steam = requestedSteamOutput;
-                            if(current_temp !== undefined) steam_temp_element.innerHTML = current_temp + " " + temp_scale;
+                            if(current_temp !== undefined) steam_temp_element.innerHTML = current_temp + " °" + temp_scale;
                         }        
 
                         updateElements(current_mode);
@@ -458,7 +458,7 @@
                             <div> 
                                 <h6>Temperature:</h6>
                                 <div class="row">
-                                    <div class="col-12"> Current Temp: 
+                                    <div class="col-12"> Actual: 
                                         <small class="text-muted" id="brew_current-temp"><span class="spinner-border spinner-border-sm"></span></small>
                                     </div>
                                 </div>
@@ -527,8 +527,8 @@
                                 <div class="col-12" id="temp_scale_label" for="temp_scale_group"> Scale:</div>
                                 <div class="my-2">
                                     <div class="btn-group" id="temp_scale_group">
-                                        <button class="btn btn-outline-info active" type="button" id="scale_C_button"> C </button>
-                                        <button class="btn btn-outline-info" type="button" id="scale_F_button"> F </button>
+                                        <button class="btn btn-outline-info active" type="button" id="scale_C_button"> °C </button>
+                                        <button class="btn btn-outline-info" type="button" id="scale_F_button"> °F </button>
                                     </div>
                                 </div>
                             </div>
