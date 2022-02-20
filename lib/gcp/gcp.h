@@ -96,7 +96,6 @@ private:
     const double kMinSteamTemp;
     const double kMaxOffset;
     const double kMinOffset;
-    const int kWebsiteQueueSize;
     const ulong kWindowSize;
     const ulong kLogInterval;
     const int kPowerFrequency;
