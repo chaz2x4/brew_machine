@@ -25,7 +25,7 @@ GCP::GCP()
 , px_kp(1)
 , px_ki(1)
 , px_kd(1)
-, outputQueue(Queue(60000 / kLogInterval))
+, outputQueue(Queue(60000 / kLogInterval, C))
 , brewTempManager(PID(&current_temp, &brew_output, &target_temp, temp_kp, temp_ki, temp_kd, P_ON_M, DIRECT))
 , steamTempManager(PID(&current_temp, &steam_output, &target_steam_temp, temp_kp, temp_ki, temp_kd, P_ON_M, DIRECT))
 , pumpPressureManager(PID(&current_pressure, &pump_output, &target_pressure, px_kp, px_ki, px_kd, P_ON_M, DIRECT))
@@ -202,24 +202,14 @@ void GCP::setTunings(double kp, double ki, double kd){
 	EEPROM.commit();
 }
 
-void GCP::parseQueue(ulong time){
-	String outputs;
-    outputs += "{ \"time\": ";
-    outputs += time;
-    outputs += ", \"temperature\": ";
-    outputs += this->current_temp;
-    outputs += ", \"outputs\": { \"brew\": ";
-    outputs += this->last_brew_output;
-    outputs += ", \"steam\": ";
-    outputs += this->last_steam_output;
-	outputs += "}, \"targets\": { \"brew\": ";
-    outputs += this->target_temp;
-    outputs += ", \"steam\": ";
-    outputs += this->target_steam_temp;
-	outputs += ", \"offset\": ";
-    outputs += this->temp_offset;
-    outputs += " }}";
-	outputQueue.push(outputs);
+void GCP::changeScale(String scale) {
+	if(outputQueue.getScale() == scale) return;
+	else if(scale == "F") {
+		outputQueue.setScale(F);
+	}
+	else if(scale == "C") {
+		outputQueue.setScale(C);
+	};
 }
 
 void GCP::loadParameters(){
@@ -311,12 +301,19 @@ void GCP::refresh(ulong real_time) {
 	}
 	this->runBrewProfile(real_time);
 
-	this->getCurrentTemp();;
 	ulong now = millis();
 	if(now - log_start_time > kLogInterval) {
 		brewTempManager.Compute();
 		steamTempManager.Compute();
-		parseQueue(real_time);
+		outputQueue.push(
+			real_time, 
+			this->getCurrentTemp(), 
+			this->last_brew_output, 
+			this->last_steam_output,
+			this->target_temp,
+			this->target_steam_temp,
+			this->temp_offset
+		);
 		log_start_time += kLogInterval;
 	}
 	

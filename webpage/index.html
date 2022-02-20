@@ -21,7 +21,7 @@
             let temp_offset;
             let cycle_time = 1500;
             let current_mode = 'brew';
-            let degree_mode = 'C';
+            let temp_scale = 'C';
             let temp_data = [];
             let target_data = {};
             let output_data = {};
@@ -177,7 +177,7 @@
 
                 if(target_temp !== undefined) {
                     let targetLabel = document.getElementById(mode + "_target_label");
-                    targetLabel.innerHTML = target_temp + " " + degree_mode;
+                    targetLabel.innerHTML = target_temp + " " + temp_scale;
                 }
 
                 if(mode == "brew" || mode == "steam") {
@@ -324,18 +324,22 @@
                     if(current_mode == 'brew') { 
                         chart.data.datasets[1].data = target_data.brew = requestedBrewTargets;
                         chart.data.datasets[2].data = output_data.brew = requestedBrewOutput;
-                        if(current_temp !== undefined) brew_temp_element.innerHTML = current_temp + " " + degree_mode;
+                        if(current_temp !== undefined) brew_temp_element.innerHTML = current_temp + " " + temp_scale;
                     }
                     else { 
                         chart.data.datasets[1].data = target_data.steam = requestedSteamTargets;
                         chart.data.datasets[2].data = output_data.steam = requestedSteamOutput;
-                        if(current_temp !== undefined) steam_temp_element.innerHTML = current_temp + " " + degree_mode;
+                        if(current_temp !== undefined) steam_temp_element.innerHTML = current_temp + " " + temp_scale;
                     }        
 
                     updateElements(current_mode);
                 });
             }, 1000);
 
+            function changeScale(scale) {
+                callServer.post("/change_scale?scale=" + scale);
+                
+            }
 
             function refreshTunings() {
                 callServer.get("/get_tunings", function(response){
@@ -366,6 +370,8 @@
             document.getElementById("steam_decrement").addEventListener('click', () => decrementTarget("steam"));
             document.getElementById("offset_increment").addEventListener('click', () => incrementTarget("offset"));
             document.getElementById("offset_decrement").addEventListener('click', () => decrementTarget("offset"));
+            document.getElementById("C_button").addEventListener('click', () => changeScale('C'));
+            document.getElementById("F_button").addEventListener('click', () => changeScale('F'));
             
             tuning_button.addEventListener('click', changeTunings);
             tunings_tab.addEventListener('hide.bs.collapse', function() {
@@ -484,9 +490,9 @@
                                 </div>
                             </div>
                             <div class="row">
-                                <div class="col-12" id="degree_label" for="degree_group"> Degree:</div>
+                                <div class="col-12" id="temp_scale_label" for="temp_scale_group"> Scale:</div>
                                 <div class="my-2">
-                                    <div class="btn-group" id="degree_group">
+                                    <div class="btn-group" id="temp_scale_group">
                                         <button class="btn btn-outline-info active" type="button" id="C_button"> C </button>
                                         <button class="btn btn-outline-info" type="button" id="F_button"> F </button>
                                     </div>

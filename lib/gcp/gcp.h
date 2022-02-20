@@ -28,23 +28,73 @@
 #define ACS_VERSION ACS712_30A
 #define RREF 430
 
-struct Queue {
+typedef enum {C, F} temp_scale;
+typedef struct Queue {
     int front, rear, capacity, count;
+    typedef enum mode{brew, steam, offset};
     String *queue;
 
-    Queue(int c) {
+    temp_scale current_scale;
+    ulong *times;
+    double *temps;
+    double *outputs[2];
+    double *targets[3];
+
+    Queue(int c, temp_scale s) {
+        current_scale = s;
         front = rear = 0;
         capacity = c + 1;
-        queue = new String[capacity];
+        times = new ulong[capacity];
+        temps = new double[capacity];
+        for(int i=0;i<2;i++){
+            outputs[i] = new double[capacity];
+        }
+        for(int i=0;i<3;i++) {
+            targets[i] = new double[capacity];
+        }
     }
 
-    ~Queue() { delete[] queue; }
+    ~Queue() { 
+        delete[] times;
+        delete[] temps;
+        for(int i=0;i<2;i++) {
+            delete[] outputs[i];
+        }
+        for(int i=0;i<3;i++) {
+            delete[] targets[i];
+        }
+    }
 
-    void push(String data){
+    void push(
+        ulong time, 
+        double temp, 
+        double brew_output, 
+        double steam_output, 
+        double brew_target, 
+        double steam_target, 
+        double offset_target
+    ){
         if(count == capacity) pop();
         if(rear == capacity - 1) rear = -1;
-        if(count == 0) queue[0] = data;
-        else queue[++rear] = data;
+        if(count == 0) {
+            times[0] = time;
+            temps[0] = temp;
+            outputs[brew][0] = brew_output;
+            outputs[steam][0] = steam_output;
+            targets[brew][0] = brew_target;
+            targets[steam][0] = steam_target;
+            targets[offset][0] = offset_target;
+        }
+        else {
+            ++rear;
+            times[rear] = time;
+            temps[rear] = temp;
+            outputs[0][rear] = brew_output;
+            outputs[1][rear] = steam_output;
+            targets[0][rear] = brew_target;
+            targets[1][rear] = steam_target;
+            targets[2][rear] = offset_target;
+        }
         count++;
     }
 
@@ -58,8 +108,33 @@ struct Queue {
         return count;
     }
 
-    String at(int i){
-        return queue[i];
+    String at(int i) {
+        String results;
+        results += "{ \"time\": ";
+        results += times[i];
+        results += ", \"temperature\": ";
+        results += temps[i];
+        results += ", \"outputs\": { \"brew\": ";
+        results += outputs[brew][i];
+        results += ", \"steam\": ";
+        results += outputs[steam][i];
+        results += "}, \"targets\": { \"brew\": ";
+        results += targets[brew][i];
+        results += ", \"steam\": ";
+        results += targets[steam][i];
+        results += ", \"offset\": ";
+        results += targets[offset][i];
+        results += " }}";
+        return results;
+    }
+
+    String getScale(){
+        if(current_scale == C) return "C";
+        else return "F";
+    }
+
+    void setScale(temp_scale scale) {
+        current_scale = scale;
     }
 };
 
@@ -80,6 +155,7 @@ public:
     void setTargetPressure(double);
     void setTargetTemp(String, double);
     void setTunings(double, double, double);
+    void changeScale(String);
     bool isBrewing();
     ulong getBrewStartTime();
     ulong getBrewStopTime();
@@ -135,7 +211,6 @@ private:
     PID pumpPressureManager;
 
     int regulateOutput(double);
-    void parseQueue(ulong);
     void loadParameters();
 };
 #endif
