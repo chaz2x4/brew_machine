@@ -25,10 +25,10 @@ GCP::GCP()
 , px_kp(1)
 , px_ki(1)
 , px_kd(1)
-, outputQueue(Queue(60000 / kLogInterval, C))
 , brewTempManager(PID(&current_temp, &brew_output, &target_temp, temp_kp, temp_ki, temp_kd, P_ON_M, DIRECT))
 , steamTempManager(PID(&current_temp, &steam_output, &target_steam_temp, temp_kp, temp_ki, temp_kd, P_ON_M, DIRECT))
 , pumpPressureManager(PID(&current_pressure, &pump_output, &target_pressure, px_kp, px_ki, px_kd, P_ON_M, DIRECT))
+, outputQueue(Queue(60000 / kLogInterval, C))
 {}
 
 GCP::~GCP(){
@@ -204,11 +204,11 @@ void GCP::setTunings(double kp, double ki, double kd){
 
 void GCP::changeScale(String scale) {
 	if(outputQueue.getScale() == scale) return;
-	else if(scale == "F") {
+	if(scale == "F") {
 		outputQueue.setScale(F);
 	}
-	else if(scale == "C") {
-		outputQueue.setScale(C);
+	else if(scale == "C") { 
+		outputQueue.setScale(C); 
 	};
 }
 

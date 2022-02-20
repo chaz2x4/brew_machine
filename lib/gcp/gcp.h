@@ -28,116 +28,6 @@
 #define ACS_VERSION ACS712_30A
 #define RREF 430
 
-typedef enum {C, F} temp_scale;
-typedef struct Queue {
-    int front, rear, capacity, count;
-    typedef enum mode{brew, steam, offset};
-    String *queue;
-
-    temp_scale current_scale;
-    ulong *times;
-    double *temps;
-    double *outputs[2];
-    double *targets[3];
-
-    Queue(int c, temp_scale s) {
-        current_scale = s;
-        front = rear = 0;
-        capacity = c;
-        times = new ulong[capacity];
-        temps = new double[capacity];
-        for(int i=0;i<2;i++){
-            outputs[i] = new double[capacity];
-        }
-        for(int i=0;i<3;i++) {
-            targets[i] = new double[capacity];
-        }
-    }
-
-    ~Queue() { 
-        delete[] times;
-        delete[] temps;
-        for(int i=0;i<2;i++) {
-            delete[] outputs[i];
-        }
-        for(int i=0;i<3;i++) {
-            delete[] targets[i];
-        }
-    }
-
-    void push(
-        ulong time, 
-        double temp, 
-        double brew_output, 
-        double steam_output, 
-        double brew_target, 
-        double steam_target, 
-        double offset_target
-    ){
-        if(count == capacity) pop();
-        if(rear == capacity - 1) rear = -1;
-        if(count == 0) {
-            times[0] = time;
-            temps[0] = temp;
-            outputs[brew][0] = brew_output;
-            outputs[steam][0] = steam_output;
-            targets[brew][0] = brew_target;
-            targets[steam][0] = steam_target;
-            targets[offset][0] = offset_target;
-        }
-        else {
-            ++rear;
-            times[rear] = time;
-            temps[rear] = temp;
-            outputs[0][rear] = brew_output;
-            outputs[1][rear] = steam_output;
-            targets[0][rear] = brew_target;
-            targets[1][rear] = steam_target;
-            targets[2][rear] = offset_target;
-        }
-        count++;
-    }
-
-    void pop() {
-        front++;
-        if(front == capacity) front = 0;
-        count--;
-    }
-
-    int size() {
-        return count;
-    }
-
-    String at(int i) {
-        String results;
-        results += "{ \"time\": ";
-        results += times[i];
-        results += ", \"temperature\": ";
-        results += temps[i];
-        results += ", \"outputs\": { \"brew\": ";
-        results += outputs[brew][i];
-        results += ", \"steam\": ";
-        results += outputs[steam][i];
-        results += "}, \"targets\": { \"brew\": ";
-        results += targets[brew][i];
-        results += ", \"steam\": ";
-        results += targets[steam][i];
-        results += ", \"offset\": ";
-        results += targets[offset][i];
-        results += " }}";
-        return results;
-    }
-
-    String getScale(){
-        if(current_scale == C) return "C";
-        else return "F";
-    }
-
-    void setScale(temp_scale scale) {
-        current_scale = scale;
-    }
-};
-
 class GCP {
 public:
     GCP();
@@ -176,6 +66,7 @@ private:
     const ulong kLogInterval;
     const int kPowerFrequency;
     const double kTranducerLimit; // In bars, ie, 1.2Mpa = 12 bars
+    typedef enum {C, F} TempScale;
 
     double current_temp;
     double temp_offset;
@@ -205,12 +96,137 @@ private:
     double px_ki;
     double px_kd;
 
-    Queue outputQueue;
     PID brewTempManager;
     PID steamTempManager;
     PID pumpPressureManager;
 
     int regulateOutput(double);
     void loadParameters();
+    double convertScale(double, TempScale);
+
+    struct Queue {
+        int front, rear, capacity, count;
+        typedef enum {brew, steam, offset} Mode;
+
+        TempScale current_scale;
+        ulong *times;
+        double *temps;
+        double *outputs[2];
+        double *targets[3];
+
+        Queue(int c, TempScale s) {
+            current_scale = s;
+            front = rear = 0;
+            capacity = c;
+            times = new ulong[capacity];
+            temps = new double[capacity];
+            for(int i=0;i<2;i++){
+                outputs[i] = new double[capacity];
+            }
+            for(int i=0;i<3;i++) {
+                targets[i] = new double[capacity];
+            }
+        }
+
+        ~Queue() { 
+            delete[] times;
+            delete[] temps;
+            for(int i=0;i<2;i++) {
+                delete[] outputs[i];
+            }
+            for(int i=0;i<3;i++) {
+                delete[] targets[i];
+            }
+            delete[] outputs;
+            delete[] targets;
+        }
+
+        double sanitize(double t) {
+            return sanitize(t, 0);
+        }
+
+        double sanitize(double t, bool getUnrounded) {
+            double result = current_scale == F ? t * 9/5 + 32 : t;
+            if(getUnrounded) return result;
+            else {
+                if(current_scale == C) {
+                    return round(result * 2.0) / 2.0;
+                }
+                else return round(result);
+            }
+        }
+
+        void push(
+            ulong time, 
+            double temp, 
+            double brew_output, 
+            double steam_output, 
+            double brew_target, 
+            double steam_target, 
+            double offset_target
+        ){
+            if(count == capacity) pop();
+            if(rear == capacity - 1) rear = -1;
+            if(count == 0) {
+                times[0] = time;
+                temps[0] = temp;
+                outputs[brew][0] = brew_output;
+                outputs[steam][0] = steam_output;
+                targets[brew][0] = brew_target;
+                targets[steam][0] = steam_target;
+                targets[offset][0] = offset_target;
+            }
+            else {
+                ++rear;
+                times[rear] = time;
+                temps[rear] = temp;
+                outputs[0][rear] = brew_output;
+                outputs[1][rear] = steam_output;
+                targets[0][rear] = brew_target;
+                targets[1][rear] = steam_target;
+                targets[2][rear] = offset_target;
+            }
+            count++;
+        }
+
+        void pop() {
+            front++;
+            if(front == capacity) front = 0;
+            count--;
+        }
+
+        int size() {
+            return count;
+        }
+
+        String at(int i) {
+            String results;
+            results += "{ \"time\": ";
+            results += times[i];
+            results += ", \"temperature\": ";
+            results += sanitize(temps[i], 1);
+            results += ", \"outputs\": { \"brew\": ";
+            results += outputs[brew][i];
+            results += ", \"steam\": ";
+            results += outputs[steam][i];
+            results += "}, \"targets\": { \"brew\": ";
+            results += sanitize(targets[brew][i]);
+            results += ", \"steam\": ";
+            results += sanitize(targets[steam][i]);
+            results += ", \"offset\": ";
+            results += sanitize(targets[offset][i]);
+            results += " }}";
+            return results;
+        }
+
+        void setScale(TempScale s) {
+            current_scale = s;
+        }
+
+        String getScale() {
+            return current_scale == C ? "C" : "F";
+        }
+    };
+    Queue outputQueue;
 };
 #endif
