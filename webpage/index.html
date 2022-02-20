@@ -40,7 +40,7 @@
                         if(context.dataIndex) {
                             let pointTemp = context.dataset.data[context.dataIndex];
                             let target_temp = target_data[current_mode][context.dataIndex];
-                            let acceptableError = (current_mode == 'brew') ? 0.5 : 1.0;
+                            let acceptableError = (current_mode == 'brew' && scale == 'C') ? 0.5 : 1.0;
                             if(pointTemp > (target_temp + acceptableError)) return '#FF6384';
                             if(pointTemp < (target_temp - acceptableError)) return '#331F2E';
                             else return '#63FF8F';
