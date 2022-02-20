@@ -20,7 +20,8 @@
 #define BREW_TEMP_ADDRESS 0
 #define STEAM_TEMP_ADDRESS 8
 #define OFFSET_ADDRESS 16
-#define TUNING_ADDRESS 24
+#define SCALE_ADDRESS 24
+#define TUNING_ADDRESS 32
 
 /* HARDWARE VERSIONS */
 #define ACS_VERSION ACS712_30A
@@ -225,7 +226,7 @@ private:
         }
 
         String getScale() {
-            return current_scale == C ? "C" : "F";
+            return current_scale == F ? "F" : "C";
         }
     };
     Queue outputQueue;

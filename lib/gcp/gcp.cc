@@ -215,10 +215,13 @@ void GCP::changeScale(String scale) {
 	if(outputQueue.getScale() == scale) return;
 	if(scale == "F") {
 		outputQueue.setScale(F);
+		EEPROM.put(SCALE_ADDRESS, F);
 	}
 	else if(scale == "C") { 
 		outputQueue.setScale(C); 
+		EEPROM.put(SCALE_ADDRESS, C);
 	};
+	EEPROM.commit();
 }
 
 TempMode GCP::modeToEnum(String mode) {
@@ -229,13 +232,16 @@ TempMode GCP::modeToEnum(String mode) {
 
 void GCP::loadParameters(){
 	double brew_temp, steam_temp, offset;
+	TempScale scale;
 	EEPROM.get(BREW_TEMP_ADDRESS, brew_temp);
 	EEPROM.get(STEAM_TEMP_ADDRESS, steam_temp);
 	EEPROM.get(OFFSET_ADDRESS, offset);
+	EEPROM.get(SCALE_ADDRESS, scale);
 
 	if(!isnan(brew_temp) && brew_temp >= kMinBrewTemp && brew_temp <= kMaxBrewTemp) target_temp = brew_temp;
 	if(!isnan(steam_temp) && steam_temp >= kMinSteamTemp && steam_temp <= kMaxSteamTemp) target_steam_temp = steam_temp;
 	if(!isnan(offset) && offset >= kMinOffset && offset <= kMaxOffset) temp_offset = offset;
+	if(scale) outputQueue.setScale(scale);
 
 	double tunings[3];
 	bool tuningsValid = true;
