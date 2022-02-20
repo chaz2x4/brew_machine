@@ -310,7 +310,7 @@
                     }
                     
                     sortedOutputs.forEach((output, index) => {             
-                        requestedLabels.push(moment(output.time * 1000 + 1000).fromNow());
+                        requestedLabels.push(moment(output.time * 1000).fromNow());
                         requestedTempData.push(output.temperature);
                         requestedBrewOutput.push(output.outputs.brew);
                         requestedSteamOutput.push(output.outputs.steam);
@@ -338,7 +338,7 @@
 
             function changeScale(scale) {
                 callServer.post("/change_scale?scale=" + scale);
-                
+
             }
 
             function refreshTunings() {

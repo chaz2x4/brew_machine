@@ -43,7 +43,7 @@ typedef struct Queue {
     Queue(int c, temp_scale s) {
         current_scale = s;
         front = rear = 0;
-        capacity = c + 1;
+        capacity = c;
         times = new ulong[capacity];
         temps = new double[capacity];
         for(int i=0;i<2;i++){
