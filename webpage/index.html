@@ -38,9 +38,9 @@
                     borderColor: '#4285F4',
                     borderWidth: 2,
                     backgroundColor: function (context) {
-                        if(context.datasetIndex) {
-                            let pointTemp = context.dataset.data[context.datasetIndex];
-                            let target_temp = target_data[current_mode][context.datasetIndex];
+                        if(context.dataIndex) {
+                            let pointTemp = context.dataset.data[context.dataIndex];
+                            let target_temp = target_data[current_mode][context.dataIndex];
                             let acceptableError = (current_mode == 'brew' && temp_scale == 'C') ? 0.5 : 1.0;
                             if(pointTemp > (target_temp + acceptableError)) return '#FF6384';
                             if(pointTemp < (target_temp - acceptableError)) return '#331F2E';
@@ -402,18 +402,16 @@
 
                     chart.data.labels = requested_labels;
                     chart.data.datasets[0].data = temp_data = requested_temp_data;
+                    chart.data.datasets[1].data = target_data.brew = requested_brew_targets;
+                    chart.data.datasets[2].data = output_data.brew = requested_brew_output;
+                    chart.data.datasets[1].data = target_data.steam = requested_steam_targets;
+                    chart.data.datasets[2].data = output_data.steam = requested_steam_output;
+                    
                     let current_temp = requested_temp_data[requested_temp_data.length - 1].toPrecision(4);
-                    if(current_mode == 'brew') { 
-                        chart.data.datasets[1].data = target_data.brew = requested_brew_targets;
-                        chart.data.datasets[2].data = output_data.brew = requested_brew_output;
-                        if(current_temp !== undefined) brew_temp_element.innerHTML = current_temp + " °" + temp_scale;
-                    }
-                    else { 
-                        chart.data.datasets[1].data = target_data.steam = requested_steam_targets;
-                        chart.data.datasets[2].data = output_data.steam = requested_steam_output;
-                        if(current_temp !== undefined) steam_temp_element.innerHTML = current_temp + " °" + temp_scale;
-                    }        
-
+                    if(current_temp !== undefined) {
+                        if(current_mode == 'brew') brew_temp_element.innerHTML = current_temp + " °" + temp_scale;
+                        else if(current_mode == 'steam') steam_temp_element.innerHTML = current_temp + " °" + temp_scale;
+                    }    
                     updateElements(current_mode);
                 });
                 clearTimeout(refresh_temps_id);
