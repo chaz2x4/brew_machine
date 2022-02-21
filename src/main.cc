@@ -6,20 +6,10 @@ NTPClient timeClient(ntpUDP);
 OLED screen;
 GCP brew_machine;
 const char* hostname = "gaggia";
+bool is_wifi_connected = false;
 
-void setup() {
-	while (!Serial) ; // wait for serial port to connect. Needed for native USB port only
-	//Primary Mission: start coffee machine
-	Serial.begin(115200);
-
-	EEPROM.begin(512);
-	brew_machine.start();
-	screen.start(&brew_machine);
-
-	WiFi.mode(WIFI_STA);
-	WiFi.begin(SECRET_SSID, SECRET_PASSWORD);
-	while (WiFi.status() != WL_CONNECTED) {}
-
+void WiFiConnected(WiFiEvent_t event, WiFiEventInfo_t info) {
+	is_wifi_connected = true;
 	ArduinoOTA.setHostname(hostname);
 	ArduinoOTA.onStart([](){
 		String type;
@@ -105,14 +95,37 @@ void setup() {
 	timeClient.begin();
 }
 
+void WiFiDisconnected(WiFiEvent_t event, WiFiEventInfo_t info) {
+	WiFi.begin(SECRET_SSID, SECRET_PASSWORD);
+}
+
+void setup() {
+	while (!Serial) ; // wait for serial port to connect. Needed for native USB port only
+	//Primary Mission: start coffee machine
+	Serial.begin(115200);
+
+	EEPROM.begin(512);
+	brew_machine.start();
+	screen.start(&brew_machine);
+
+	WiFi.mode(WIFI_STA);
+	WiFi.begin(SECRET_SSID, SECRET_PASSWORD);
+	WiFi.onEvent(WiFiConnected, SYSTEM_EVENT_STA_CONNECTED);
+	WiFi.onEvent(WiFiDisconnected, SYSTEM_EVENT_STA_DISCONNECTED);
+}
+
 // the loop function runs over and over again until power down or reset
 void loop() {
-	ArduinoOTA.handle();
-	timeClient.update();
+	ulong current_time;
+	if(is_wifi_connected) {
+		ArduinoOTA.handle();
+		timeClient.update();
+		current_time = timeClient.getEpochTime();
+	}
+	else current_time = millis();
 
-	ulong currentTime = timeClient.getEpochTime();
-	if(currentTime) {
-		brew_machine.refresh(currentTime);
-		screen.refresh(currentTime);
+	if(current_time) {
+		brew_machine.refresh(current_time);
+		screen.refresh(current_time);
 	}
 }
