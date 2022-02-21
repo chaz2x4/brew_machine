@@ -308,84 +308,19 @@
                     }
                 }
             })();
-
-            function refreshTemps() {
-                refresh_temps_id = setInterval(function(){
-                    callServer.get("/get_temps", function(response){
-                        let requested_labels = [];
-                        let requested_temp_data = [];
-                        let requested_brew_output = [];
-                        let requested_steam_output = [];
-                        let requested_brew_targets = [];
-                        let requested_steam_targets = [];
-                        
-                        let sorted_outputs = response.sort((a, b) => a.time - b.time);
-                        let last_output = sorted_outputs[sorted_outputs.length - 1];
-                        if(!is_target_loaded) {
-                            [temp_scale, brew_target, steam_target, temp_offset] = [last_output.scale, last_output.targets.brew, last_output.targets.steam, last_output.targets.offset];
-                            updateElements('offset');
-                            is_target_loaded = true;
-                        }
-                        
-                        sorted_outputs.forEach((output, index) => {             
-                            requested_labels.push(moment(output.time * 1000).fromNow());
-                            requested_temp_data.push(output.temperature);
-                            requested_brew_output.push(output.outputs.brew);
-                            requested_steam_output.push(output.outputs.steam);
-                            requested_brew_targets.push(output.targets.brew);
-                            requested_steam_targets.push(output.targets.steam);
-                        })
-
-                        chart.data.labels = requested_labels;
-                        chart.data.datasets[0].data = temp_data = requested_temp_data;
-                        let current_temp = requested_temp_data[requested_temp_data.length - 1].toPrecision(4);
-                        if(current_mode == 'brew') { 
-                            chart.data.datasets[1].data = target_data.brew = requested_brew_targets;
-                            chart.data.datasets[2].data = output_data.brew = requested_brew_output;
-                            if(current_temp !== undefined) brew_temp_element.innerHTML = current_temp + " °" + temp_scale;
-                        }
-                        else { 
-                            chart.data.datasets[1].data = target_data.steam = requested_steam_targets;
-                            chart.data.datasets[2].data = output_data.steam = requested_steam_output;
-                            if(current_temp !== undefined) steam_temp_element.innerHTML = current_temp + " °" + temp_scale;
-                        }        
-
-                        updateElements(current_mode);
-                    });
-                }, 1000);
-            }
-            refreshTemps();
-
+            
             function changeScale(scale) {
                 callServer.post("/change_scale?scale=" + scale);
                 
                 temp_scale = scale;
                 
-                document.getElementById("brew_target_label").innerHTML = placeholder.outerHTML;
-                document.getElementById("steam_target_label").innerHTML = placeholder.outerHTML;
                 document.getElementById("offset_target_label").innerHTML = placeholder.outerHTML;
-                
                 scale_c_button.classList.toggle("active", scale == "C");
                 scale_f_button.classList.toggle("active", scale == "F");
                 
-                clearInterval(refresh_temps_id);
-                clearInterval(refresh_targets_id);
-                refreshTemps();
                 refreshTargets();
             }
-
-            function refreshTunings() {
-                callServer.get("/get_tunings", function(response){
-                    if(response) {                        
-                        Object.entries(response).forEach(entry => {
-                            const [name, value] = entry;
-                            let input = document.getElementById(name);
-                            input.value = value;
-                        });
-                    }
-                });
-            }
-
+            
             let steam_switch = document.getElementById("switch_steam");
             let brew_switch = document.getElementById("switch_brew");
             let advanced_switch = document.getElementById("switch_advanced");
@@ -429,11 +364,69 @@
             let placeholder = document.createElement("span");
             placeholder.classList.add("spinner-border", "spinner-border-sm");
 
-            function refreshTargets() {
-                refresh_targets_id = setInterval(function() {
-                    is_target_loaded = false;
-                }, 15000);
+            function refreshTunings() {
+                callServer.get("/get_tunings", function(response){
+                    if(response) {                        
+                        Object.entries(response).forEach(entry => {
+                            const [name, value] = entry;
+                            let input = document.getElementById(name);
+                            input.value = value;
+                        });
+                    }
+                });
             }
+
+            refresh_temps_id = setTimeout(function refreshTemps() {
+                callServer.get("/get_temps", function(response){
+                    let requested_labels = [];
+                    let requested_temp_data = [];
+                    let requested_brew_output = [];
+                    let requested_steam_output = [];
+                    let requested_brew_targets = [];
+                    let requested_steam_targets = [];
+                    
+                    let sorted_outputs = response.sort((a, b) => a.time - b.time);
+                    let last_output = sorted_outputs[sorted_outputs.length - 1];
+                    if(!is_target_loaded) {
+                        [temp_scale, brew_target, steam_target, temp_offset] = [last_output.scale, last_output.targets.brew, last_output.targets.steam, last_output.targets.offset];
+                        updateElements('offset');
+                        is_target_loaded = true;
+                    }
+                    
+                    sorted_outputs.forEach((output, index) => {             
+                        requested_labels.push(moment(output.time * 1000).fromNow());
+                        requested_temp_data.push(output.temperature);
+                        requested_brew_output.push(output.outputs.brew);
+                        requested_steam_output.push(output.outputs.steam);
+                        requested_brew_targets.push(output.targets.brew);
+                        requested_steam_targets.push(output.targets.steam);
+                    })
+
+                    chart.data.labels = requested_labels;
+                    chart.data.datasets[0].data = temp_data = requested_temp_data;
+                    let current_temp = requested_temp_data[requested_temp_data.length - 1].toPrecision(4);
+                    if(current_mode == 'brew') { 
+                        chart.data.datasets[1].data = target_data.brew = requested_brew_targets;
+                        chart.data.datasets[2].data = output_data.brew = requested_brew_output;
+                        if(current_temp !== undefined) brew_temp_element.innerHTML = current_temp + " °" + temp_scale;
+                    }
+                    else { 
+                        chart.data.datasets[1].data = target_data.steam = requested_steam_targets;
+                        chart.data.datasets[2].data = output_data.steam = requested_steam_output;
+                        if(current_temp !== undefined) steam_temp_element.innerHTML = current_temp + " °" + temp_scale;
+                    }        
+
+                    updateElements(current_mode);
+                });
+                clearTimeout(refresh_temps_id);
+                refresh_temps_id = setTimeout(refreshTemps, 1000);
+            }, 1000);
+
+            refresh_targets_id = setTimeout(function refreshTargets() {
+                is_target_loaded = false;
+                clearTimeout(refresh_targets_id);
+                refresh_targets_id = setTimeout(refreshTargets, 5000);
+            }, 5000);
         }   
     </script>
 </head>
