@@ -58,7 +58,7 @@
                 }, {
                     type: 'line',
                     label: 'Target',
-                    data: target_data,
+                    data: target_data[current_mode],
                     borderColor: '#4285F4',
                     borderWidth: 2,
                     borderDash: [5, 5],
@@ -400,18 +400,20 @@
                         requested_steam_targets.push(output.targets.steam);
                     })
 
-                    chart.data.labels = requested_labels;
-                    chart.data.datasets[0].data = temp_data = requested_temp_data;
-                    chart.data.datasets[1].data = target_data.brew = requested_brew_targets;
-                    chart.data.datasets[2].data = output_data.brew = requested_brew_output;
-                    chart.data.datasets[1].data = target_data.steam = requested_steam_targets;
-                    chart.data.datasets[2].data = output_data.steam = requested_steam_output;
+                    temp_data = requested_temp_data;
+                    target_data.brew = requested_brew_targets;
+                    output_data.brew = requested_brew_output;
+                    target_data.steam = requested_steam_targets;
+                    output_data.steam = requested_steam_output;
                     
+                    chart.data.labels = requested_labels;
+                    chart.data.datasets[0].data = temp_data;
+                    chart.data.datasets[1].data = target_data[current_mode];
+                    chart.data.datasets[2].data = output_data[current_mode];
+
                     let current_temp = requested_temp_data[requested_temp_data.length - 1].toPrecision(4);
-                    if(current_temp !== undefined) {
-                        if(current_mode == 'brew') brew_temp_element.innerHTML = current_temp + " °" + temp_scale;
-                        else if(current_mode == 'steam') steam_temp_element.innerHTML = current_temp + " °" + temp_scale;
-                    }    
+                    if(current_mode == 'brew') brew_temp_element.innerHTML = current_temp + " °" + temp_scale;
+                    else if(current_mode == 'steam') steam_temp_element.innerHTML = current_temp + " °" + temp_scale;
                     updateElements(current_mode);
                 });
                 clearTimeout(refresh_temps_id);
