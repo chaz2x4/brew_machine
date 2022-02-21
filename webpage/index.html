@@ -38,9 +38,9 @@
                     borderColor: '#4285F4',
                     borderWidth: 2,
                     backgroundColor: function (context) {
-                        if(context.dataIndex) {
-                            let pointTemp = context.dataset.data[context.dataIndex];
-                            let target_temp = target_data[current_mode][context.dataIndex];
+                        if(context.datasetIndex) {
+                            let pointTemp = context.dataset.data[context.datasetIndex];
+                            let target_temp = target_data[current_mode][context.datasetIndex];
                             let acceptableError = (current_mode == 'brew' && temp_scale == 'C') ? 0.5 : 1.0;
                             if(pointTemp > (target_temp + acceptableError)) return '#FF6384';
                             if(pointTemp < (target_temp - acceptableError)) return '#331F2E';
@@ -317,8 +317,6 @@
                 document.getElementById("offset_target_label").innerHTML = placeholder.outerHTML;
                 scale_c_button.classList.toggle("active", scale == "C");
                 scale_f_button.classList.toggle("active", scale == "F");
-                
-                refreshTargets();
             }
             
             let steam_switch = document.getElementById("switch_steam");
@@ -376,7 +374,7 @@
                 });
             }
 
-            refresh_temps_id = setTimeout(function refreshTemps() {
+           function refreshTemps() {
                 callServer.get("/get_temps", function(response){
                     let requested_labels = [];
                     let requested_temp_data = [];
@@ -420,13 +418,15 @@
                 });
                 clearTimeout(refresh_temps_id);
                 refresh_temps_id = setTimeout(refreshTemps, 1000);
-            }, 1000);
+            }
+            refresh_temps_id = setTimeout(refreshTemps, 1000);
 
-            refresh_targets_id = setTimeout(function refreshTargets() {
+            function refreshTargets() {
                 is_target_loaded = false;
                 clearTimeout(refresh_targets_id);
                 refresh_targets_id = setTimeout(refreshTargets, 5000);
-            }, 5000);
+            }
+            refresh_targets_id = setTimeout(refreshTargets, 5000);
         }   
     </script>
 </head>
