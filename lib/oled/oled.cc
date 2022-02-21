@@ -54,7 +54,7 @@ void OLED::eventListener(){
         if(button_state[0] == LOW && last_button_state[0] == HIGH) {
             downtime = now;
             time_last_button = now;
-            if(this->is_editable) this->incrementTemp();
+            if(this->is_editable) gcp->incrementTemp(this->current_mode);
             else this->changeMode();
         }
         else if(button_state[0] == HIGH && last_button_state[0] == LOW) downtime = -1 ;
@@ -64,7 +64,7 @@ void OLED::eventListener(){
         if(button_state[1] == LOW && last_button_state[1] == HIGH) {
             downtime = now;
             time_last_button = now;
-            if(this->is_editable) this->decrementTemp();
+            if(this->is_editable) gcp->decrementTemp(this->current_mode);
             else this->changeMode();
         }
         else if(button_state[1] == HIGH && last_button_state[1] == LOW) downtime = -1 ;
@@ -120,7 +120,7 @@ void OLED::refresh(ulong real_time){
         target_temp = round(target_temp * (9.0/5.0)) + 32;
         current_temp = current_temp * (9.0/5.0) + 32;
     }
-    else target_temp = round(current_temp * 2.0) / 2.0;
+    else target_temp = round(target_temp * 2.0) / 2.0;
     if(this->is_editable) {
         if(flash) display.printf("Set %s\n %#0.1f %s", modeTitle, target_temp, gcp->getScale());
         else display.printf("Set %s", modeTitle);
@@ -148,12 +148,4 @@ void OLED::changeMode(){
 
 TempMode OLED::getCurrentMode(){
     return this->current_mode;;
-}
-
-void OLED::incrementTemp(){
-    gcp->incrementTemp(this->current_mode);
-}
-
-void OLED::decrementTemp(){
-    gcp->decrementTemp(this->current_mode);
 }
