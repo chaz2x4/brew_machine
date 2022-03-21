@@ -9,16 +9,16 @@ GCP::GCP()
 , kMinSteamTemp(130.0)
 , kMaxOffset(11)
 , kMinOffset(-11)
-, kWindowSize(1500)
+, kWindowSize(1000)
 , kLogInterval(500)
 , kPowerFrequency(60)
 , temp_offset(-8)
 , target_temp(92)
 , target_steam_temp(140)
 , preinfusion_time(2000)
-, temp_kp(127.5)
-, temp_ki(15.55)
-, temp_kd(392.06)
+, temp_kp(40)
+, temp_ki(6.67)
+, temp_kd(52.27)
 , brewTempManager(PID(&current_temp, &brew_output, &target_temp, temp_kp, temp_ki, temp_kd, P_ON_M, DIRECT))
 , steamTempManager(PID(&current_temp, &steam_output, &target_steam_temp, temp_kp, temp_ki, temp_kd, P_ON_M, DIRECT))
 , outputQueue(Queue(60000 / kLogInterval, C))
@@ -44,8 +44,6 @@ void GCP::start() {
 
 	brewTempManager.SetOutputLimits(0, kWindowSize);
 	steamTempManager.SetOutputLimits(0, kWindowSize);
-	brewTempManager.SetSampleTime(kLogInterval);
-	steamTempManager.SetSampleTime(kLogInterval);
 }
 
 void GCP::setTargetTemp(TempMode current_mode, double temp) {
@@ -259,14 +257,6 @@ void GCP::loadParameters(){
 	if(tuningsValid) setTunings(tunings[0], tunings[1], tunings[2]);
 }
 
-int GCP::regulateOutput(double output) {
-	int roundedOutput = int(output);
-	int powerPeriod = int(1000/kPowerFrequency);
-	int remainder = roundedOutput % powerPeriod;
-	if(remainder == 0) return roundedOutput;
-	return roundedOutput + powerPeriod - remainder;
-}
-
 void GCP::refresh(ulong real_time) {
 	/* 
 		Brew Relay and Steam Relay will always be calculating
@@ -307,31 +297,8 @@ void GCP::refresh(ulong real_time) {
 	
 	if(now - window_start_time > kWindowSize) {
 		window_start_time += kWindowSize;
-		last_brew_output = regulateOutput(brew_output);
-		last_steam_output = regulateOutput(steam_output);
-
-		if(target_steam_temp - current_temp > 5) {
-			steamTempManager.SetMode(MANUAL);
-			last_steam_output = kWindowSize;
-		}
-		else if(target_steam_temp - current_temp < -1) { 
-			steamTempManager.SetMode(MANUAL);
-			last_steam_output = 0;
-		}
-		else {
-			steamTempManager.SetMode(AUTOMATIC);
-		}
-		
-		if(target_temp - current_temp > 5)  {
-			brewTempManager.SetMode(MANUAL);
-			last_brew_output = kWindowSize;
-		}
-		else if(target_temp - current_temp < -1) {
-			brewTempManager.SetMode(MANUAL);
-			last_brew_output = 0;
-		} else {
-			brewTempManager.SetMode(AUTOMATIC);
-		}
+		last_brew_output = brew_output;
+		last_steam_output = steam_output;
 	}
 
 	if(last_brew_output > now - window_start_time) digitalWrite(HEATER_PIN, HIGH);

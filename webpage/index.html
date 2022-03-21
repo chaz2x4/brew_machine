@@ -23,7 +23,7 @@
             let steam_target;
             let temp_offset;
             let temp_scale = "C";
-            let cycle_time = 1500;
+            let cycle_time = 1000;
             let current_mode = 'brew';
             let temp_data = [];
             let target_data = {};
@@ -420,9 +420,9 @@
 
                     updateElements();
                 });
-                refresh_temps_id = setTimeout(refreshTemps, cycle_time);
+                refresh_temps_id = setTimeout(refreshTemps, 1000);
             }
-            refresh_temps_id = setTimeout(refreshTemps, cycle_time);
+            refresh_temps_id = setTimeout(refreshTemps, 1000);
 
             function refreshTargets() {
                 clearTimeout(refresh_targets_id);

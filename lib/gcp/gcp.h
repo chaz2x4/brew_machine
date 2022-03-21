@@ -93,7 +93,6 @@ private:
     PID brewTempManager;
     PID steamTempManager;
 
-    int regulateOutput(double);
     void loadParameters();
     TempMode modeToEnum(String);
     void setTargetTemp(TempMode, double);
