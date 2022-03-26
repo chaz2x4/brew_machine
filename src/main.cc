@@ -12,12 +12,9 @@ void WiFiConnected(WiFiEvent_t event, WiFiEventInfo_t info) {
 	is_wifi_connected = true;
 	ArduinoOTA.setHostname(hostname);
 	ArduinoOTA.onStart([](){
-		String type;
-		if (ArduinoOTA.getCommand() == U_FLASH) type = "sketch";
-		else type = "filesystem";
 		digitalWrite(HEATER_PIN, LOW);
 		digitalWrite(STEAM_PIN, LOW);
-		Serial.println("Updating " + type);
+		Serial.println("Updating...");
 	}).onEnd([](){
 		Serial.println("\nComplete");
 	}).onProgress([](uint progress, uint total){
