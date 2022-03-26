@@ -46,7 +46,7 @@ public:
     double getTargetTemp(TempMode);
     double getActualTemp();
     double getCurrentTemp();
-    String getScale();
+    const char* getScale();
     String getOutput();
     String getTunings();
     void setTunings(double, double, double);
@@ -100,14 +100,14 @@ private:
     struct Queue {
         int front, rear, capacity, count;
 
-        TempScale current_scale;
+        TempScale scale;
         ulong *times;
         double *temps;
         double *outputs[2];
         double *targets[3];
 
         Queue(int c, TempScale s) {
-            current_scale = s;
+            scale = s;
             front = rear = 0;
             capacity = c;
             times = new ulong[capacity];
@@ -141,7 +141,7 @@ private:
 
         double sanitize(double t, bool getUnrounded, bool getOffset) {
             double result;
-            if(current_scale == F) {
+            if(scale == F) {
                 result = t * 9 / 5;
                 if(!getOffset) result += 32;
             }
@@ -149,7 +149,7 @@ private:
     
             if(getUnrounded) return result;
             else {
-                if(current_scale == C) {
+                if(scale == C) {
                     return round(result * 2.0) / 2.0;
                 }
                 else return round(result);
@@ -206,7 +206,7 @@ private:
             results += ", \"temperature\": ";
             results += sanitize(temps[i], 1);
             results += ", \"scale\": \"";
-            results += getScale() + "\"";
+            results += scale == F ? "F\"" : "C\"";
             results += ", \"outputs\": { \"brew\": ";
             results += outputs[BREW][i];
             results += ", \"steam\": ";
@@ -219,14 +219,6 @@ private:
             results += sanitize(targets[OFFSET][i], false, true);
             results += " }}";
             return results;
-        }
-
-        void setScale(TempScale s) {
-            current_scale = s;
-        }
-
-        String getScale() {
-            return current_scale == F ? "F" : "C";
         }
     };
     Queue outputQueue;

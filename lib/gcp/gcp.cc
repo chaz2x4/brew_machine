@@ -93,7 +93,7 @@ void GCP::incrementTemp(TempMode current_mode) {
 	double temp;
 	double i = 0.5;
 
-	if(outputQueue.current_scale == F) i = (5.0/9.0);
+	if(outputQueue.scale == F) i = (5.0/9.0);
 	else if (current_mode == STEAM) i = 1;
 
 	switch(current_mode) {
@@ -116,7 +116,7 @@ void GCP::decrementTemp(TempMode current_mode) {
 	double temp;
 	double i = 0.5;
 
-	if(outputQueue.current_scale == F) i = (5.0/9.0);
+	if(outputQueue.scale == F) i = (5.0/9.0);
 	else if (current_mode == STEAM) i = 1;
 
 	switch(current_mode) {
@@ -180,8 +180,8 @@ String GCP::getOutput(){
 	return outputString;
 }
 
-String GCP::getScale(){
-	return outputQueue.getScale();
+const char* GCP::getScale(){
+	return outputQueue.scale == F ? "F" : "C";
 }
 
 String GCP::getTunings(){
@@ -214,15 +214,9 @@ void GCP::setTunings(double kp, double ki, double kd){
 }
 
 void GCP::changeScale(String scale) {
-	if(outputQueue.getScale() == scale) return;
-	if(scale == "F") {
-		outputQueue.setScale(F);
-		EEPROM.put(SCALE_ADDRESS, F);
-	}
-	else if(scale == "C") { 
-		outputQueue.setScale(C); 
-		EEPROM.put(SCALE_ADDRESS, C);
-	};
+	TempScale new_scale = scale == "F" ? F : C;
+	outputQueue.scale = new_scale;
+	EEPROM.put(SCALE_ADDRESS, new_scale);
 	EEPROM.commit();
 }
 
@@ -243,7 +237,7 @@ void GCP::loadParameters(){
 	if(!isnan(brew_temp) && brew_temp >= kMinBrewTemp && brew_temp <= kMaxBrewTemp) target_temp = brew_temp;
 	if(!isnan(steam_temp) && steam_temp >= kMinSteamTemp && steam_temp <= kMaxSteamTemp) target_steam_temp = steam_temp;
 	if(!isnan(offset) && offset >= kMinOffset && offset <= kMaxOffset) temp_offset = offset;
-	if(scale) outputQueue.setScale(scale);
+	if(scale) outputQueue.scale = scale;
 
 	double tunings[3];
 	bool tuningsValid = true;
