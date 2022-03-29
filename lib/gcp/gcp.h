@@ -105,6 +105,7 @@ private:
     struct Queue {
         int front, rear, capacity, count;
 
+        StaticJsonDocument<30720> output;
         TempScale scale;
         ulong *times;
         float *temps;
