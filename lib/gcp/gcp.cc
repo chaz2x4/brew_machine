@@ -169,15 +169,7 @@ double GCP::getCurrentTemp() {
 }
 
 String GCP::getOutput(){
-	String output = "[";
-
-	for(unsigned i = 0; i < outputQueue.size(); i++){
-		if(i > 0 ) output += ",";
-		output += outputQueue.at(i);
-	}
-
-	output += "]";
-	return output;
+	return outputQueue.toJson();
 }
 
 const char* GCP::getScale(){

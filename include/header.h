@@ -7,6 +7,7 @@
 #include <ESPAsyncWebServer.h>
 #include <AsyncJson.h>
 #include <ArduinoJson.h>
+#include <StreamUtils.h>
 #include <ESPmDNS.h>
 #include <Update.h>
 #include <WiFiUdp.h>

@@ -6,6 +6,8 @@
 #include <Adafruit_MAX31865.h>
 #include <EEPROM.h>
 #include <PID_v1.h>
+#include <AsyncJson.h>
+#include <ArduinoJson.h>
 
 /* PINS */
 #define HEATER_PIN 13
@@ -100,6 +102,7 @@ private:
     struct Queue {
         int front, rear, capacity, count;
 
+        StaticJsonDocument<30720> output;
         TempScale scale;
         ulong *times;
         double *temps;
@@ -199,26 +202,26 @@ private:
             return count;
         }
 
-        String at(int i) {
-            String results;
-            results += "{ \"time\": ";
-            results += times[i];
-            results += ", \"temperature\": ";
-            results += sanitize(temps[i], 1);
-            results += ", \"scale\": \"";
-            results += scale == F ? "F\"" : "C\"";
-            results += ", \"outputs\": { \"brew\": ";
-            results += outputs[BREW][i];
-            results += ", \"steam\": ";
-            results += outputs[STEAM][i];
-            results += "}, \"targets\": { \"brew\": ";
-            results += sanitize(targets[BREW][i]);
-            results += ", \"steam\": ";
-            results += sanitize(targets[STEAM][i]);
-            results += ", \"offset\": ";
-            results += sanitize(targets[OFFSET][i], false, true);
-            results += " }}";
-            return results;
+        String toJson() {
+            for(int i = 0; i<count; i++) {
+                JsonObject results = output.createNestedObject();
+                results["time"] = times[i];
+                results["temperature"] = sanitize(temps[i], 1);
+                results["scale"] = scale == F ? "F" : "C";
+
+                JsonObject json_outputs = results.createNestedObject("outputs");
+                json_outputs["brew"] = outputs[BREW][i];
+                json_outputs["steam"] = outputs[STEAM][i];
+
+                JsonObject json_targets = results.createNestedObject("targets");
+                json_targets["brew"] = sanitize(targets[BREW][i]);
+                json_targets["steam"] = sanitize(targets[STEAM][i]);
+                json_targets["offset"] = sanitize(targets[OFFSET][i], false, true);
+            }
+            String outputString;
+            serializeJson(output, outputString);
+            output.clear();
+            return outputString;
         }
     };
     Queue outputQueue;
