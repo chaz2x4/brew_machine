@@ -177,15 +177,13 @@ const char* GCP::getScale(){
 }
 
 String GCP::getTunings(){
-	String output;
-    output += "{ \"kp\": ";
-    output += temp_kp;
-    output += ", \"ki\": ";
-    output += temp_ki;
-    output +=  ", \"kd\": ";
-    output += temp_kd;
-    output += " }";
-    return output;
+	StaticJsonDocument<64> output;
+	output["kp"] = temp_kp;
+	output["ki"] = temp_ki;
+	output["kd"] = temp_kd;
+	String outputString;
+	serializeJson(output, outputString);
+	return outputString;
 }
 
 void GCP::setTunings(double kp, double ki, double kd){
