@@ -102,7 +102,6 @@ private:
     struct Queue {
         int front, rear, capacity, count;
 
-        StaticJsonDocument<61440> output;
         TempScale scale;
         ulong *times;
         double *temps;
@@ -203,6 +202,7 @@ private:
         }
 
         String toJson() {
+            DynamicJsonDocument output(61440);
             for(int i = 0; i<count; i++) {
                 JsonObject results = output.createNestedObject();
                 results["time"] = times[i];
@@ -220,7 +220,6 @@ private:
             }
             String outputString;
             serializeJson(output, outputString);
-            output.clear();
             return outputString;
         }
     };
