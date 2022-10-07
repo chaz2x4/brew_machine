@@ -20,10 +20,11 @@ GCP::GCP()
 , target_steam_temp(140)
 , brew_output(0)
 , steam_output(0)
+, tuner_output(0)
 , kp(40)
 , ki(6.67)
 , kd(52.27)
-, tuner(&current_temp, &brew_output, tuner.CohenCoon_PID, tuner.directIP, tuner.printALL)
+, tuner(&current_temp, &tuner_output, tuner.CohenCoon_PID, tuner.directIP, tuner.printALL)
 , brewTempManager(QuickPID(&current_temp, &brew_output, &target_brew_temp))
 , steamTempManager(QuickPID(&current_temp, &steam_output, &target_steam_temp))
 , outputQueue(Queue(60000 / kLogInterval, C))
@@ -186,12 +187,12 @@ String GCP::getTunings(){
 	return outputString;
 }
 
-void GCP::PWM(QuickPID* tempManager, int pin, float output, float target_temp ) {
-	float optimumOutput = tuner.softPwm(pin, current_temp, output, target_temp, kWindowSize, debounce);
+void GCP::PWM(TempMode mode, QuickPID* tempManager, int pin, float output, float target_temp) {
+	float optimumOutput = tuner.softPwm(pin, current_temp, tuner_output, target_temp, kWindowSize, debounce);
 	switch(tuner.Run()) {
 		case tuner.sample: //Runs once per sample during test phase
 			this->getCurrentTemp();
-			tuner.plotter(current_temp, output, target_temp, 0.5f, 3);
+			tuner.plotter(current_temp, tuner_output, target_temp, 0.5f, 3);
 			break;
 
 		case tuner.tunings: //Set tunings once test is complete
@@ -199,6 +200,7 @@ void GCP::PWM(QuickPID* tempManager, int pin, float output, float target_temp ) 
 			tempManager->SetOutputLimits(0, kWindowSize * 0.1);
 			tempManager->SetSampleTimeUs((kWindowSize - 1) * 1000);
 			debounce = false;
+			tuner_output = kOutputStep;
 			setTunings(kp, ki, kd);
 			break;
 
@@ -206,6 +208,7 @@ void GCP::PWM(QuickPID* tempManager, int pin, float output, float target_temp ) 
 			this->getCurrentTemp();
 			brewTempManager.Compute();
 			steamTempManager.Compute();
+			tuner_output = mode == BREW ? brew_output : steam_output;
 			tuner.plotter(current_temp, optimumOutput, target_brew_temp, 0.5f, 3);
 			break;
 	}
@@ -287,8 +290,8 @@ void GCP::refresh(ulong real_time) {
 		If temperature rises above maximum safe temperature turn off relay
 	*/
 
-	this->PWM(&brewTempManager, HEATER_PIN, brew_output, target_brew_temp);
-	this->PWM(&steamTempManager, STEAM_PIN, steam_output, target_steam_temp);
+	this->PWM(BREW, &brewTempManager, HEATER_PIN, brew_output, target_brew_temp);
+	this->PWM(STEAM, &steamTempManager, STEAM_PIN, steam_output, target_steam_temp);
 
 	//Log information for website display
 	ulong now = millis();

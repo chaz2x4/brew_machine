@@ -74,6 +74,7 @@ private:
 
     float brew_output;
     float steam_output;
+    float tuner_output;
 
     ulong window_start_time;
     ulong log_start_time;
@@ -92,10 +93,10 @@ private:
     QuickPID brewTempManager;
     QuickPID steamTempManager;
 
-    void PWM(QuickPID*, int, float, float);
     void loadParameters();
     TempMode modeToEnum(String);
     void setTargetTemp(TempMode, float);
+    void PWM(TempMode, QuickPID*, int, float, float);
 
     struct Queue {
         int front, rear, capacity, count;
