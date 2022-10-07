@@ -51,9 +51,9 @@ void test_function_gcp_increment_brew_temp(){
 }
 
 void test_function_gcp_increment_steam_temp(){
-    brew_machine.setTargetTemp(STEAM, 150);
+    brew_machine.setTargetTemp(STEAM, 149);
     brew_machine.incrementTemp(STEAM);
-    TEST_ASSERT_EQUAL(151, brew_machine.getTargetTemp(STEAM));
+    TEST_ASSERT_EQUAL(150, brew_machine.getTargetTemp(STEAM));
 }
 
 void test_function_gcp_increment_offset(){
@@ -82,13 +82,13 @@ void test_function_gcp_decrement_offset(){
 
 void test_function_gcp_brew_max_1(){
     brew_machine.setTargetTemp(BREW, 162);
-    TEST_ASSERT_EQUAL(115, brew_machine.getTargetTemp(BREW));
+    TEST_ASSERT_EQUAL(105, brew_machine.getTargetTemp(BREW));
 }
 
 void test_function_gcp_brew_max_2(){
-    brew_machine.setTargetTemp(BREW, 162);
+    brew_machine.setTargetTemp(BREW, 105);
     brew_machine.incrementTemp(BREW);
-    TEST_ASSERT_EQUAL(115, brew_machine.getTargetTemp(BREW));
+    TEST_ASSERT_EQUAL(105, brew_machine.getTargetTemp(BREW));
 }
 
 void test_function_gcp_brew_min_1(){
@@ -104,34 +104,34 @@ void test_function_gcp_brew_min_2(){
 
 void test_function_gcp_steam_max_1(){
     brew_machine.setTargetTemp(STEAM, 162);
-    TEST_ASSERT_EQUAL(160, brew_machine.getTargetTemp(STEAM));
+    TEST_ASSERT_EQUAL(150, brew_machine.getTargetTemp(STEAM));
 }
 
 void test_function_gcp_steam_max_2(){
-    brew_machine.setTargetTemp(STEAM, 162);
+    brew_machine.setTargetTemp(STEAM, 150);
     brew_machine.incrementTemp(STEAM);
-    TEST_ASSERT_EQUAL(160, brew_machine.getTargetTemp(STEAM));
+    TEST_ASSERT_EQUAL(150, brew_machine.getTargetTemp(STEAM));
 }
 
 void test_function_gcp_steam_min_1(){
     brew_machine.setTargetTemp(STEAM, 0);
-    TEST_ASSERT_EQUAL(140, brew_machine.getTargetTemp(STEAM));
+    TEST_ASSERT_EQUAL(130, brew_machine.getTargetTemp(STEAM));
 }
 
 void test_function_gcp_steam_min_2(){
-    brew_machine.setTargetTemp(STEAM, 0);
+    brew_machine.setTargetTemp(STEAM, 130);
     brew_machine.decrementTemp(STEAM);
-    TEST_ASSERT_EQUAL(140, brew_machine.getTargetTemp(STEAM));
+    TEST_ASSERT_EQUAL(130, brew_machine.getTargetTemp(STEAM));
 }
 
 void test_function_gcp_offset_max_1(){
     brew_machine.setTargetTemp(OFFSET, 20);
-    TEST_ASSERT_EQUAL(15, brew_machine.getTargetTemp(OFFSET));
+    TEST_ASSERT_EQUAL(11, brew_machine.getTargetTemp(OFFSET));
 }
 
 void test_function_gcp_offset_min_1(){
     brew_machine.setTargetTemp(OFFSET, -20);
-    TEST_ASSERT_EQUAL(-15, brew_machine.getTargetTemp(OFFSET));
+    TEST_ASSERT_EQUAL(-11, brew_machine.getTargetTemp(OFFSET));
 }
 
 void test_function_gcp_offset_max_2(){
@@ -294,7 +294,6 @@ void setup(){
 void loop(){
     if(current_loop < max_loops) {
         RUN_TEST(test_function_gcp_output);
-        // RUN_TEST(test_function_gcp_get_pressure);
         delay(1000);
         current_loop++;
     }
