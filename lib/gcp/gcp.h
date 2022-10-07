@@ -78,6 +78,7 @@ private:
 
     float brew_output;
     float steam_output;
+    float tuner_output;
 
     float brew_kp;
     float brew_ki;
