@@ -16,11 +16,11 @@ GCP::GCP()
 , target_temp(92)
 , target_steam_temp(140)
 , preinfusion_time(2000)
-, temp_kp(40)
-, temp_ki(6.67)
-, temp_kd(52.27)
-, brewTempManager(PID(&current_temp, &brew_output, &target_temp, temp_kp, temp_ki, temp_kd, P_ON_M, DIRECT))
-, steamTempManager(PID(&current_temp, &steam_output, &target_steam_temp, temp_kp, temp_ki, temp_kd, P_ON_M, DIRECT))
+, kp(40)
+, ki(6.67)
+, kd(52.27)
+, brewTempManager(QuickPID(&current_temp, &brew_output, &target_temp))
+, steamTempManager(QuickPID(&current_temp, &steam_output, &target_steam_temp))
 , outputQueue(Queue(60000 / kLogInterval, C))
 {}
 
@@ -37,18 +37,20 @@ void GCP::start() {
 
 	pinMode(HEATER_PIN, OUTPUT);
 	pinMode(STEAM_PIN, OUTPUT);
-	pinMode(TRANSDUCER_PIN, INPUT);
 
-	brewTempManager.SetMode(AUTOMATIC);
-	steamTempManager.SetMode(AUTOMATIC);
+	brewTempManager.SetTunings(kp, ki, kd);
+	steamTempManager.SetTunings(kp, ki, kd);
 
 	brewTempManager.SetOutputLimits(0, kWindowSize);
 	steamTempManager.SetOutputLimits(0, kWindowSize);
+
+	brewTempManager.SetMode(brewTempManager.Control::automatic);
+	steamTempManager.SetMode(steamTempManager.Control::automatic);
 }
 
-void GCP::setTargetTemp(TempMode current_mode, double temp) {
-	double minTemp;
-	double maxTemp;
+void GCP::setTargetTemp(TempMode current_mode, float temp) {
+	float minTemp;
+	float maxTemp;
 	int tempAddress;
 	switch(current_mode) {
 		case OFFSET:
@@ -90,8 +92,8 @@ void GCP::incrementTemp(String current_mode) {
 }
 
 void GCP::incrementTemp(TempMode current_mode) {
-	double temp;
-	double i = 0.5;
+	float temp;
+	float i = 0.5;
 
 	if(outputQueue.scale == F) i = (5.0/9.0);
 	else if (current_mode == STEAM) i = 1;
@@ -113,8 +115,8 @@ void GCP::decrementTemp(String current_mode) {
 }
 
 void GCP::decrementTemp(TempMode current_mode) {
-	double temp;
-	double i = 0.5;
+	float temp;
+	float i = 0.5;
 
 	if(outputQueue.scale == F) i = (5.0/9.0);
 	else if (current_mode == STEAM) i = 1;
@@ -131,11 +133,7 @@ void GCP::decrementTemp(TempMode current_mode) {
 	this->setTargetTemp(current_mode, temp);
 }
 
-double GCP::getTargetPressure() {
-	return this->target_pressure;
-}
-
-double GCP::getTargetTemp(TempMode current_mode) {
+float GCP::getTargetTemp(TempMode current_mode) {
 	switch(current_mode) {
 		case OFFSET: 
 			return this->temp_offset;
@@ -145,8 +143,8 @@ double GCP::getTargetTemp(TempMode current_mode) {
 	}
 }
 
-double GCP::getActualTemp() {
-	double temp =  tempProbe.temperature(100, RREF);
+float GCP::getActualTemp() {
+	float temp =  tempProbe.temperature(100, RREF);
  	uint8_t probe_fault = tempProbe.readFault();
 	if (probe_fault) {
 		Serial.print("Fault 0x"); Serial.println(probe_fault, HEX);
@@ -161,8 +159,8 @@ double GCP::getActualTemp() {
 	return temp;
 }
 
-double GCP::getCurrentTemp() {
-	double temp = this->getActualTemp();
+float GCP::getCurrentTemp() {
+	float temp = this->getActualTemp();
 	temp += temp_offset;
 	this->current_temp = temp;
 	return temp;
@@ -178,24 +176,24 @@ const char* GCP::getScale(){
 
 String GCP::getTunings(){
 	StaticJsonDocument<64> output;
-	output["kp"] = temp_kp;
-	output["ki"] = temp_ki;
-	output["kd"] = temp_kd;
+	output["kp"] = kp;
+	output["ki"] = ki;
+	output["kd"] = kd;
 	String outputString;
 	serializeJson(output, outputString);
 	return outputString;
 }
 
-void GCP::setTunings(double kp, double ki, double kd){
-	this->temp_kp = kp;
-	this->temp_ki = ki;
-	this->temp_kd = kd;
+void GCP::setTunings(float kp, float ki, float kd){
+	this->kp = kp;
+	this->ki = ki;
+	this->kd = kd;
 
-	brewTempManager.SetTunings(kp, ki, kd, P_ON_M);
-	brewTempManager.SetMode(AUTOMATIC);
+	brewTempManager.SetTunings(kp, ki, kd);
+	steamTempManager.SetTunings(kp, ki, kd);
 
-	steamTempManager.SetTunings(kp, ki, kd, P_ON_M);
-	steamTempManager.SetMode(AUTOMATIC);
+	brewTempManager.SetMode(brewTempManager.Control::automatic);
+	steamTempManager.SetMode(steamTempManager.Control::automatic);
 	
 	EEPROM.put(TUNING_ADDRESS, kp);
 	EEPROM.put(TUNING_ADDRESS + 8, ki);
@@ -217,7 +215,7 @@ TempMode GCP::modeToEnum(String mode) {
 }
 
 void GCP::loadParameters(){
-	double brew_temp, steam_temp, offset;
+	float brew_temp, steam_temp, offset;
 	TempScale scale;
 	EEPROM.get(BREW_TEMP_ADDRESS, brew_temp);
 	EEPROM.get(STEAM_TEMP_ADDRESS, steam_temp);
@@ -229,7 +227,7 @@ void GCP::loadParameters(){
 	if(!isnan(offset) && offset >= kMinOffset && offset <= kMaxOffset) temp_offset = offset;
 	if(scale) outputQueue.scale = scale;
 
-	double tunings[3];
+	float tunings[3];
 	bool tuningsValid = true;
 	for(int i=0; i<3; i++) {
 		EEPROM.get(TUNING_ADDRESS + i*8, tunings[i]);
@@ -257,7 +255,7 @@ void GCP::refresh(ulong real_time) {
 	*/
 
 	// Emergency and error handling function
-	double actual_temp = this->getActualTemp();
+	float actual_temp = this->getActualTemp();
 	if(actual_temp >= kEmergencyShutoffTemp || actual_temp < 0) {
 		digitalWrite(HEATER_PIN, LOW);
 		digitalWrite(STEAM_PIN, LOW);

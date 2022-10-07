@@ -5,7 +5,7 @@
 
 #include <Adafruit_MAX31865.h>
 #include <EEPROM.h>
-#include <PID_v1.h>
+#include <QuickPID.h>
 #include <ArduinoJson.h>
 
 /* PINS */
@@ -39,41 +39,37 @@ public:
     void decrementTemp(String);
     void incrementTemp(TempMode);
     void decrementTemp(TempMode);
-    double getTargetPressure();
-    double getTargetTemp(TempMode);
-    double getActualTemp();
-    double getCurrentTemp();
+    float getTargetTemp(TempMode);
+    float getActualTemp();
+    float getCurrentTemp();
     const char* getScale();
     String getOutput();
     String getTunings();
-    void setTunings(double, double, double);
+    void setTunings(float, float, float);
     void changeScale(String);
     void refresh(ulong);
 private:
     Adafruit_MAX31865 tempProbe;
-    const double kEmergencyShutoffTemp;
-    const double kMaxBrewTemp;
-    const double kMinBrewTemp;
-    const double kMaxSteamTemp;
-    const double kMinSteamTemp;
-    const double kMaxOffset;
-    const double kMinOffset;
+    const float kEmergencyShutoffTemp;
+    const float kMaxBrewTemp;
+    const float kMinBrewTemp;
+    const float kMaxSteamTemp;
+    const float kMinSteamTemp;
+    const float kMaxOffset;
+    const float kMinOffset;
     const ulong kWindowSize;
     const ulong kLogInterval;
     const int kPowerFrequency;
     typedef enum {C, F} TempScale;
 
-    double current_temp;
-    double temp_offset;
-    double target_temp;
-    double target_steam_temp;
+    float current_temp;
+    float temp_offset;
+    float target_temp;
+    float target_steam_temp;
 
-    double current_pressure;
-    double target_pressure;
-
-    double brew_output;
-    double steam_output;
-    double pump_output;
+    float brew_output;
+    float steam_output;
+    float pump_output;
 
     ulong window_start_time;
     ulong log_start_time;
@@ -81,37 +77,37 @@ private:
     ulong brew_stop_time;
     ulong preinfusion_time;
 
-    double temp_kp;
-    double temp_ki;
-    double temp_kd;
+    float kp;
+    float ki;
+    float kd;
 
-    PID brewTempManager;
-    PID steamTempManager;
+    QuickPID brewTempManager;
+    QuickPID steamTempManager;
 
     void loadParameters();
     TempMode modeToEnum(String);
-    void setTargetTemp(TempMode, double);
+    void setTargetTemp(TempMode, float);
 
     struct Queue {
         int front, rear, capacity, count;
 
         TempScale scale;
         ulong *times;
-        double *temps;
-        double *outputs[2];
-        double *targets[3];
+        float *temps;
+        float *outputs[2];
+        float *targets[3];
 
         Queue(int c, TempScale s) {
             scale = s;
             front = rear = 0;
             capacity = c;
             times = new ulong[capacity];
-            temps = new double[capacity];
+            temps = new float[capacity];
             for(int i=0;i<2;i++){
-                outputs[i] = new double[capacity];
+                outputs[i] = new float[capacity];
             }
             for(int i=0;i<3;i++) {
-                targets[i] = new double[capacity];
+                targets[i] = new float[capacity];
             }
         }
 
@@ -126,16 +122,16 @@ private:
             }
         }
 
-        double sanitize(double t) {
+        float sanitize(float t) {
             return sanitize(t, false, false);
         }
 
-        double sanitize(double t, bool getUnrounded) {
+        float sanitize(float t, bool getUnrounded) {
             return sanitize(t, getUnrounded, false);
         }
 
-        double sanitize(double t, bool getUnrounded, bool getOffset) {
-            double result;
+        float sanitize(float t, bool getUnrounded, bool getOffset) {
+            float result;
             if(scale == F) {
                 result = t * 9 / 5;
                 if(!getOffset) result += 32;
@@ -153,12 +149,12 @@ private:
 
         void push(
             ulong time, 
-            double temp, 
-            double brew_output, 
-            double steam_output, 
-            double brew_target, 
-            double steam_target, 
-            double offset_target
+            float temp, 
+            float brew_output, 
+            float steam_output, 
+            float brew_target, 
+            float steam_target, 
+            float offset_target
         ){
             if(count == capacity) pop();
             if(rear == capacity - 1) rear = -1;

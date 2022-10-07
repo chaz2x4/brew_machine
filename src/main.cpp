@@ -51,9 +51,9 @@ void WiFiConnected(WiFiEvent_t event, WiFiEventInfo_t info) {
 			request->send(400);
 		}
 		else {
-			double kp = tunings["kp"].as<double>();
-			double ki = tunings["ki"].as<double>();
-			double kd = tunings["kd"].as<double>();
+			float kp = tunings["kp"].as<float>();
+			float ki = tunings["ki"].as<float>();
+			float kd = tunings["kd"].as<float>();
 			brew_machine.setTunings(kp, ki, kd);
 			request->send(200);
 		}

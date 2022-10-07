@@ -109,8 +109,8 @@ void OLED::refresh(ulong real_time){
 
     ulong wait;
     ulong now = millis();
-    double target_temp = gcp->getTargetTemp(BREW);
-    double current_temp = gcp->getCurrentTemp();
+    float target_temp = gcp->getTargetTemp(BREW);
+    float current_temp = gcp->getCurrentTemp();
     if(this->current_mode == STEAM) {
         target_temp = gcp->getTargetTemp(STEAM);
     }
