@@ -220,15 +220,13 @@ void GCP::setTunings(float kp, float ki, float kd){
 	this->kd = kd;
 
 	brewTempManager.SetMode(brewTempManager.Control::automatic);
-	steamTempManager.SetMode(steamTempManager.Control::automatic);
-
 	brewTempManager.SetProportionalMode(brewTempManager.pMode::pOnMeas);
-	steamTempManager.SetProportionalMode(steamTempManager.pMode::pOnMeas);
-
 	brewTempManager.SetAntiWindupMode(brewTempManager.iAwMode::iAwClamp);
-	steamTempManager.SetAntiWindupMode(steamTempManager.iAwMode::iAwClamp);
-
 	brewTempManager.SetTunings(kp, ki, kd);
+
+	steamTempManager.SetMode(steamTempManager.Control::automatic);
+	steamTempManager.SetProportionalMode(steamTempManager.pMode::pOnMeas);
+	steamTempManager.SetAntiWindupMode(steamTempManager.iAwMode::iAwClamp);
 	steamTempManager.SetTunings(kp, ki, kd);
 
 	EEPROM.put(TUNING_ADDRESS, kp);
