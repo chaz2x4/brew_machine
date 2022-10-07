@@ -77,22 +77,17 @@ private:
     float steam_output;
     float tuner_output;
 
-    ulong window_start_time;
-    ulong log_start_time;
-    ulong brew_start_time;
-    ulong brew_stop_time;
-    ulong preinfusion_time;
-
-    bool debounce = true;
-
     float kp;
     float ki;
     float kd;
 
+    bool debounce = true;
     sTune tuner;
 
     QuickPID brewTempManager;
     QuickPID steamTempManager;
+
+    ulong log_start_time;
 
     void loadParameters();
     TempMode modeToEnum(String);
