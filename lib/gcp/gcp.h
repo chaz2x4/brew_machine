@@ -37,6 +37,7 @@ public:
     GCP();
     ~GCP();
     void start();
+    void setTargetTemp(TempMode, float);
     void incrementTemp(String);
     void decrementTemp(String);
     void incrementTemp(TempMode);
@@ -95,7 +96,6 @@ private:
 
     void loadParameters();
     TempMode modeToEnum(String);
-    void setTargetTemp(TempMode, float);
     void PWM(TempMode, QuickPID*, int, float, float);
 
     struct Queue {
