@@ -1,2 +1,2 @@
-#define SECRET_SSID ""
-#define SECRET_PASSWORD ""
+#define SECRET_SSID "MiddleEarth"
+#define SECRET_PASSWORD "speak mellon and enter"
