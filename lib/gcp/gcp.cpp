@@ -83,21 +83,14 @@ void GCP::setTargetTemp(TempMode current_mode, float temp) {
 	switch(current_mode) {
 		case OFFSET:
 			this->temp_offset = temp;
-<<<<<<< HEAD
 			brewTuner.SetEmergencyStop(kEmergencyShutoffTemp - temp_offset);
 			steamTuner.SetEmergencyStop(kEmergencyShutoffTemp - temp_offset);
-=======
->>>>>>> b43acf8 (Rename .cc files to .cpp)
 			break;
 		case STEAM:
 			this->target_steam_temp = temp;
 			break;
 		default:
-<<<<<<< HEAD
 			this->target_brew_temp = temp;
-=======
-			this->target_temp = temp;
->>>>>>> b43acf8 (Rename .cc files to .cpp)
 	}
 
 	EEPROM.put(tempAddress, temp);
@@ -109,13 +102,8 @@ void GCP::incrementTemp(String current_mode) {
 }
 
 void GCP::incrementTemp(TempMode current_mode) {
-<<<<<<< HEAD
 	float temp;
 	float i = 0.5;
-=======
-	double temp;
-	double i = 0.5;
->>>>>>> b43acf8 (Rename .cc files to .cpp)
 
 	if(outputQueue.scale == F) i = (5.0/9.0);
 	else if (current_mode == STEAM) i = 1;
@@ -125,11 +113,7 @@ void GCP::incrementTemp(TempMode current_mode) {
 			break;
 		case STEAM: temp = target_steam_temp;
 			break;
-<<<<<<< HEAD
 		default: temp = target_brew_temp;
-=======
-		default: temp = target_temp;
->>>>>>> b43acf8 (Rename .cc files to .cpp)
 	}
 
 	temp += i;
@@ -141,13 +125,8 @@ void GCP::decrementTemp(String current_mode) {
 }
 
 void GCP::decrementTemp(TempMode current_mode) {
-<<<<<<< HEAD
 	float temp;
 	float i = 0.5;
-=======
-	double temp;
-	double i = 0.5;
->>>>>>> b43acf8 (Rename .cc files to .cpp)
 
 	if(outputQueue.scale == F) i = (5.0/9.0);
 	else if (current_mode == STEAM) i = 1;
@@ -157,46 +136,25 @@ void GCP::decrementTemp(TempMode current_mode) {
 			break;
 		case STEAM: temp = target_steam_temp;
 			break;
-<<<<<<< HEAD
 		default: temp = target_brew_temp;
-=======
-		default: temp = target_temp;
->>>>>>> b43acf8 (Rename .cc files to .cpp)
 	}
 
 	temp -= i;
 	this->setTargetTemp(current_mode, temp);
 }
 
-<<<<<<< HEAD
 float GCP::getTargetTemp(TempMode current_mode) {
-=======
-double GCP::getTargetPressure() {
-	return this->target_pressure;
-}
-
-double GCP::getTargetTemp(TempMode current_mode) {
->>>>>>> b43acf8 (Rename .cc files to .cpp)
 	switch(current_mode) {
 		case OFFSET: 
 			return this->temp_offset;
 		case STEAM:
 			return this->target_steam_temp;
-<<<<<<< HEAD
 			default: return this->target_brew_temp;
 	}
 }
 
 float GCP::getActualTemp() {
 	float temp = tempProbe.temperature(100, RREF);
-=======
-			default: return this->target_temp;
-	}
-}
-
-double GCP::getActualTemp() {
-	double temp =  tempProbe.temperature(100, RREF);
->>>>>>> b43acf8 (Rename .cc files to .cpp)
  	uint8_t probe_fault = tempProbe.readFault();
 	if (probe_fault) {
 		Serial.print("Fault 0x"); Serial.println(probe_fault, HEX);
@@ -211,36 +169,24 @@ double GCP::getActualTemp() {
 	return temp;
 }
 
-<<<<<<< HEAD
-float GCP::getCurrentTemp() {
-	float temp = this->getActualTemp();
-	temp += temp_offset;
-=======
 double GCP::getCurrentTemp() {
 	double temp = this->getActualTemp();
 	temp += temp_offset;
-	this->current_temp = temp;
->>>>>>> b43acf8 (Rename .cc files to .cpp)
 	return temp;
 }
 
 String GCP::getOutput(){
-<<<<<<< HEAD
 	return outputQueue.getAll();
 }
 
 String GCP::getLastOutput(){
 	return outputQueue.getLast();
-=======
-	return outputQueue.toJson();
->>>>>>> b43acf8 (Rename .cc files to .cpp)
 }
 
 const char* GCP::getScale(){
 	return outputQueue.scale == F ? "F" : "C";
 }
 
-<<<<<<< HEAD
 String GCP::getTunings(String mode){
 	return getTunings(modeToEnum(mode));
 }
@@ -258,19 +204,11 @@ String GCP::getTunings(TempMode mode){
 		output["kd"] = brew_kd;
 	}
 
-=======
-String GCP::getTunings(){
-	StaticJsonDocument<64> output;
-	output["kp"] = temp_kp;
-	output["ki"] = temp_ki;
-	output["kd"] = temp_kd;
->>>>>>> b43acf8 (Rename .cc files to .cpp)
 	String outputString;
 	serializeJson(output, outputString);
 	return outputString;
 }
 
-<<<<<<< HEAD
 void GCP::setTunings(String mode, float kp, float ki, float kd){
 	setTunings(modeToEnum(mode), kp, ki, kd);
 }
@@ -305,29 +243,6 @@ void GCP::changeScale(String scale_string) {
 	TempScale scale = scale_string == "F" ? F : C;
 	outputQueue.scale = scale;
 	EEPROM.put(SCALE_ADDRESS, scale);
-=======
-void GCP::setTunings(double kp, double ki, double kd){
-	this->temp_kp = kp;
-	this->temp_ki = ki;
-	this->temp_kd = kd;
-
-	brewTempManager.SetTunings(kp, ki, kd, P_ON_M);
-	brewTempManager.SetMode(AUTOMATIC);
-
-	steamTempManager.SetTunings(kp, ki, kd, P_ON_M);
-	steamTempManager.SetMode(AUTOMATIC);
-	
-	EEPROM.put(TUNING_ADDRESS, kp);
-	EEPROM.put(TUNING_ADDRESS + 8, ki);
-	EEPROM.put(TUNING_ADDRESS + 16, kd);
-	EEPROM.commit();
-}
-
-void GCP::changeScale(String scale) {
-	TempScale new_scale = scale == "F" ? F : C;
-	outputQueue.scale = new_scale;
-	EEPROM.put(SCALE_ADDRESS, new_scale);
->>>>>>> b43acf8 (Rename .cc files to .cpp)
 	EEPROM.commit();
 }
 
@@ -337,7 +252,6 @@ TempMode GCP::modeToEnum(String mode) {
 	else return BREW;
 }
 
-<<<<<<< HEAD
 float GCP::PWM(TempMode mode, QuickPID* tempManager, sTune* tuner, int pin, float output, float setpoint){
 	ulong now = millis();
 	if(output > (now - window_start_time)) digitalWrite(pin, HIGH);
@@ -394,41 +308,26 @@ float GCP::PWM(TempMode mode, QuickPID* tempManager, sTune* tuner, int pin, floa
 
 void GCP::loadParameters(){
 	float brew_temp, steam_temp, offset;
-=======
-void GCP::loadParameters(){
-	double brew_temp, steam_temp, offset;
->>>>>>> b43acf8 (Rename .cc files to .cpp)
 	TempScale scale;
 	EEPROM.get(BREW_TEMP_ADDRESS, brew_temp);
 	EEPROM.get(STEAM_TEMP_ADDRESS, steam_temp);
 	EEPROM.get(OFFSET_ADDRESS, offset);
 	EEPROM.get(SCALE_ADDRESS, scale);
 
-<<<<<<< HEAD
 	if(!isnan(brew_temp) && brew_temp >= kMinBrewTemp && brew_temp <= kMaxBrewTemp) target_brew_temp = brew_temp;
-=======
-	if(!isnan(brew_temp) && brew_temp >= kMinBrewTemp && brew_temp <= kMaxBrewTemp) target_temp = brew_temp;
->>>>>>> b43acf8 (Rename .cc files to .cpp)
 	if(!isnan(steam_temp) && steam_temp >= kMinSteamTemp && steam_temp <= kMaxSteamTemp) target_steam_temp = steam_temp;
 	if(!isnan(offset) && offset >= kMinOffset && offset <= kMaxOffset) temp_offset = offset;
 	if(scale) outputQueue.scale = scale;
 
-<<<<<<< HEAD
 	float tunings[6];
 	bool tuningsValid = true;
 	for(int i=0; i<6; i++) {
-=======
-	double tunings[3];
-	bool tuningsValid = true;
-	for(int i=0; i<3; i++) {
->>>>>>> b43acf8 (Rename .cc files to .cpp)
 		EEPROM.get(TUNING_ADDRESS + i*8, tunings[i]);
 		if(tunings[i] < 0 || isnan(tunings[i])) {
 			tuningsValid = false;
 			break;
 		}
 	}
-<<<<<<< HEAD
 	if(tuningsValid) {
 		setTunings(BREW, tunings[0], tunings[1], tunings[2]);
 		setTunings(STEAM, tunings[3], tunings[4], tunings[5]);
@@ -438,12 +337,6 @@ void GCP::loadParameters(){
 void GCP::refresh(ulong real_time) {
 	float optimum_brew = 0;
 	float optimum_steam = 0;
-=======
-	if(tuningsValid) setTunings(tunings[0], tunings[1], tunings[2]);
-}
-
-void GCP::refresh(ulong real_time) {
->>>>>>> b43acf8 (Rename .cc files to .cpp)
 	/* 
 		Brew Relay and Steam Relay will always be calculating
 		When power switch is on the heater will heat until it gets to targetBrewtemp
@@ -456,24 +349,15 @@ void GCP::refresh(ulong real_time) {
 		This is all handled on the hardware side.
 
 		If temperature rises above maximum safe temperature turn off relay
-<<<<<<< HEAD
 		
 	*/
 
 	if(this->getActualTemp() > kEmergencyShutoffTemp) {
-=======
-	*/
-
-	// Emergency and error handling function
-	double actual_temp = this->getActualTemp();
-	if(actual_temp >= kEmergencyShutoffTemp || actual_temp < 0) {
->>>>>>> b43acf8 (Rename .cc files to .cpp)
 		digitalWrite(HEATER_PIN, LOW);
 		digitalWrite(STEAM_PIN, LOW);
 		return;
 	}
 
-<<<<<<< HEAD
 	ulong now = millis();
 	ulong window_elapsed_time = now - window_start_time;
 	if(window_elapsed_time > kWindowSize) {
@@ -482,40 +366,16 @@ void GCP::refresh(ulong real_time) {
 
 	optimum_brew = PWM(BREW, &brewTempManager, &brewTuner, HEATER_PIN, brew_output, target_brew_temp);
 	optimum_steam = PWM(STEAM, &steamTempManager, &steamTuner, STEAM_PIN, steam_output, target_steam_temp);
-=======
-	//Update on/off time when the window time is up
-	ulong now = millis();
-	ulong window_time_elapsed = now - window_start_time;
-	if(window_time_elapsed > kWindowSize) {
-		brewTempManager.Compute();
-		steamTempManager.Compute();
-		window_start_time += kWindowSize;
-	}
-
-	//Physical hardware controls for brew and steam output
-	if(brew_output > window_time_elapsed) digitalWrite(HEATER_PIN, HIGH);
-	else digitalWrite(HEATER_PIN, LOW);
-
-	if(steam_output > window_time_elapsed) digitalWrite(STEAM_PIN, HIGH);
-	else digitalWrite(STEAM_PIN, LOW);
->>>>>>> b43acf8 (Rename .cc files to .cpp)
 
 	//Log information for website display
 	ulong log_time_elapsed = now - log_start_time;
 	if(log_time_elapsed > kLogInterval) {
 		outputQueue.push(
 			real_time, 
-<<<<<<< HEAD
 			current_temp, 
 			optimum_brew, 
 			optimum_steam,
 			this->target_brew_temp,
-=======
-			this->getCurrentTemp(), 
-			this->brew_output, 
-			this->steam_output,
-			this->target_temp,
->>>>>>> b43acf8 (Rename .cc files to .cpp)
 			this->target_steam_temp,
 			this->temp_offset
 		);
