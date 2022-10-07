@@ -11,15 +11,20 @@ GCP::GCP()
 , kMinOffset(-11)
 , kWindowSize(1000)
 , kLogInterval(500)
-, kPowerFrequency(60)
+, kOutputStep(50)
+, kTuneTime(500)
+, kSamples(500)
+, kSettleTime(10)
 , temp_offset(-8)
-, target_temp(92)
+, target_brew_temp(92)
 , target_steam_temp(140)
-, preinfusion_time(2000)
+, brew_output(0)
+, steam_output(0)
 , kp(40)
 , ki(6.67)
 , kd(52.27)
-, brewTempManager(QuickPID(&current_temp, &brew_output, &target_temp))
+, tuner(&current_temp, &brew_output, tuner.CohenCoon_PID, tuner.directIP, tuner.printALL)
+, brewTempManager(QuickPID(&current_temp, &brew_output, &target_brew_temp))
 , steamTempManager(QuickPID(&current_temp, &steam_output, &target_steam_temp))
 , outputQueue(Queue(60000 / kLogInterval, C))
 {}
@@ -32,20 +37,17 @@ GCP::~GCP(){
 void GCP::start() {
 	loadParameters();
 
-	this->tempProbe.begin(MAX31865_3WIRE);
-	this->getCurrentTemp();
+	if(!tempProbe.begin(MAX31865_3WIRE)) {
+		Serial.println("Could not initialize thermocouple.");
+		while (1) delay(10);
+	}
 
+	pinMode(THERMOPROBE_READY_PIN, INPUT);
 	pinMode(HEATER_PIN, OUTPUT);
 	pinMode(STEAM_PIN, OUTPUT);
 
-	brewTempManager.SetTunings(kp, ki, kd);
-	steamTempManager.SetTunings(kp, ki, kd);
-
-	brewTempManager.SetOutputLimits(0, kWindowSize);
-	steamTempManager.SetOutputLimits(0, kWindowSize);
-
-	brewTempManager.SetMode(brewTempManager.Control::automatic);
-	steamTempManager.SetMode(steamTempManager.Control::automatic);
+	tuner.Configure(kMaxSteamTemp, kWindowSize, 0, kOutputStep, kTuneTime, kSettleTime, kSamples);
+	tuner.SetEmergencyStop(kEmergencyShutoffTemp);
 }
 
 void GCP::setTargetTemp(TempMode current_mode, float temp) {
@@ -80,7 +82,7 @@ void GCP::setTargetTemp(TempMode current_mode, float temp) {
 			this->target_steam_temp = temp;
 			break;
 		default:
-			this->target_temp = temp;
+			this->target_brew_temp = temp;
 	}
 
 	EEPROM.put(tempAddress, temp);
@@ -103,7 +105,7 @@ void GCP::incrementTemp(TempMode current_mode) {
 			break;
 		case STEAM: temp = target_steam_temp;
 			break;
-		default: temp = target_temp;
+		default: temp = target_brew_temp;
 	}
 
 	temp += i;
@@ -126,7 +128,7 @@ void GCP::decrementTemp(TempMode current_mode) {
 			break;
 		case STEAM: temp = target_steam_temp;
 			break;
-		default: temp = target_temp;
+		default: temp = target_brew_temp;
 	}
 
 	temp -= i;
@@ -139,12 +141,12 @@ float GCP::getTargetTemp(TempMode current_mode) {
 			return this->temp_offset;
 		case STEAM:
 			return this->target_steam_temp;
-			default: return this->target_temp;
+			default: return this->target_brew_temp;
 	}
 }
 
 float GCP::getActualTemp() {
-	float temp =  tempProbe.temperature(100, RREF);
+	float temp = tempProbe.temperature(100, RREF);
  	uint8_t probe_fault = tempProbe.readFault();
 	if (probe_fault) {
 		Serial.print("Fault 0x"); Serial.println(probe_fault, HEX);
@@ -184,17 +186,48 @@ String GCP::getTunings(){
 	return outputString;
 }
 
+void GCP::PWM(QuickPID* tempManager, int pin, float output, float target_temp ) {
+	float optimumOutput = tuner.softPwm(pin, current_temp, output, target_temp, kWindowSize, debounce);
+	switch(tuner.Run()) {
+		case tuner.sample: //Runs once per sample during test phase
+			this->getCurrentTemp();
+			tuner.plotter(current_temp, output, target_temp, 0.5f, 3);
+			break;
+
+		case tuner.tunings: //Set tunings once test is complete
+			tuner.GetAutoTunings(&kp, &ki, &kd);
+			tempManager->SetOutputLimits(0, kWindowSize * 0.1);
+			tempManager->SetSampleTimeUs((kWindowSize - 1) * 1000);
+			debounce = false;
+			setTunings(kp, ki, kd);
+			break;
+
+		case tuner.runPid: //Runs once per sample after tunings set
+			this->getCurrentTemp();
+			brewTempManager.Compute();
+			steamTempManager.Compute();
+			tuner.plotter(current_temp, optimumOutput, target_brew_temp, 0.5f, 3);
+			break;
+	}
+}
+
 void GCP::setTunings(float kp, float ki, float kd){
 	this->kp = kp;
 	this->ki = ki;
 	this->kd = kd;
 
+	brewTempManager.SetMode(brewTempManager.Control::automatic);
+	steamTempManager.SetMode(steamTempManager.Control::automatic);
+
+	brewTempManager.SetProportionalMode(brewTempManager.pMode::pOnMeas);
+	steamTempManager.SetProportionalMode(steamTempManager.pMode::pOnMeas);
+
+	brewTempManager.SetAntiWindupMode(brewTempManager.iAwMode::iAwClamp);
+	steamTempManager.SetAntiWindupMode(steamTempManager.iAwMode::iAwClamp);
+
 	brewTempManager.SetTunings(kp, ki, kd);
 	steamTempManager.SetTunings(kp, ki, kd);
 
-	brewTempManager.SetMode(brewTempManager.Control::automatic);
-	steamTempManager.SetMode(steamTempManager.Control::automatic);
-	
 	EEPROM.put(TUNING_ADDRESS, kp);
 	EEPROM.put(TUNING_ADDRESS + 8, ki);
 	EEPROM.put(TUNING_ADDRESS + 16, kd);
@@ -222,7 +255,7 @@ void GCP::loadParameters(){
 	EEPROM.get(OFFSET_ADDRESS, offset);
 	EEPROM.get(SCALE_ADDRESS, scale);
 
-	if(!isnan(brew_temp) && brew_temp >= kMinBrewTemp && brew_temp <= kMaxBrewTemp) target_temp = brew_temp;
+	if(!isnan(brew_temp) && brew_temp >= kMinBrewTemp && brew_temp <= kMaxBrewTemp) target_brew_temp = brew_temp;
 	if(!isnan(steam_temp) && steam_temp >= kMinSteamTemp && steam_temp <= kMaxSteamTemp) target_steam_temp = steam_temp;
 	if(!isnan(offset) && offset >= kMinOffset && offset <= kMaxOffset) temp_offset = offset;
 	if(scale) outputQueue.scale = scale;
@@ -254,31 +287,11 @@ void GCP::refresh(ulong real_time) {
 		If temperature rises above maximum safe temperature turn off relay
 	*/
 
-	// Emergency and error handling function
-	float actual_temp = this->getActualTemp();
-	if(actual_temp >= kEmergencyShutoffTemp || actual_temp < 0) {
-		digitalWrite(HEATER_PIN, LOW);
-		digitalWrite(STEAM_PIN, LOW);
-		return;
-	}
-
-	//Update on/off time when the window time is up
-	ulong now = millis();
-	ulong window_time_elapsed = now - window_start_time;
-	if(window_time_elapsed > kWindowSize) {
-		brewTempManager.Compute();
-		steamTempManager.Compute();
-		window_start_time += kWindowSize;
-	}
-
-	//Physical hardware controls for brew and steam output
-	if(brew_output > window_time_elapsed) digitalWrite(HEATER_PIN, HIGH);
-	else digitalWrite(HEATER_PIN, LOW);
-
-	if(steam_output > window_time_elapsed) digitalWrite(STEAM_PIN, HIGH);
-	else digitalWrite(STEAM_PIN, LOW);
+	this->PWM(&brewTempManager, HEATER_PIN, brew_output, target_brew_temp);
+	this->PWM(&steamTempManager, STEAM_PIN, steam_output, target_steam_temp);
 
 	//Log information for website display
+	ulong now = millis();
 	ulong log_time_elapsed = now - log_start_time;
 	if(log_time_elapsed > kLogInterval) {
 		outputQueue.push(
@@ -286,7 +299,7 @@ void GCP::refresh(ulong real_time) {
 			this->getCurrentTemp(), 
 			this->brew_output, 
 			this->steam_output,
-			this->target_temp,
+			this->target_brew_temp,
 			this->target_steam_temp,
 			this->temp_offset
 		);

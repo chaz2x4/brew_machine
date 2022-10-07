@@ -6,12 +6,14 @@
 #include <Adafruit_MAX31865.h>
 #include <EEPROM.h>
 #include <QuickPID.h>
+#include <sTune.h>
 #include <ArduinoJson.h>
 
 /* PINS */
 #define HEATER_PIN 13
 #define STEAM_PIN 12
 #define THERMOPROBE_PIN A5
+#define THERMOPROBE_READY_PIN 27
 
 /* EEPROM ADDRESSES */
 #define BREW_TEMP_ADDRESS 0
@@ -57,19 +59,21 @@ private:
     const float kMinSteamTemp;
     const float kMaxOffset;
     const float kMinOffset;
-    const ulong kWindowSize;
-    const ulong kLogInterval;
-    const int kPowerFrequency;
+    const int kWindowSize;
+    const int kLogInterval;
+    const int kOutputStep;
+    const int kTuneTime;
+    const int kSamples;
+    const int kSettleTime;
     typedef enum {C, F} TempScale;
 
     float current_temp;
     float temp_offset;
-    float target_temp;
+    float target_brew_temp;
     float target_steam_temp;
 
     float brew_output;
     float steam_output;
-    float pump_output;
 
     ulong window_start_time;
     ulong log_start_time;
@@ -77,13 +81,18 @@ private:
     ulong brew_stop_time;
     ulong preinfusion_time;
 
+    bool debounce = true;
+
     float kp;
     float ki;
     float kd;
 
+    sTune tuner;
+
     QuickPID brewTempManager;
     QuickPID steamTempManager;
 
+    void PWM(QuickPID*, int, float, float);
     void loadParameters();
     TempMode modeToEnum(String);
     void setTargetTemp(TempMode, float);
