@@ -79,8 +79,6 @@ private:
     double brew_output;
     double steam_output;
     double pump_output;
-    int last_brew_output;
-    int last_steam_output;
 
     ulong window_start_time;
     ulong log_start_time;

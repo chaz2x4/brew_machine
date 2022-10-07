@@ -256,6 +256,7 @@ void GCP::refresh(ulong real_time) {
 		If temperature rises above maximum safe temperature turn off relay
 	*/
 
+	// Emergency and error handling function
 	double actual_temp = this->getActualTemp();
 	if(actual_temp >= kEmergencyShutoffTemp || actual_temp < 0) {
 		digitalWrite(HEATER_PIN, LOW);
@@ -263,32 +264,34 @@ void GCP::refresh(ulong real_time) {
 		return;
 	}
 
+	//Update on/off time when the window time is up
 	ulong now = millis();
-	if(now - log_start_time > kLogInterval) {
+	ulong window_time_elapsed = now - window_start_time;
+	if(window_time_elapsed > kWindowSize) {
 		brewTempManager.Compute();
 		steamTempManager.Compute();
+		window_start_time += kWindowSize;
+	}
+
+	//Physical hardware controls for brew and steam output
+	if(brew_output > window_time_elapsed) digitalWrite(HEATER_PIN, HIGH);
+	else digitalWrite(HEATER_PIN, LOW);
+
+	if(steam_output > window_time_elapsed) digitalWrite(STEAM_PIN, HIGH);
+	else digitalWrite(STEAM_PIN, LOW);
+
+	//Log information for website display
+	ulong log_time_elapsed = now - log_start_time;
+	if(log_time_elapsed > kLogInterval) {
 		outputQueue.push(
 			real_time, 
 			this->getCurrentTemp(), 
-			this->last_brew_output, 
-			this->last_steam_output,
+			this->brew_output, 
+			this->steam_output,
 			this->target_temp,
 			this->target_steam_temp,
 			this->temp_offset
 		);
 		log_start_time += kLogInterval;
 	}
-	
-	if(now - window_start_time > kWindowSize) {
-		window_start_time += kWindowSize;
-		last_brew_output = brew_output;
-		last_steam_output = steam_output;
-	}
-
-	if(last_brew_output > now - window_start_time) digitalWrite(HEATER_PIN, HIGH);
-	else digitalWrite(HEATER_PIN, LOW);
-
-	if(last_steam_output > now - window_start_time) digitalWrite(STEAM_PIN, HIGH);
-	else digitalWrite(STEAM_PIN, LOW);
-	
 }
