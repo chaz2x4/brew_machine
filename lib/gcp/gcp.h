@@ -6,17 +6,12 @@
 #include <Adafruit_MAX31865.h>
 #include <EEPROM.h>
 #include <PID_v1.h>
-#include <AsyncJson.h>
 #include <ArduinoJson.h>
 
 /* PINS */
 #define HEATER_PIN 13
 #define STEAM_PIN 12
-#define PUMP_PIN 27
-#define ZERO_CROSS_PIN 33
 #define THERMOPROBE_PIN A5
-#define CURRENT_PIN A4
-#define TRANSDUCER_PIN A3
 
 /* EEPROM ADDRESSES */
 #define BREW_TEMP_ADDRESS 0
