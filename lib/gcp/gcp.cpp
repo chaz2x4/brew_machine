@@ -201,10 +201,10 @@ void GCP::setTunings(float kp, float ki, float kd){
 	EEPROM.commit();
 }
 
-void GCP::changeScale(String scale) {
-	TempScale new_scale = scale == "F" ? F : C;
-	outputQueue.scale = new_scale;
-	EEPROM.put(SCALE_ADDRESS, new_scale);
+void GCP::changeScale(String scale_string) {
+	TempScale scale = scale_string == "F" ? F : C;
+	outputQueue.scale = scale;
+	EEPROM.put(SCALE_ADDRESS, scale);
 	EEPROM.commit();
 }
 
