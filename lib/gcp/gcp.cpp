@@ -49,6 +49,8 @@ void GCP::start() {
 
 	tuner.Configure(kMaxSteamTemp, kWindowSize, 0, kOutputStep, kTuneTime, kSettleTime, kSamples);
 	tuner.SetEmergencyStop(kEmergencyShutoffTemp);
+
+	setTunings(kp, ki, kd);
 }
 
 void GCP::setTargetTemp(TempMode current_mode, float temp) {
@@ -187,33 +189,6 @@ String GCP::getTunings(){
 	return outputString;
 }
 
-void GCP::PWM(TempMode mode, QuickPID* tempManager, int pin, float output, float target_temp) {
-	float optimumOutput = tuner.softPwm(pin, current_temp, tuner_output, target_temp, kWindowSize, debounce);
-	switch(tuner.Run()) {
-		case tuner.sample: //Runs once per sample during test phase
-			this->getCurrentTemp();
-			tuner.plotter(current_temp, tuner_output, target_temp, 0.5f, 3);
-			break;
-
-		case tuner.tunings: //Set tunings once test is complete
-			tuner.GetAutoTunings(&kp, &ki, &kd);
-			tempManager->SetOutputLimits(0, kWindowSize * 0.1);
-			tempManager->SetSampleTimeUs((kWindowSize - 1) * 1000);
-			debounce = false;
-			tuner_output = kOutputStep;
-			setTunings(kp, ki, kd);
-			break;
-
-		case tuner.runPid: //Runs once per sample after tunings set
-			this->getCurrentTemp();
-			brewTempManager.Compute();
-			steamTempManager.Compute();
-			tuner_output = mode == BREW ? brew_output : steam_output;
-			tuner.plotter(current_temp, optimumOutput, target_brew_temp, 0.5f, 3);
-			break;
-	}
-}
-
 void GCP::setTunings(float kp, float ki, float kd){
 	this->kp = kp;
 	this->ki = ki;
@@ -286,13 +261,31 @@ void GCP::refresh(ulong real_time) {
 		This is all handled on the hardware side.
 
 		If temperature rises above maximum safe temperature turn off relay
+		
 	*/
 
-	this->PWM(BREW, &brewTempManager, HEATER_PIN, brew_output, target_brew_temp);
-	this->PWM(STEAM, &steamTempManager, STEAM_PIN, steam_output, target_steam_temp);
+	float actual_temp = this->getActualTemp();
+	if(actual_temp >= kEmergencyShutoffTemp || actual_temp < 0) {
+		digitalWrite(HEATER_PIN, LOW);
+		digitalWrite(STEAM_PIN, LOW);
+		return;
+	}
+
+	ulong now = millis();
+	ulong window_time_elapsed = now - window_start_time;
+	if(window_time_elapsed > kWindowSize) {
+		brewTempManager.Compute();
+		steamTempManager.Compute();
+		window_start_time += kWindowSize;
+	}
+
+	if(brew_output > now - window_start_time) digitalWrite(HEATER_PIN, HIGH);
+	else digitalWrite(HEATER_PIN, LOW);
+
+	if(steam_output > now - window_start_time) digitalWrite(STEAM_PIN, HIGH);
+	else digitalWrite(STEAM_PIN, LOW);
 
 	//Log information for website display
-	ulong now = millis();
 	ulong log_time_elapsed = now - log_start_time;
 	if(log_time_elapsed > kLogInterval) {
 		outputQueue.push(

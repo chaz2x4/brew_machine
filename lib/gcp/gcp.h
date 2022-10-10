@@ -81,13 +81,13 @@ private:
     float ki;
     float kd;
 
-    bool debounce = true;
     sTune tuner;
 
     QuickPID brewTempManager;
     QuickPID steamTempManager;
 
     ulong log_start_time;
+    ulong window_start_time;
 
     void loadParameters();
     TempMode modeToEnum(String);
