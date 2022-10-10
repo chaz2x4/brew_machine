@@ -368,6 +368,7 @@ void GCP::refresh(ulong real_time) {
 	optimum_steam = PWM(STEAM, &steamTempManager, &steamTuner, STEAM_PIN, steam_output, target_steam_temp);
 
 	//Log information for website display
+	ulong now = millis();
 	ulong log_time_elapsed = now - log_start_time;
 	if(log_time_elapsed > kLogInterval) {
 		outputQueue.push(
@@ -379,7 +380,6 @@ void GCP::refresh(ulong real_time) {
 			this->target_steam_temp,
 			this->temp_offset
 		);
-		Serial.printf("Temp: %0.5f, Brew Output: %0.5f, Steam Output %0.5f\n", current_temp, brew_output, steam_output);
 		log_start_time += kLogInterval;
 	}
 }
