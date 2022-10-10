@@ -75,13 +75,13 @@ private:
 
     float brew_output;
     float steam_output;
-    float tuner_output;
 
     float kp;
     float ki;
     float kd;
 
-    sTune tuner;
+    sTune brewTuner;
+    sTune steamTuner;
 
     QuickPID brewTempManager;
     QuickPID steamTempManager;
@@ -91,7 +91,6 @@ private:
 
     void loadParameters();
     TempMode modeToEnum(String);
-    void PWM(TempMode, QuickPID*, int, float, float);
 
     struct Queue {
         int front, rear, capacity, count;

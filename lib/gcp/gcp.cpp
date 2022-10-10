@@ -11,20 +11,20 @@ GCP::GCP()
 , kMinOffset(-11)
 , kWindowSize(1000)
 , kLogInterval(500)
-, kOutputStep(50)
-, kTuneTime(500)
+, kOutputStep(200)
+, kTuneTime(200)
 , kSamples(500)
-, kSettleTime(10)
+, kSettleTime(5)
 , temp_offset(-8)
 , target_brew_temp(92)
 , target_steam_temp(140)
 , brew_output(0)
 , steam_output(0)
-, tuner_output(0)
 , kp(40)
 , ki(6.67)
 , kd(52.27)
-, tuner(&current_temp, &tuner_output, tuner.CohenCoon_PID, tuner.directIP, tuner.printALL)
+, brewTuner(&current_temp, &brew_output, brewTuner.CohenCoon_PID, brewTuner.directIP, brewTuner.printALL)
+, steamTuner(&current_temp, &steam_output, steamTuner.CohenCoon_PID, steamTuner.directIP, steamTuner.printALL)
 , brewTempManager(QuickPID(&current_temp, &brew_output, &target_brew_temp))
 , steamTempManager(QuickPID(&current_temp, &steam_output, &target_steam_temp))
 , outputQueue(Queue(60000 / kLogInterval, C))
@@ -47,8 +47,10 @@ void GCP::start() {
 	pinMode(HEATER_PIN, OUTPUT);
 	pinMode(STEAM_PIN, OUTPUT);
 
-	tuner.Configure(kMaxSteamTemp, kWindowSize, 0, kOutputStep, kTuneTime, kSettleTime, kSamples);
-	tuner.SetEmergencyStop(kEmergencyShutoffTemp);
+	brewTuner.Configure(kMaxBrewTemp, kWindowSize, 0, kOutputStep, kTuneTime, kSettleTime, kSamples);
+	steamTuner.Configure(kMaxSteamTemp, kWindowSize, 0, kOutputStep, kTuneTime, kSettleTime, kSamples);
+	brewTuner.SetEmergencyStop(kEmergencyShutoffTemp - temp_offset);
+	steamTuner.SetEmergencyStop(kEmergencyShutoffTemp - temp_offset);
 
 	brewTempManager.SetOutputLimits(0, kWindowSize);
 	brewTempManager.SetSampleTimeUs(kWindowSize * 1000);
@@ -88,6 +90,8 @@ void GCP::setTargetTemp(TempMode current_mode, float temp) {
 	switch(current_mode) {
 		case OFFSET:
 			this->temp_offset = temp;
+			brewTuner.SetEmergencyStop(kEmergencyShutoffTemp - temp_offset);
+			steamTuner.SetEmergencyStop(kEmergencyShutoffTemp - temp_offset);
 			break;
 		case STEAM:
 			this->target_steam_temp = temp;
@@ -175,7 +179,6 @@ float GCP::getActualTemp() {
 float GCP::getCurrentTemp() {
 	float temp = this->getActualTemp();
 	temp += temp_offset;
-	this->current_temp = temp;
 	return temp;
 }
 
@@ -272,40 +275,44 @@ void GCP::refresh(ulong real_time) {
 		
 	*/
 
-	float actual_temp = this->getActualTemp();
-	if(actual_temp >= kEmergencyShutoffTemp || actual_temp < 0) {
-		digitalWrite(HEATER_PIN, LOW);
-		digitalWrite(STEAM_PIN, LOW);
-		return;
+	float optimum_brew = brewTuner.softPwm(HEATER_PIN, current_temp, brew_output, target_brew_temp, kWindowSize, 0);
+	float optimum_steam = steamTuner.softPwm(STEAM_PIN, current_temp, steam_output, target_steam_temp, kWindowSize, 0);
+
+	if(brewTempManager.Compute() || steamTempManager.Compute()) {
+		current_temp = this->getCurrentTemp();
 	}
 
-	ulong now = millis();
-	ulong window_time_elapsed = now - window_start_time;
-	if(window_time_elapsed > kWindowSize) {
-		brewTempManager.Compute();
-		steamTempManager.Compute();
-		window_start_time += kWindowSize;
-	}
-
-	if(brew_output > now - window_start_time) digitalWrite(HEATER_PIN, HIGH);
-	else digitalWrite(HEATER_PIN, LOW);
-
-	if(steam_output > now - window_start_time) digitalWrite(STEAM_PIN, HIGH);
-	else digitalWrite(STEAM_PIN, LOW);
+	// switch(brewTuner.Run()){
+	// 	case brewTuner.sample:
+	// 		current_temp = this->getCurrentTemp();
+	// 		break;
+	// 	case brewTuner.tunings:
+	// 		brewTuner.GetAutoTunings(&kp, &ki, &kd);
+	// 		brewTempManager.SetOutputLimits(0, kWindowSize);
+	// 		brewTempManager.SetSampleTimeUs((kWindowSize - 1) * 1000);
+	// 		brew_output = 0;
+	// 		setTunings(kp, ki, kd);
+	// 		break;
+	// 	case brewTuner.runPid:
+	// 		current_temp = this->getCurrentTemp();
+	// 		brewTempManager.Compute();
+	// 		brewTuner.plotter(current_temp, optimum_brew, target_brew_temp, 0.5f, 3);
+	// 		break;
+	// }
 
 	//Log information for website display
+	ulong now = millis();
 	ulong log_time_elapsed = now - log_start_time;
 	if(log_time_elapsed > kLogInterval) {
 		outputQueue.push(
 			real_time, 
-			this->getCurrentTemp(), 
+			current_temp, 
 			this->brew_output, 
 			this->steam_output,
 			this->target_brew_temp,
 			this->target_steam_temp,
 			this->temp_offset
 		);
-		Serial.printf("Temp: %0.5f, Brew Output: %0.5f, Steam Output %0.5f\n", current_temp, brew_output, steam_output);
 		log_start_time += kLogInterval;
 	}
 }
