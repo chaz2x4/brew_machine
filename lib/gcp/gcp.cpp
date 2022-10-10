@@ -50,6 +50,14 @@ void GCP::start() {
 	tuner.Configure(kMaxSteamTemp, kWindowSize, 0, kOutputStep, kTuneTime, kSettleTime, kSamples);
 	tuner.SetEmergencyStop(kEmergencyShutoffTemp);
 
+	brewTempManager.SetOutputLimits(0, kWindowSize);
+	brewTempManager.SetSampleTimeUs(kWindowSize * 1000);
+	brewTempManager.SetMode(brewTempManager.Control::automatic);
+
+	steamTempManager.SetOutputLimits(0, kWindowSize);
+	steamTempManager.SetSampleTimeUs(kWindowSize * 1000);
+	steamTempManager.SetMode(steamTempManager.Control::automatic);
+
 	setTunings(kp, ki, kd);
 }
 
@@ -297,6 +305,7 @@ void GCP::refresh(ulong real_time) {
 			this->target_steam_temp,
 			this->temp_offset
 		);
+		Serial.printf("Temp: %0.5f, Brew Output: %0.5f, Steam Output %0.5f\n", current_temp, brew_output, steam_output);
 		log_start_time += kLogInterval;
 	}
 }
