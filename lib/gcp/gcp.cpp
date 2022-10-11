@@ -249,41 +249,49 @@ TempMode GCP::modeToEnum(String mode) {
 }
 
 float GCP::PWM(TempMode mode, QuickPID* tempManager, sTune* tuner, int pin, float output, float setpoint){
-	float optimumOutput = tuner->softPwm(pin, current_temp, output, setpoint, kWindowSize, 0);
+	ulong now = millis();
+	if(output > (now - window_start_time)) digitalWrite(pin, HIGH);
+	else digitalWrite(pin, LOW);
+
+	if((tuning_complete || current_temp > (target_steam_temp * 0.9)) && !currently_pwm) currently_pwm = true;
+	if(!currently_pwm) digitalWrite(STEAM_PIN, HIGH);
+
 	switch(tuner->Run()){
 		case tuner->sample:
 			current_temp = this->getCurrentTemp();
-			return output;
+			break;
 		case tuner->tunings:
+			float kp, ki, kd;
+			tuner->GetAutoTunings(&kp, &ki, &kd);
+			kp *= 10;
+			ki *= 10;
+			kd *= 10;
 			if(mode == STEAM) {
-				tuner->GetAutoTunings(&steam_kp, &steam_ki, &steam_kd);
 				steam_output = kOutputStep;
-				steam_kp *= 10;
-				steam_ki *= 10;
-				steam_kd *= 10;
+				steam_kp = kp;
+				steam_ki = ki;
+				steam_kd = kd;
 			}
 			else {
-				tuner->GetAutoTunings(&brew_kp, &brew_ki, &brew_kd);
 				brew_output = kOutputStep;
-				brew_kp *= 10;
-				brew_ki *= 10;
-				brew_kd *= 10;
-				tuning_complete = true;
+				brew_kp = kp;
+				brew_ki = ki;
+				brew_kd = kd;
 			}
 			tempManager->SetOutputLimits(0, kWindowSize);
 			tempManager->SetSampleTimeUs((kWindowSize - 1) * 1000);
 			tempManager->SetMode(tempManager->Control::automatic);
 			tempManager->SetProportionalMode(tempManager->pMode::pOnMeas);
 			tempManager->SetAntiWindupMode(tempManager->iAwMode::iAwClamp);
-			if(mode == STEAM) setTunings(mode, steam_kp, steam_ki, steam_kd);
-			else setTunings(mode, brew_kp, brew_ki, brew_kd);
+			setTunings(mode, kp, ki, kd);
+			tuning_complete = true;
 			break;
 		case tuner->runPid:
 			current_temp = this->getCurrentTemp();
 			tempManager->Compute();
-			return optimumOutput;
+			break;
 	}
-	return optimumOutput;
+	return output;
 }
 
 void GCP::loadParameters(){
@@ -338,16 +346,16 @@ void GCP::refresh(ulong real_time) {
 		return;
 	}
 
+	ulong now = millis();
+	ulong window_elapsed_time = now - window_start_time;
+	if(window_elapsed_time > kWindowSize) {
+		window_start_time += kWindowSize;
+	}
+
 	optimum_brew = PWM(BREW, &brewTempManager, &brewTuner, HEATER_PIN, brew_output, target_brew_temp);
 	optimum_steam = PWM(STEAM, &steamTempManager, &steamTuner, STEAM_PIN, steam_output, target_steam_temp);
-	if((tuning_complete || current_temp > (target_steam_temp * 0.9)) && !currently_pwm) {
-		steamTempManager.SetMode(steamTempManager.Control::automatic);
-		currently_pwm = true;
-	}
-	if(!currently_pwm) digitalWrite(STEAM_PIN, HIGH);
-	
+
 	//Log information for website display
-	ulong now = millis();
 	ulong log_time_elapsed = now - log_start_time;
 	if(log_time_elapsed > kLogInterval) {
 		outputQueue.push(
