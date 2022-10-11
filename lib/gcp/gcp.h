@@ -10,10 +10,10 @@
 #include <ArduinoJson.h>
 
 /* PINS */
-#define HEATER_PIN 13
+#define HEATER_PIN 27
 #define STEAM_PIN 12
 #define THERMOPROBE_PIN A5
-#define THERMOPROBE_READY_PIN 27
+#define THERMOPROBE_READY_PIN 33
 
 /* EEPROM ADDRESSES */
 #define BREW_TEMP_ADDRESS 0
