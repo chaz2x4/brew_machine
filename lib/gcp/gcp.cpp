@@ -258,16 +258,16 @@ float GCP::PWM(TempMode mode, QuickPID* tempManager, sTune* tuner, int pin, floa
 			if(mode == STEAM) {
 				tuner->GetAutoTunings(&steam_kp, &steam_ki, &steam_kd);
 				steam_output = kOutputStep;
-				steam_kp *= 100;
-				steam_ki *= 100;
-				steam_kd *= 100;
+				steam_kp *= 10;
+				steam_ki *= 10;
+				steam_kd *= 10;
 			}
 			else {
 				tuner->GetAutoTunings(&brew_kp, &brew_ki, &brew_kd);
 				brew_output = kOutputStep;
-				brew_kp *= 100;
-				brew_ki *= 100;
-				brew_kd *= 100;
+				brew_kp *= 10;
+				brew_ki *= 10;
+				brew_kd *= 10;
 				tuning_complete = true;
 			}
 			tempManager->SetOutputLimits(0, kWindowSize);
