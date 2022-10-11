@@ -308,42 +308,35 @@ void GCP::refresh(ulong real_time) {
 	float optimum_brew = brewTuner.softPwm(HEATER_PIN, current_temp, brew_output, target_brew_temp, kWindowSize, 0);
 	float optimum_steam = steamTuner.softPwm(STEAM_PIN, current_temp, steam_output, target_steam_temp, kWindowSize, 0);
 
-	if(brewTempManager.Compute() || steamTempManager.Compute()) {
-		current_temp = this->getCurrentTemp();
+	switch(brewTuner.Run()){
+		case brewTuner.sample:
+			current_temp = this->getCurrentTemp();
+			break;
+		case brewTuner.tunings:
+			brew_output = 0;
+			brewTuner.GetAutoTunings(&brew_kp, &brew_ki, &brew_kd);
+			setTunings(BREW, brew_kp, brew_ki, brew_kd);
+			break;
+		case brewTuner.runPid:
+			current_temp = this->getCurrentTemp();
+			brewTempManager.Compute();
+			break;
 	}
-	// switch(brewTuner.Run()){
-	// 	case brewTuner.sample:
-	// 		current_temp = this->getCurrentTemp();
-	// 		break;
-	// 	case brewTuner.tunings:
-	// 		brewTuner.GetAutoTunings(&brew_kp, &brew_ki, &brew_kd);
-	// 		brewTempManager.SetOutputLimits(0, kWindowSize);
-	// 		brewTempManager.SetSampleTimeUs((kWindowSize - 1) * 1000);
-	// 		brew_output = 0;
-	// 		setTunings(BREW, brew_kp, brew_ki, brew_kd);
-	// 		break;
-	// 	case brewTuner.runPid:
-	// 		current_temp = this->getCurrentTemp();
-	// 		brewTempManager.Compute();
-	// 		break;
-	// }
 
-	// switch(steamTuner.Run()){
-	// 	case steamTuner.sample:
-	// 		current_temp = this->getCurrentTemp();
-	// 		break;
-	// 	case steamTuner.tunings:
-	// 		steamTuner.GetAutoTunings(&steam_kp, &steam_ki, &steam_kd);
-	// 		steamTempManager.SetOutputLimits(0, kWindowSize);
-	// 		steamTempManager.SetSampleTimeUs((kWindowSize - 1) * 1000);
-	// 		steam_output = 0;
-	// 		setTunings(STEAM, steam_kp, steam_ki, steam_kd);
-	// 		break;
-	// 	case steamTuner.runPid:
-	// 		current_temp = this->getCurrentTemp();
-	// 		steamTempManager.Compute();
-	// 		break;
-	// }
+	switch(steamTuner.Run()){
+		case steamTuner.sample:
+			current_temp = this->getCurrentTemp();
+			break;
+		case steamTuner.tunings:
+			steam_output = 0;
+			steamTuner.GetAutoTunings(&steam_kp, &steam_ki, &steam_kd);
+			setTunings(STEAM, steam_kp, steam_ki, steam_kd);
+			break;
+		case steamTuner.runPid:
+			current_temp = this->getCurrentTemp();
+			steamTempManager.Compute();
+			break;
+	}
 
 	//Log information for website display
 	ulong now = millis();
