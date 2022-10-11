@@ -52,8 +52,8 @@ void GCP::start() {
 
 	brewTuner.Configure(kMaxBrewTemp, kWindowSize, 0, kOutputStep, kTuneTime, kSettleTime, kSamples);
 	steamTuner.Configure(kMaxSteamTemp, kWindowSize, 0, kOutputStep, kTuneTime, kSettleTime, kSamples);
-	brewTuner.SetEmergencyStop(kEmergencyShutoffTemp - temp_offset);
-	steamTuner.SetEmergencyStop(kEmergencyShutoffTemp - temp_offset);
+	brewTuner.SetEmergencyStop(kEmergencyShutoffTemp + temp_offset);
+	steamTuner.SetEmergencyStop(kEmergencyShutoffTemp + temp_offset);
 
 	setTunings(BREW, brew_kp, brew_ki, brew_kd);
 	setTunings(STEAM, steam_kp, steam_ki, steam_kd);
