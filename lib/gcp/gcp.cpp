@@ -2,7 +2,7 @@
 
 GCP::GCP()
 : tempProbe(Adafruit_MAX31865(THERMOPROBE_PIN))
-, kEmergencyShutoffTemp(155.0)
+, kEmergencyShutoffTemp(161.0)
 , kMaxBrewTemp(105.0)
 , kMinBrewTemp(85.0)
 , kMaxSteamTemp(150.0)
