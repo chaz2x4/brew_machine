@@ -11,7 +11,7 @@ GCP::GCP()
 , kMinOffset(-11)
 , kWindowSize(1000)
 , kLogInterval(500)
-, kOutputStep(200)
+, kOutputStep(1000)
 , kTuneTime(60)
 , kSamples(500)
 , kSettleTime(10)
@@ -54,9 +54,6 @@ void GCP::start() {
 	steamTuner.Configure(kMaxSteamTemp, kWindowSize, 0, kOutputStep, kTuneTime, kSettleTime, kSamples);
 	brewTuner.SetEmergencyStop(kEmergencyShutoffTemp + temp_offset);
 	steamTuner.SetEmergencyStop(kEmergencyShutoffTemp + temp_offset);
-
-	setTunings(BREW, brew_kp, brew_ki, brew_kd);
-	setTunings(STEAM, steam_kp, steam_ki, steam_kd);
 }
 
 void GCP::setTargetTemp(TempMode current_mode, float temp) {
@@ -230,11 +227,6 @@ void GCP::setTunings(TempMode mode, float kp, float ki, float kd){
 		tempManager = &brewTempManager;
 	}
 
-	tempManager->SetOutputLimits(0, kWindowSize);
-	tempManager->SetSampleTimeUs(kWindowSize * 1000);
-	tempManager->SetMode(tempManager->Control::automatic);
-	tempManager->SetProportionalMode(tempManager->pMode::pOnMeas);
-	tempManager->SetAntiWindupMode(tempManager->iAwMode::iAwClamp);
 	tempManager->SetTunings(kp, ki, kd);
 
 	EEPROM.put(TUNING_ADDRESS + eeprom_offset, kp);
@@ -254,6 +246,38 @@ TempMode GCP::modeToEnum(String mode) {
 	if(mode == "offset") return OFFSET;
 	else if(mode == "steam") return STEAM;
 	else return BREW;
+}
+
+float GCP::PWM(TempMode mode, QuickPID* tempManager, sTune* tuner, int pin, float output, float setpoint){
+	float optimumOutput = tuner->softPwm(pin, current_temp, output, setpoint, kWindowSize, 0);
+	switch(tuner->Run()){
+		case tuner->sample:
+			current_temp = this->getCurrentTemp();
+			return output;
+		case tuner->tunings:
+			if(mode == STEAM) {
+				tuner->GetAutoTunings(&steam_kp, &steam_ki, &steam_kd);
+				steam_output = kOutputStep;
+			}
+			else {
+				tuner->GetAutoTunings(&brew_kp, &brew_ki, &brew_kd);
+				brew_output = kOutputStep;
+				tuning_complete = true;
+			}
+			tempManager->SetOutputLimits(0, kWindowSize);
+			tempManager->SetSampleTimeUs((kWindowSize - 1) * 1000);
+			tempManager->SetMode(tempManager->Control::automatic);
+			tempManager->SetProportionalMode(tempManager->pMode::pOnMeas);
+			tempManager->SetAntiWindupMode(tempManager->iAwMode::iAwClamp);
+			if(mode == STEAM) setTunings(mode, steam_kp, steam_ki, steam_kd);
+			else setTunings(mode, brew_kp, brew_ki, brew_kd);
+			break;
+		case tuner->runPid:
+			current_temp = this->getCurrentTemp();
+			tempManager->Compute();
+			return optimumOutput;
+	}
+	return optimumOutput;
 }
 
 void GCP::loadParameters(){
@@ -285,6 +309,8 @@ void GCP::loadParameters(){
 }
 
 void GCP::refresh(ulong real_time) {
+	float optimum_brew = 0;
+	float optimum_steam = 0;
 	/* 
 		Brew Relay and Steam Relay will always be calculating
 		When power switch is on the heater will heat until it gets to targetBrewtemp
@@ -306,11 +332,14 @@ void GCP::refresh(ulong real_time) {
 		return;
 	}
 
-	float optimum_brew = brewTuner.softPwm(HEATER_PIN, current_temp, brew_output, target_brew_temp, kWindowSize, 0);
-	float optimum_steam = steamTuner.softPwm(STEAM_PIN, current_temp, steam_output, target_steam_temp, kWindowSize, 0);
+	optimum_brew = PWM(BREW, &brewTempManager, &brewTuner, HEATER_PIN, brew_output, target_brew_temp);
+	if((tuning_complete || current_temp > (target_steam_temp * 0.9)) && !currently_pwm) {
+		steamTempManager.SetMode(steamTempManager.Control::automatic);
+		currently_pwm = true;
+	}
+	if(currently_pwm) optimum_steam = PWM(STEAM, &steamTempManager, &steamTuner, STEAM_PIN, steam_output, target_steam_temp);
+	else digitalWrite(STEAM_PIN, HIGH);
 	
-	if(brewTempManager.Compute() || steamTempManager.Compute()) current_temp = this->getCurrentTemp();
-
 	//Log information for website display
 	ulong now = millis();
 	ulong log_time_elapsed = now - log_start_time;

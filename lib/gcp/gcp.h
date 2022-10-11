@@ -86,6 +86,8 @@ private:
     float steam_ki;
     float steam_kd;
 
+    bool tuning_complete;
+    bool currently_pwm;
     sTune brewTuner;
     sTune steamTuner;
 
@@ -97,6 +99,7 @@ private:
 
     void loadParameters();
     TempMode modeToEnum(String);
+    float PWM(TempMode, QuickPID*, sTune*, int, float, float);
 
     struct Queue {
         int front, rear, capacity, count;
