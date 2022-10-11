@@ -308,25 +308,8 @@ void GCP::refresh(ulong real_time) {
 
 	float optimum_brew = brewTuner.softPwm(HEATER_PIN, current_temp, brew_output, target_brew_temp, kWindowSize, 0);
 	float optimum_steam = steamTuner.softPwm(STEAM_PIN, current_temp, steam_output, target_steam_temp, kWindowSize, 0);
-	switch(brewTuner.Run()){
-		case brewTuner.sample:
-			current_temp = this->getCurrentTemp();
-			break;
-		case brewTuner.tunings:
-			brew_output = kOutputStep;
-			brewTuner.GetAutoTunings(&brew_kp, &brew_ki, &brew_kd);
-			steamTuner.GetAutoTunings(&brew_kp, &brew_ki, &brew_kd);
-			setTunings(BREW, brew_kp, brew_ki, brew_kd);
-			setTunings(STEAM, steam_kp, steam_ki, steam_kd);
-
-			break;
-		case brewTuner.runPid:
-			current_temp = this->getCurrentTemp();
-			brewTempManager.Compute();
-			steamTempManager.Compute();
-			break;
-	}
 	
+	if(brewTempManager.Compute() || steamTempManager.Compute()) current_temp = this->getCurrentTemp();
 
 	//Log information for website display
 	ulong now = millis();
