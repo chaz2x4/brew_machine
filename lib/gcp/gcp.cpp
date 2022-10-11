@@ -11,7 +11,7 @@ GCP::GCP()
 , kMinOffset(-11)
 , kWindowSize(1000)
 , kLogInterval(500)
-, kOutputStep(1000)
+, kOutputStep(50)
 , kTuneTime(60)
 , kSamples(500)
 , kSettleTime(10)
@@ -333,12 +333,12 @@ void GCP::refresh(ulong real_time) {
 	}
 
 	optimum_brew = PWM(BREW, &brewTempManager, &brewTuner, HEATER_PIN, brew_output, target_brew_temp);
+	optimum_steam = PWM(STEAM, &steamTempManager, &steamTuner, STEAM_PIN, steam_output, target_steam_temp);
 	if((tuning_complete || current_temp > (target_steam_temp * 0.9)) && !currently_pwm) {
 		steamTempManager.SetMode(steamTempManager.Control::automatic);
 		currently_pwm = true;
 	}
-	if(currently_pwm) optimum_steam = PWM(STEAM, &steamTempManager, &steamTuner, STEAM_PIN, steam_output, target_steam_temp);
-	else digitalWrite(STEAM_PIN, HIGH);
+	if(!currently_pwm) digitalWrite(STEAM_PIN, HIGH);
 	
 	//Log information for website display
 	ulong now = millis();
