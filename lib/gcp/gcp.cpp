@@ -11,10 +11,10 @@ GCP::GCP()
 , kMinOffset(-11)
 , kWindowSize(1000)
 , kLogInterval(500)
-, kOutputStep(200)
+, kOutputStep(50)
 , kTuneTime(200)
-, kSamples(500)
-, kSettleTime(5)
+, kSamples(200)
+, kSettleTime(10)
 , temp_offset(-8)
 , target_brew_temp(92)
 , target_steam_temp(140)
@@ -26,8 +26,8 @@ GCP::GCP()
 , steam_kp(40)
 , steam_ki(6.67)
 , steam_kd(52.27)
-, brewTuner(&current_temp, &brew_output, brewTuner.CohenCoon_PID, brewTuner.directIP, brewTuner.printALL)
-, steamTuner(&current_temp, &steam_output, steamTuner.CohenCoon_PID, steamTuner.directIP, steamTuner.printALL)
+, brewTuner(&current_temp, &brew_output, brewTuner.ZN_PID, brewTuner.directIP, brewTuner.printALL)
+, steamTuner(&current_temp, &steam_output, steamTuner.ZN_PID, steamTuner.directIP, steamTuner.printALL)
 , brewTempManager(QuickPID(&current_temp, &brew_output, &target_brew_temp))
 , steamTempManager(QuickPID(&current_temp, &steam_output, &target_steam_temp))
 , outputQueue(Queue(60000 / kLogInterval, C))
@@ -313,7 +313,7 @@ void GCP::refresh(ulong real_time) {
 			current_temp = this->getCurrentTemp();
 			break;
 		case brewTuner.tunings:
-			brew_output = 0;
+			brew_output = kOutputStep;
 			brewTuner.GetAutoTunings(&brew_kp, &brew_ki, &brew_kd);
 			setTunings(BREW, brew_kp, brew_ki, brew_kd);
 			break;
@@ -328,7 +328,7 @@ void GCP::refresh(ulong real_time) {
 			current_temp = this->getCurrentTemp();
 			break;
 		case steamTuner.tunings:
-			steam_output = 0;
+			steam_output = kOutputStep;
 			steamTuner.GetAutoTunings(&steam_kp, &steam_ki, &steam_kd);
 			setTunings(STEAM, steam_kp, steam_ki, steam_kd);
 			break;
