@@ -300,6 +300,11 @@ void GCP::refresh(ulong real_time) {
 		
 	*/
 
+	if(this->getActualTemp() > kEmergencyShutoffTemp) {
+		digitalWrite(HEATER_PIN, LOW);
+		digitalWrite(STEAM_PIN, LOW);
+	}
+
 	float optimum_brew = brewTuner.softPwm(HEATER_PIN, current_temp, brew_output, target_brew_temp, kWindowSize, 0);
 	float optimum_steam = steamTuner.softPwm(STEAM_PIN, current_temp, steam_output, target_steam_temp, kWindowSize, 0);
 
