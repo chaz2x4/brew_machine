@@ -47,8 +47,10 @@ public:
     float getCurrentTemp();
     const char* getScale();
     String getOutput();
-    String getTunings();
-    void setTunings(float, float, float);
+    String getTunings(String);
+    String getTunings(TempMode);
+    void setTunings(String, float, float, float);
+    void setTunings(TempMode, float, float, float);
     void changeScale(String);
     void refresh(ulong);
 private:
@@ -76,9 +78,13 @@ private:
     float brew_output;
     float steam_output;
 
-    float kp;
-    float ki;
-    float kd;
+    float brew_kp;
+    float brew_ki;
+    float brew_kd;
+
+    float steam_kp;
+    float steam_ki;
+    float steam_kd;
 
     sTune brewTuner;
     sTune steamTuner;

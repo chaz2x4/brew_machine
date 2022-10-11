@@ -343,7 +343,7 @@
                 let ki = document.getElementById("ki");
                 let kd = document.getElementById("kd");
                 let tunings = { "kp" : kp.value, "ki": ki.value, "kd": kd.value };
-                callServer.put("/set_tunings", JSON.stringify(tunings), function(){
+                callServer.put("/set_tunings?mode=" + current_mode, JSON.stringify(tunings), function(){
                     tuning_button.disabled = false;
                     tuning_button.innerHTML = "Set Tunings:";
                 })
@@ -356,7 +356,7 @@
             placeholder.classList.add("spinner-border", "spinner-border-sm");
 
             function refreshTunings() {
-                callServer.get("/get_tunings", function(response){
+                callServer.get("/get_tunings?mode=" + current_mode, function(response){
                     if(response) {                        
                         Object.entries(response).forEach(entry => {
                             const [name, value] = entry;

@@ -20,9 +20,12 @@ GCP::GCP()
 , target_steam_temp(140)
 , brew_output(0)
 , steam_output(0)
-, kp(40)
-, ki(6.67)
-, kd(52.27)
+, brew_kp(40)
+, brew_ki(6.67)
+, brew_kd(52.27)
+, steam_kp(40)
+, steam_ki(6.67)
+, steam_kd(52.27)
 , brewTuner(&current_temp, &brew_output, brewTuner.CohenCoon_PID, brewTuner.directIP, brewTuner.printALL)
 , steamTuner(&current_temp, &steam_output, steamTuner.CohenCoon_PID, steamTuner.directIP, steamTuner.printALL)
 , brewTempManager(QuickPID(&current_temp, &brew_output, &target_brew_temp))
@@ -52,15 +55,8 @@ void GCP::start() {
 	brewTuner.SetEmergencyStop(kEmergencyShutoffTemp - temp_offset);
 	steamTuner.SetEmergencyStop(kEmergencyShutoffTemp - temp_offset);
 
-	brewTempManager.SetOutputLimits(0, kWindowSize);
-	brewTempManager.SetSampleTimeUs(kWindowSize * 1000);
-	brewTempManager.SetMode(brewTempManager.Control::automatic);
-
-	steamTempManager.SetOutputLimits(0, kWindowSize);
-	steamTempManager.SetSampleTimeUs(kWindowSize * 1000);
-	steamTempManager.SetMode(steamTempManager.Control::automatic);
-
-	setTunings(kp, ki, kd);
+	setTunings(BREW, brew_kp, brew_ki, brew_kd);
+	setTunings(STEAM, steam_kp, steam_ki, steam_kd);
 }
 
 void GCP::setTargetTemp(TempMode current_mode, float temp) {
@@ -190,34 +186,60 @@ const char* GCP::getScale(){
 	return outputQueue.scale == F ? "F" : "C";
 }
 
-String GCP::getTunings(){
+String GCP::getTunings(String mode){
+	return getTunings(modeToEnum(mode));
+}
+
+String GCP::getTunings(TempMode mode){
 	StaticJsonDocument<64> output;
-	output["kp"] = kp;
-	output["ki"] = ki;
-	output["kd"] = kd;
+	if(mode == STEAM) {
+		output["kp"] = steam_kp;
+		output["ki"] = steam_ki;
+		output["kd"] = steam_kd;
+	}
+	else {
+		output["kp"] = brew_kp;
+		output["ki"] = brew_ki;
+		output["kd"] = brew_kd;
+	}
+
 	String outputString;
 	serializeJson(output, outputString);
 	return outputString;
 }
 
-void GCP::setTunings(float kp, float ki, float kd){
-	this->kp = kp;
-	this->ki = ki;
-	this->kd = kd;
+void GCP::setTunings(String mode, float kp, float ki, float kd){
+	setTunings(modeToEnum(mode), kp, ki, kd);
+}
 
-	brewTempManager.SetMode(brewTempManager.Control::automatic);
-	brewTempManager.SetProportionalMode(brewTempManager.pMode::pOnMeas);
-	brewTempManager.SetAntiWindupMode(brewTempManager.iAwMode::iAwClamp);
-	brewTempManager.SetTunings(kp, ki, kd);
+void GCP::setTunings(TempMode mode, float kp, float ki, float kd){
+	QuickPID* tempManager;
+	int eeprom_offset = 0;
+	
+	if(mode == STEAM) {
+		steam_kp = kp;
+		steam_ki = ki;
+		steam_kd = kd;
+		tempManager = &steamTempManager;
+		eeprom_offset = 24;
+	}
+	else {
+		brew_kp = kp;
+		brew_ki = ki;
+		brew_kd = kd;
+		tempManager = &brewTempManager;
+	}
 
-	steamTempManager.SetMode(steamTempManager.Control::automatic);
-	steamTempManager.SetProportionalMode(steamTempManager.pMode::pOnMeas);
-	steamTempManager.SetAntiWindupMode(steamTempManager.iAwMode::iAwClamp);
-	steamTempManager.SetTunings(kp, ki, kd);
+	tempManager->SetOutputLimits(0, kWindowSize);
+	tempManager->SetSampleTimeUs(kWindowSize * 1000);
+	tempManager->SetMode(tempManager->Control::automatic);
+	tempManager->SetProportionalMode(tempManager->pMode::pOnMeas);
+	tempManager->SetAntiWindupMode(tempManager->iAwMode::iAwClamp);
+	tempManager->SetTunings(kp, ki, kd);
 
-	EEPROM.put(TUNING_ADDRESS, kp);
-	EEPROM.put(TUNING_ADDRESS + 8, ki);
-	EEPROM.put(TUNING_ADDRESS + 16, kd);
+	EEPROM.put(TUNING_ADDRESS + eeprom_offset, kp);
+	EEPROM.put(TUNING_ADDRESS + eeprom_offset + 8, ki);
+	EEPROM.put(TUNING_ADDRESS + eeprom_offset + 16, kd);
 	EEPROM.commit();
 }
 
@@ -247,16 +269,19 @@ void GCP::loadParameters(){
 	if(!isnan(offset) && offset >= kMinOffset && offset <= kMaxOffset) temp_offset = offset;
 	if(scale) outputQueue.scale = scale;
 
-	float tunings[3];
+	float tunings[6];
 	bool tuningsValid = true;
-	for(int i=0; i<3; i++) {
+	for(int i=0; i<6; i++) {
 		EEPROM.get(TUNING_ADDRESS + i*8, tunings[i]);
 		if(tunings[i] < 0 || isnan(tunings[i])) {
 			tuningsValid = false;
 			break;
 		}
 	}
-	if(tuningsValid) setTunings(tunings[0], tunings[1], tunings[2]);
+	if(tuningsValid) {
+		setTunings(BREW, tunings[0], tunings[1], tunings[2]);
+		setTunings(STEAM, tunings[3], tunings[4], tunings[5]);
+	}
 }
 
 void GCP::refresh(ulong real_time) {
@@ -281,22 +306,37 @@ void GCP::refresh(ulong real_time) {
 	if(brewTempManager.Compute() || steamTempManager.Compute()) {
 		current_temp = this->getCurrentTemp();
 	}
-
 	// switch(brewTuner.Run()){
 	// 	case brewTuner.sample:
 	// 		current_temp = this->getCurrentTemp();
 	// 		break;
 	// 	case brewTuner.tunings:
-	// 		brewTuner.GetAutoTunings(&kp, &ki, &kd);
+	// 		brewTuner.GetAutoTunings(&brew_kp, &brew_ki, &brew_kd);
 	// 		brewTempManager.SetOutputLimits(0, kWindowSize);
 	// 		brewTempManager.SetSampleTimeUs((kWindowSize - 1) * 1000);
 	// 		brew_output = 0;
-	// 		setTunings(kp, ki, kd);
+	// 		setTunings(BREW, brew_kp, brew_ki, brew_kd);
 	// 		break;
 	// 	case brewTuner.runPid:
 	// 		current_temp = this->getCurrentTemp();
 	// 		brewTempManager.Compute();
-	// 		brewTuner.plotter(current_temp, optimum_brew, target_brew_temp, 0.5f, 3);
+	// 		break;
+	// }
+
+	// switch(steamTuner.Run()){
+	// 	case steamTuner.sample:
+	// 		current_temp = this->getCurrentTemp();
+	// 		break;
+	// 	case steamTuner.tunings:
+	// 		steamTuner.GetAutoTunings(&steam_kp, &steam_ki, &steam_kd);
+	// 		steamTempManager.SetOutputLimits(0, kWindowSize);
+	// 		steamTempManager.SetSampleTimeUs((kWindowSize - 1) * 1000);
+	// 		steam_output = 0;
+	// 		setTunings(STEAM, steam_kp, steam_ki, steam_kd);
+	// 		break;
+	// 	case steamTuner.runPid:
+	// 		current_temp = this->getCurrentTemp();
+	// 		steamTempManager.Compute();
 	// 		break;
 	// }
 
@@ -307,8 +347,8 @@ void GCP::refresh(ulong real_time) {
 		outputQueue.push(
 			real_time, 
 			current_temp, 
-			this->brew_output, 
-			this->steam_output,
+			optimum_brew, 
+			optimum_steam,
 			this->target_brew_temp,
 			this->target_steam_temp,
 			this->temp_offset
