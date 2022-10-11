@@ -11,9 +11,9 @@ GCP::GCP()
 , kMinOffset(-11)
 , kWindowSize(1000)
 , kLogInterval(500)
-, kOutputStep(50)
-, kTuneTime(200)
-, kSamples(200)
+, kOutputStep(200)
+, kTuneTime(60)
+, kSamples(500)
 , kSettleTime(10)
 , temp_offset(-8)
 , target_brew_temp(92)
@@ -307,8 +307,6 @@ void GCP::refresh(ulong real_time) {
 	}
 
 	float optimum_brew = brewTuner.softPwm(HEATER_PIN, current_temp, brew_output, target_brew_temp, kWindowSize, 0);
-	float optimum_steam = steamTuner.softPwm(STEAM_PIN, current_temp, steam_output, target_steam_temp, kWindowSize, 0);
-
 	switch(brewTuner.Run()){
 		case brewTuner.sample:
 			current_temp = this->getCurrentTemp();
@@ -323,20 +321,23 @@ void GCP::refresh(ulong real_time) {
 			brewTempManager.Compute();
 			break;
 	}
-
-	switch(steamTuner.Run()){
-		case steamTuner.sample:
-			current_temp = this->getCurrentTemp();
-			break;
-		case steamTuner.tunings:
-			steam_output = kOutputStep;
-			steamTuner.GetAutoTunings(&steam_kp, &steam_ki, &steam_kd);
-			setTunings(STEAM, steam_kp, steam_ki, steam_kd);
-			break;
-		case steamTuner.runPid:
-			current_temp = this->getCurrentTemp();
-			steamTempManager.Compute();
-			break;
+	
+	float optimum_steam = steamTuner.softPwm(STEAM_PIN, current_temp, steam_output, target_steam_temp, kWindowSize, 0);
+	if(brewTuner.runPid) {
+		switch(steamTuner.Run()){
+			case steamTuner.sample:
+				current_temp = this->getCurrentTemp();
+				break;
+			case steamTuner.tunings:
+				steam_output = kOutputStep;
+				steamTuner.GetAutoTunings(&steam_kp, &steam_ki, &steam_kd);
+				setTunings(STEAM, steam_kp, steam_ki, steam_kd);
+				break;
+			case steamTuner.runPid:
+				current_temp = this->getCurrentTemp();
+				steamTempManager.Compute();
+				break;
+		}
 	}
 
 	//Log information for website display
