@@ -289,6 +289,10 @@ float GCP::PWM(TempMode mode, QuickPID* tempManager, sTune* tuner, int pin, floa
 		case tuner->runPid:
 			current_temp = this->getCurrentTemp();
 			tempManager->Compute();
+			if(current_temp < setpoint - 8) {
+				if(mode == STEAM) steam_output = kWindowSize;
+				else brew_output = kWindowSize;
+			}
 			break;
 	}
 	return output;
