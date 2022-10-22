@@ -228,7 +228,6 @@ private:
 
         String getLast(){
             DynamicJsonDocument output(192);
-<<<<<<< HEAD
             int i = rear;
             output["time"] = times[i];
             output["temperature"] = sanitize(temps[i], 1);
@@ -243,22 +242,6 @@ private:
             json_targets["steam"] = sanitize(targets[STEAM][i]);
             json_targets["offset"] = sanitize(targets[OFFSET][i], false, true);
 
-=======
-            int i = count-1;
-            JsonObject results = output.createNestedObject();
-            results["time"] = times[i];
-            results["temperature"] = sanitize(temps[i], 1);
-            results["scale"] = scale == F ? "F" : "C";
-
-            JsonObject json_outputs = results.createNestedObject("outputs");
-            json_outputs["brew"] = outputs[BREW][i];
-            json_outputs["steam"] = outputs[STEAM][i];
-
-            JsonObject json_targets = results.createNestedObject("targets");
-            json_targets["brew"] = sanitize(targets[BREW][i]);
-            json_targets["steam"] = sanitize(targets[STEAM][i]);
-            json_targets["offset"] = sanitize(targets[OFFSET][i], false, true);
->>>>>>> eb137b0 (Add function to get last temps instead of entire array)
             String outputString;
             serializeJson(output, outputString);
             return outputString;
