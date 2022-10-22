@@ -229,19 +229,19 @@ private:
         String getLast(){
             DynamicJsonDocument output(192);
             int i = count-1;
-            JsonObject results = output.createNestedObject();
-            results["time"] = times[i];
-            results["temperature"] = sanitize(temps[i], 1);
-            results["scale"] = scale == F ? "F" : "C";
+            output["time"] = times[i];
+            output["temperature"] = sanitize(temps[i], 1);
+            output["scale"] = scale == F ? "F" : "C";
 
-            JsonObject json_outputs = results.createNestedObject("outputs");
+            JsonObject json_outputs = output.createNestedObject("outputs");
             json_outputs["brew"] = outputs[BREW][i];
             json_outputs["steam"] = outputs[STEAM][i];
 
-            JsonObject json_targets = results.createNestedObject("targets");
+            JsonObject json_targets = output.createNestedObject("targets");
             json_targets["brew"] = sanitize(targets[BREW][i]);
             json_targets["steam"] = sanitize(targets[STEAM][i]);
             json_targets["offset"] = sanitize(targets[OFFSET][i], false, true);
+
             String outputString;
             serializeJson(output, outputString);
             return outputString;
