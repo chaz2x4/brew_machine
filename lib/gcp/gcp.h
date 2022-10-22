@@ -204,7 +204,7 @@ private:
         }
 
         String toJson() {
-            DynamicJsonDocument output(61440);
+            DynamicJsonDocument output(24576);
             for(int i = 0; i<count; i++) {
                 JsonObject results = output.createNestedObject();
                 results["time"] = times[i];
