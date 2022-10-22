@@ -253,12 +253,15 @@
                     case "offset":
                         max_temp = convertScales(max_offset, true);
                         temp_offset = (temp_offset < max_temp) ? temp_offset + i : max_temp;
+                        break;
                     case "steam":
                         max_temp = convertScales(max_steam_temp);
                         steam_target = (steam_target < max_temp) ? steam_target + i : max_temp;
+                        break;
                     default:
                         max_temp = convertScales(max_brew_temp);
-                        brew_target = (brew_target < max_temp) ? brew_target + i: max_temp; 
+                        brew_target = (brew_target < max_temp) ? brew_target + i : max_temp;
+                        break;
                 }
                 updateElements();
                 callServer.post("/increment_target?mode=" + mode);
@@ -272,12 +275,15 @@
                     case "offset":
                         min_temp = convertScales(min_offset, true);
                         temp_offset = (temp_offset > min_temp) ? temp_offset - i : min_temp;
+                        break;
                     case "steam":
                         min_temp = convertScales(min_steam_temp);
-                        steam_target = (steam_target > min_temp) ? steam_target - i: min_temp;
+                        steam_target = (steam_target > min_temp) ? steam_target - i : min_temp;
+                        break;
                     default:
                         min_temp = convertScales(min_brew_temp);
-                        brew_target = (brew_target > min_temp) ? brew_target - i : min_temp; 
+                        brew_target = (brew_target > min_temp) ? brew_target - i : min_temp;
+                        break;
                 }
                 updateElements();
                 callServer.post("/decrement_target?mode=" + mode);
