@@ -188,7 +188,7 @@ String GCP::getTunings(String mode){
 }
 
 String GCP::getTunings(TempMode mode){
-	StaticJsonDocument<64> output;
+	StaticJsonDocument<48> output;
 	if(mode == STEAM) {
 		output["kp"] = steam_kp;
 		output["ki"] = steam_ki;
