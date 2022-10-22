@@ -186,7 +186,12 @@
                 scale_f_button.classList.toggle("active", temp_scale == "F");
 
                 let target_temp = brew_target;
-                if(current_mode == "steam") target_temp = steam_target;
+                document.getElementById("advanced_title").innerHTML = "Brew:"
+                if(current_mode == "steam") {
+                    target_temp = steam_target;
+                    document.getElementById("advanced_title").innerHTML = "Steam:";
+                }
+
                 chart.options.scales.y1.suggestedMin = target_temp % 5 === 0 ? Math.floor(target_temp / 5 - 1) * 5 : Math.floor(target_temp / 5) * 5;
                 chart.options.scales.y1.suggestedMax = target_temp % 5 === 0 ? Math.ceil(target_temp / 5 + 1) * 5 : Math.ceil(target_temp / 5) * 5;
                 chart.update();
@@ -559,6 +564,7 @@
                         </div>
                         <div class="tab-pane fade" id="advanced_card">
                             <div class="row"> 
+                                <h6 id="advanced_title">Brew:</h6>
                                 <div class="col-12" for="offset_group"> Offset: 
                                     <small class="text-muted" id="offset_target_label"><span class="spinner-border spinner-border-sm"></span></small>
                                 </div>
