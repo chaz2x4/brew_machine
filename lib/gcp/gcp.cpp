@@ -14,7 +14,7 @@ GCP::GCP()
 , kOutputStep(100)
 , kTuneTime(60)
 , kSamples(200)
-, kSettleTime(10)
+, kSettleTime(5)
 , temp_offset(-8)
 , target_brew_temp(92)
 , target_steam_temp(140)
@@ -254,11 +254,11 @@ float GCP::PWM(TempMode mode, QuickPID* tempManager, sTune* tuner, int pin, floa
 	else digitalWrite(pin, LOW);
 
 	if((tuning_complete || current_temp > (target_steam_temp * 0.9)) && !currently_pwm) currently_pwm = true;
-	if(!currently_pwm) digitalWrite(STEAM_PIN, HIGH);
 
 	switch(tuner->Run()){
 		case tuner->sample:
 			current_temp = this->getCurrentTemp();
+			if(!currently_pwm) steam_output = kWindowSize;
 			break;
 		case tuner->tunings:
 			float kp, ki, kd;
@@ -289,9 +289,13 @@ float GCP::PWM(TempMode mode, QuickPID* tempManager, sTune* tuner, int pin, floa
 		case tuner->runPid:
 			current_temp = this->getCurrentTemp();
 			tempManager->Compute();
-			if(current_temp < setpoint - 8) {
+			if(current_temp < setpoint * 0.9) {
 				if(mode == STEAM) steam_output = kWindowSize;
 				else brew_output = kWindowSize;
+			}
+			else if(current_temp < setpoint * 0.975) {
+				if(mode == STEAM) steam_output = kWindowSize / 2;
+				else brew_output = kWindowSize / 2;
 			}
 			break;
 	}
