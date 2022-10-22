@@ -23,132 +23,132 @@ void loadParameters(){
 }
 
 void saveParameters(){
-    brew_machine.setTargetTemp("brew", saved_target_brew_temp);
-    brew_machine.setTargetTemp("steam", saved_target_steam_temp);
-    brew_machine.setTargetTemp("offset", saved_target_offset);
+    brew_machine.setTargetTemp(BREW, saved_target_brew_temp);
+    brew_machine.setTargetTemp(STEAM, saved_target_steam_temp);
+    brew_machine.setTargetTemp(OFFSET, saved_target_offset);
     brew_machine.setTunings(saved_tunings[0], saved_tunings[1], saved_tunings[2]);
 }
 
 void test_function_gcp_set_brew_temp(){
-    brew_machine.setTargetTemp("brew", 95);
-    TEST_ASSERT_EQUAL(95, brew_machine.getTargetTemp("brew"));
+    brew_machine.setTargetTemp(BREW, 95);
+    TEST_ASSERT_EQUAL(95, brew_machine.getTargetTemp(BREW));
 }
 
 void test_function_gcp_set_steam_temp(){
-    brew_machine.setTargetTemp("steam", 150);
-    TEST_ASSERT_EQUAL(150, brew_machine.getTargetTemp("steam"));
+    brew_machine.setTargetTemp(STEAM, 150);
+    TEST_ASSERT_EQUAL(150, brew_machine.getTargetTemp(STEAM));
 }
 
 void test_function_gcp_set_offset(){
-     brew_machine.setTargetTemp("offset", -10);
-    TEST_ASSERT_EQUAL(-10, brew_machine.getTargetTemp("offset"));
+     brew_machine.setTargetTemp(OFFSET, -10);
+    TEST_ASSERT_EQUAL(-10, brew_machine.getTargetTemp(OFFSET));
 }
 
 void test_function_gcp_increment_brew_temp(){
-    brew_machine.setTargetTemp("brew", 95);
-    brew_machine.incrementTemp("brew");
-    TEST_ASSERT_EQUAL(95.5, brew_machine.getTargetTemp("brew"));
+    brew_machine.setTargetTemp(BREW, 95);
+    brew_machine.incrementTemp(BREW);
+    TEST_ASSERT_EQUAL(95.5, brew_machine.getTargetTemp(BREW));
 }
 
 void test_function_gcp_increment_steam_temp(){
-    brew_machine.setTargetTemp("steam", 150);
-    brew_machine.incrementTemp("steam");
-    TEST_ASSERT_EQUAL(151, brew_machine.getTargetTemp("steam"));
+    brew_machine.setTargetTemp(STEAM, 149);
+    brew_machine.incrementTemp(STEAM);
+    TEST_ASSERT_EQUAL(150, brew_machine.getTargetTemp(STEAM));
 }
 
 void test_function_gcp_increment_offset(){
-    brew_machine.setTargetTemp("offset", -10);
-    brew_machine.incrementTemp("offset");
-    TEST_ASSERT_EQUAL(-9.5, brew_machine.getTargetTemp("offset"));
+    brew_machine.setTargetTemp(OFFSET, -10);
+    brew_machine.incrementTemp(OFFSET);
+    TEST_ASSERT_EQUAL(-9.5, brew_machine.getTargetTemp(OFFSET));
 }
 
 void test_function_gcp_decrement_brew_temp(){
-    brew_machine.setTargetTemp("brew", 95);
-    brew_machine.decrementTemp("brew");
-    TEST_ASSERT_EQUAL(94.5, brew_machine.getTargetTemp("brew"));
+    brew_machine.setTargetTemp(BREW, 95);
+    brew_machine.decrementTemp(BREW);
+    TEST_ASSERT_EQUAL(94.5, brew_machine.getTargetTemp(BREW));
 }
 
 void test_function_gcp_decrement_steam_temp(){
-    brew_machine.setTargetTemp("steam", 150);
-    brew_machine.decrementTemp("steam");
-    TEST_ASSERT_EQUAL(149, brew_machine.getTargetTemp("steam"));
+    brew_machine.setTargetTemp(STEAM, 150);
+    brew_machine.decrementTemp(STEAM);
+    TEST_ASSERT_EQUAL(149, brew_machine.getTargetTemp(STEAM));
 }
 
 void test_function_gcp_decrement_offset(){
-    brew_machine.setTargetTemp("offset", 10);
-    brew_machine.decrementTemp("offset");
-    TEST_ASSERT_EQUAL(9.5, brew_machine.getTargetTemp("offset"));
+    brew_machine.setTargetTemp(OFFSET, 10);
+    brew_machine.decrementTemp(OFFSET);
+    TEST_ASSERT_EQUAL(9.5, brew_machine.getTargetTemp(OFFSET));
 }
 
 void test_function_gcp_brew_max_1(){
-    brew_machine.setTargetTemp("brew", 162);
-    TEST_ASSERT_EQUAL(115, brew_machine.getTargetTemp("brew"));
+    brew_machine.setTargetTemp(BREW, 162);
+    TEST_ASSERT_EQUAL(105, brew_machine.getTargetTemp(BREW));
 }
 
 void test_function_gcp_brew_max_2(){
-    brew_machine.setTargetTemp("brew", 162);
-    brew_machine.incrementTemp("brew");
-    TEST_ASSERT_EQUAL(115, brew_machine.getTargetTemp("brew"));
+    brew_machine.setTargetTemp(BREW, 105);
+    brew_machine.incrementTemp(BREW);
+    TEST_ASSERT_EQUAL(105, brew_machine.getTargetTemp(BREW));
 }
 
 void test_function_gcp_brew_min_1(){
-    brew_machine.setTargetTemp("brew", 0);
-    TEST_ASSERT_EQUAL(85, brew_machine.getTargetTemp("brew"));
+    brew_machine.setTargetTemp(BREW, 0);
+    TEST_ASSERT_EQUAL(85, brew_machine.getTargetTemp(BREW));
 }
 
 void test_function_gcp_brew_min_2(){
-    brew_machine.setTargetTemp("brew", 0);
-    brew_machine.decrementTemp("brew");
-    TEST_ASSERT_EQUAL(85, brew_machine.getTargetTemp("brew"));
+    brew_machine.setTargetTemp(BREW, 0);
+    brew_machine.decrementTemp(BREW);
+    TEST_ASSERT_EQUAL(85, brew_machine.getTargetTemp(BREW));
 }
 
 void test_function_gcp_steam_max_1(){
-    brew_machine.setTargetTemp("steam", 162);
-    TEST_ASSERT_EQUAL(160, brew_machine.getTargetTemp("steam"));
+    brew_machine.setTargetTemp(STEAM, 162);
+    TEST_ASSERT_EQUAL(150, brew_machine.getTargetTemp(STEAM));
 }
 
 void test_function_gcp_steam_max_2(){
-    brew_machine.setTargetTemp("steam", 162);
-    brew_machine.incrementTemp("steam");
-    TEST_ASSERT_EQUAL(160, brew_machine.getTargetTemp("steam"));
+    brew_machine.setTargetTemp(STEAM, 150);
+    brew_machine.incrementTemp(STEAM);
+    TEST_ASSERT_EQUAL(150, brew_machine.getTargetTemp(STEAM));
 }
 
 void test_function_gcp_steam_min_1(){
-    brew_machine.setTargetTemp("steam", 0);
-    TEST_ASSERT_EQUAL(140, brew_machine.getTargetTemp("steam"));
+    brew_machine.setTargetTemp(STEAM, 0);
+    TEST_ASSERT_EQUAL(130, brew_machine.getTargetTemp(STEAM));
 }
 
 void test_function_gcp_steam_min_2(){
-    brew_machine.setTargetTemp("steam", 0);
-    brew_machine.decrementTemp("steam");
-    TEST_ASSERT_EQUAL(140, brew_machine.getTargetTemp("steam"));
+    brew_machine.setTargetTemp(STEAM, 130);
+    brew_machine.decrementTemp(STEAM);
+    TEST_ASSERT_EQUAL(130, brew_machine.getTargetTemp(STEAM));
 }
 
 void test_function_gcp_offset_max_1(){
-    brew_machine.setTargetTemp("offset", 20);
-    TEST_ASSERT_EQUAL(15, brew_machine.getTargetTemp("offset"));
+    brew_machine.setTargetTemp(OFFSET, 20);
+    TEST_ASSERT_EQUAL(11, brew_machine.getTargetTemp(OFFSET));
 }
 
 void test_function_gcp_offset_min_1(){
-    brew_machine.setTargetTemp("offset", -20);
-    TEST_ASSERT_EQUAL(-15, brew_machine.getTargetTemp("offset"));
+    brew_machine.setTargetTemp(OFFSET, -20);
+    TEST_ASSERT_EQUAL(-11, brew_machine.getTargetTemp(OFFSET));
 }
 
 void test_function_gcp_offset_max_2(){
-    brew_machine.setTargetTemp("offset", 20);
-    brew_machine.incrementTemp("offset");
-    TEST_ASSERT_EQUAL(15, brew_machine.getTargetTemp("offset"));
+    brew_machine.setTargetTemp(OFFSET, 20);
+    brew_machine.incrementTemp(OFFSET);
+    TEST_ASSERT_EQUAL(15, brew_machine.getTargetTemp(OFFSET));
 }
 
 void test_function_gcp_offset_min_2(){
-    brew_machine.setTargetTemp("offset", -20);
-    brew_machine.decrementTemp("offset");
-    TEST_ASSERT_EQUAL(-15, brew_machine.getTargetTemp("offset"));
+    brew_machine.setTargetTemp(OFFSET, -20);
+    brew_machine.decrementTemp(OFFSET);
+    TEST_ASSERT_EQUAL(-15, brew_machine.getTargetTemp(OFFSET));
 }
 
 void test_function_gcp_current_temp(){
     double temp = brew_machine.getActualTemp();
-    double offset = brew_machine.getTargetTemp("offset");
+    double offset = brew_machine.getTargetTemp(OFFSET);
     TEST_ASSERT_EQUAL(temp + offset, brew_machine.getCurrentTemp());
 }
 
@@ -159,21 +159,21 @@ void test_function_gcp_set_tunings(){
 
 void test_function_gcp_eeprom_brew(){
     double temp;
-    brew_machine.setTargetTemp("brew", 96);
+    brew_machine.setTargetTemp(BREW, 96);
     EEPROM.get(BREW_TEMP_ADDRESS, temp);
     TEST_ASSERT_EQUAL(96, temp);
 }
 
 void test_function_gcp_eeprom_steam(){
     double temp;
-    brew_machine.setTargetTemp("steam", 152);
+    brew_machine.setTargetTemp(STEAM, 152);
     EEPROM.get(STEAM_TEMP_ADDRESS, temp);
     TEST_ASSERT_EQUAL(152, temp);
 }
 
 void test_function_gcp_eeprom_offset(){
     double temp;
-    brew_machine.setTargetTemp("offset", -11);
+    brew_machine.setTargetTemp(OFFSET, -11);
     EEPROM.get(OFFSET_ADDRESS, temp);
     TEST_ASSERT_EQUAL(-11, temp);
 }
@@ -189,11 +189,11 @@ void test_function_gcp_eeprom_tunings(){
 }
 
 void test_function_oled_increment_brew(){
-    String current_mode = screen.getCurrentMode();
-    double target = brew_machine.getTargetTemp("brew");
-    if(current_mode == "brew") {
+    TempMode current_mode = screen.getCurrentMode();
+    double target = brew_machine.getTargetTemp(BREW);
+    if(current_mode == BREW) {
         screen.incrementTemp();
-        TEST_ASSERT_EQUAL(target + 0.5, brew_machine.getTargetTemp("brew"));
+        TEST_ASSERT_EQUAL(target + 0.5, brew_machine.getTargetTemp(BREW));
     }
     else {
         screen.changeMode();
@@ -202,11 +202,11 @@ void test_function_oled_increment_brew(){
 }
 
 void test_function_oled_decrement_brew(){
-    String current_mode = screen.getCurrentMode();
-    double target = brew_machine.getTargetTemp("brew");
-    if(current_mode == "brew") {
+    TempMode current_mode = screen.getCurrentMode();
+    double target = brew_machine.getTargetTemp(BREW);
+    if(current_mode == BREW) {
         screen.decrementTemp();
-        TEST_ASSERT_EQUAL(target - 0.5, brew_machine.getTargetTemp("brew"));
+        TEST_ASSERT_EQUAL(target - 0.5, brew_machine.getTargetTemp(BREW));
     }
     else {
         screen.changeMode();
@@ -215,11 +215,11 @@ void test_function_oled_decrement_brew(){
 }
 
 void test_function_oled_increment_steam(){
-    String current_mode = screen.getCurrentMode();
-    double target = brew_machine.getTargetTemp("steam");
-    if(current_mode == "steam") {
+    TempMode current_mode = screen.getCurrentMode();
+    double target = brew_machine.getTargetTemp(STEAM);
+    if(current_mode == STEAM) {
         screen.incrementTemp();
-        TEST_ASSERT_EQUAL(target + 1, brew_machine.getTargetTemp("steam"));
+        TEST_ASSERT_EQUAL(target + 1, brew_machine.getTargetTemp(STEAM));
     }
     else {
         screen.changeMode();
@@ -228,11 +228,11 @@ void test_function_oled_increment_steam(){
 }
 
 void test_function_oled_decrement_steam(){
-    String current_mode = screen.getCurrentMode();
-    double target = brew_machine.getTargetTemp("steam");
-    if(current_mode == "steam") {
+    TempMode current_mode = screen.getCurrentMode();
+    double target = brew_machine.getTargetTemp(STEAM);
+    if(current_mode == STEAM) {
         screen.decrementTemp();
-        TEST_ASSERT_EQUAL(target - 1, brew_machine.getTargetTemp("steam"));
+        TEST_ASSERT_EQUAL(target - 1, brew_machine.getTargetTemp(STEAM));
     }
     else {
         screen.changeMode();
@@ -243,11 +243,6 @@ void test_function_oled_decrement_steam(){
 void test_function_gcp_output(){
     ulong now = millis();
     brew_machine.refresh(now);
-}
-
-void test_function_gcp_get_pressure(){
-    double px = brew_machine.getPressure();
-    TEST_ASSERT_GREATER_OR_EQUAL(px, 1);
 }
 
 void setup(){
@@ -299,7 +294,6 @@ void setup(){
 void loop(){
     if(current_loop < max_loops) {
         RUN_TEST(test_function_gcp_output);
-        // RUN_TEST(test_function_gcp_get_pressure);
         delay(1000);
         current_loop++;
     }

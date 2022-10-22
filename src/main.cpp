@@ -12,12 +12,9 @@ void WiFiConnected(WiFiEvent_t event, WiFiEventInfo_t info) {
 	is_wifi_connected = true;
 	ArduinoOTA.setHostname(hostname);
 	ArduinoOTA.onStart([](){
-		String type;
-		if (ArduinoOTA.getCommand() == U_FLASH) type = "sketch";
-		else type = "filesystem";
 		digitalWrite(HEATER_PIN, LOW);
 		digitalWrite(STEAM_PIN, LOW);
-		Serial.println("Updating " + type);
+		Serial.println("Updating...");
 	}).onEnd([](){
 		Serial.println("\nComplete");
 	}).onProgress([](uint progress, uint total){
@@ -44,20 +41,27 @@ void WiFiConnected(WiFiEvent_t event, WiFiEventInfo_t info) {
 		request->send(200, "text/json", brew_machine.getOutput());
 	});
 
+	server.on("/get_recent_temps", HTTP_GET, [](AsyncWebServerRequest *request){
+		request->send(200, "text/json", brew_machine.getLastOutput());
+	});
+
 	server.on("/get_tunings", HTTP_GET, [](AsyncWebServerRequest *request){
-		request->send(200, "text/json", brew_machine.getTunings());
+		if(request->hasArg("mode")) { 
+			request->send(200, "text/json", brew_machine.getTunings(request->arg("mode")));
+		}
+		else request->send(400);
 	});
 
 	AsyncCallbackJsonWebHandler* handler = new AsyncCallbackJsonWebHandler("/set_tunings", [](AsyncWebServerRequest *request, JsonVariant &json) {
 		JsonObject&& tunings = json.as<JsonObject>();
-		if(tunings["kp"].isNull() || tunings["ki"].isNull() || tunings["kd"].isNull()) {
+		if(tunings["kp"].isNull() || tunings["ki"].isNull() || tunings["kd"].isNull() || !request->hasArg("mode")) {
 			request->send(400);
 		}
 		else {
-			double kp = tunings["kp"].as<double>();
-			double ki = tunings["ki"].as<double>();
-			double kd = tunings["kd"].as<double>();
-			brew_machine.setTunings(kp, ki, kd);
+			float kp = tunings["kp"].as<float>();
+			float ki = tunings["ki"].as<float>();
+			float kd = tunings["kd"].as<float>();
+			brew_machine.setTunings(request->arg("mode"), kp, ki, kd);
 			request->send(200);
 		}
 	});

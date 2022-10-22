@@ -5,16 +5,15 @@
 
 #include <Adafruit_MAX31865.h>
 #include <EEPROM.h>
-#include <PID_v1.h>
+#include <QuickPID.h>
+#include <sTune.h>
+#include <ArduinoJson.h>
 
 /* PINS */
-#define HEATER_PIN 13
+#define HEATER_PIN 27
 #define STEAM_PIN 12
-#define PUMP_PIN 27
-#define ZERO_CROSS_PIN 33
 #define THERMOPROBE_PIN A5
-#define CURRENT_PIN A4
-#define TRANSDUCER_PIN A3
+#define THERMOPROBE_READY_PIN 33
 
 /* EEPROM ADDRESSES */
 #define BREW_TEMP_ADDRESS 0
@@ -38,85 +37,91 @@ public:
     GCP();
     ~GCP();
     void start();
+    void setTargetTemp(TempMode, float);
     void incrementTemp(String);
     void decrementTemp(String);
     void incrementTemp(TempMode);
     void decrementTemp(TempMode);
-    double getTargetPressure();
-    double getTargetTemp(TempMode);
-    double getActualTemp();
-    double getCurrentTemp();
-    String getScale();
+    float getTargetTemp(TempMode);
+    float getActualTemp();
+    float getCurrentTemp();
+    const char* getScale();
     String getOutput();
-    String getTunings();
-    void setTunings(double, double, double);
+    String getLastOutput();
+    String getTunings(String);
+    String getTunings(TempMode);
+    void setTunings(String, float, float, float);
+    void setTunings(TempMode, float, float, float);
     void changeScale(String);
     void refresh(ulong);
 private:
     Adafruit_MAX31865 tempProbe;
-    const double kEmergencyShutoffTemp;
-    const double kMaxBrewTemp;
-    const double kMinBrewTemp;
-    const double kMaxSteamTemp;
-    const double kMinSteamTemp;
-    const double kMaxOffset;
-    const double kMinOffset;
-    const ulong kWindowSize;
-    const ulong kLogInterval;
-    const int kPowerFrequency;
+    const float kEmergencyShutoffTemp;
+    const float kMaxBrewTemp;
+    const float kMinBrewTemp;
+    const float kMaxSteamTemp;
+    const float kMinSteamTemp;
+    const float kMaxOffset;
+    const float kMinOffset;
+    const int kWindowSize;
+    const int kLogInterval;
+    const int kOutputStep;
+    const int kTuneTime;
+    const int kSamples;
+    const int kSettleTime;
     typedef enum {C, F} TempScale;
 
-    double current_temp;
-    double temp_offset;
-    double target_temp;
-    double target_steam_temp;
+    float current_temp;
+    float temp_offset;
+    float target_brew_temp;
+    float target_steam_temp;
 
-    double current_pressure;
-    double target_pressure;
+    float brew_output;
+    float steam_output;
 
-    double brew_output;
-    double steam_output;
-    double pump_output;
-    int last_brew_output;
-    int last_steam_output;
+    float brew_kp;
+    float brew_ki;
+    float brew_kd;
 
-    ulong window_start_time;
+    float steam_kp;
+    float steam_ki;
+    float steam_kd;
+
+    bool tuning_complete;
+    bool currently_pwm;
+    sTune brewTuner;
+    sTune steamTuner;
+
+    QuickPID brewTempManager;
+    QuickPID steamTempManager;
+
     ulong log_start_time;
-    ulong brew_start_time;
-    ulong brew_stop_time;
-    ulong preinfusion_time;
-
-    double temp_kp;
-    double temp_ki;
-    double temp_kd;
-
-    PID brewTempManager;
-    PID steamTempManager;
+    ulong window_start_time;
 
     void loadParameters();
     TempMode modeToEnum(String);
-    void setTargetTemp(TempMode, double);
+    float PWM(TempMode, QuickPID*, sTune*, int, float, float);
 
     struct Queue {
         int front, rear, capacity, count;
 
-        TempScale current_scale;
+        TempScale scale;
         ulong *times;
-        double *temps;
-        double *outputs[2];
-        double *targets[3];
+        float *temps;
+        float *outputs[2];
+        float *targets[3];
 
         Queue(int c, TempScale s) {
-            current_scale = s;
+            scale = s;
             front = rear = 0;
             capacity = c;
             times = new ulong[capacity];
-            temps = new double[capacity];
+            temps = new float[capacity];
             for(int i=0;i<2;i++){
-                outputs[i] = new double[capacity];
+                outputs[i] = new float[capacity];
             }
             for(int i=0;i<3;i++) {
-                targets[i] = new double[capacity];
+                targets[i] = new float[capacity];
             }
         }
 
@@ -131,17 +136,17 @@ private:
             }
         }
 
-        double sanitize(double t) {
+        float sanitize(float t) {
             return sanitize(t, false, false);
         }
 
-        double sanitize(double t, bool getUnrounded) {
+        float sanitize(float t, bool getUnrounded) {
             return sanitize(t, getUnrounded, false);
         }
 
-        double sanitize(double t, bool getUnrounded, bool getOffset) {
-            double result;
-            if(current_scale == F) {
+        float sanitize(float t, bool getUnrounded, bool getOffset) {
+            float result;
+            if(scale == F) {
                 result = t * 9 / 5;
                 if(!getOffset) result += 32;
             }
@@ -149,7 +154,7 @@ private:
     
             if(getUnrounded) return result;
             else {
-                if(current_scale == C) {
+                if(scale == C) {
                     return round(result * 2.0) / 2.0;
                 }
                 else return round(result);
@@ -158,14 +163,14 @@ private:
 
         void push(
             ulong time, 
-            double temp, 
-            double brew_output, 
-            double steam_output, 
-            double brew_target, 
-            double steam_target, 
-            double offset_target
+            float temp, 
+            float brew_output, 
+            float steam_output, 
+            float brew_target, 
+            float steam_target, 
+            float offset_target
         ){
-            if(count == capacity) pop();
+            if(count == capacity) shift();
             if(rear == capacity - 1) rear = -1;
             if(count == 0) {
                 times[0] = time;
@@ -189,7 +194,7 @@ private:
             count++;
         }
 
-        void pop() {
+        void shift() {
             front++;
             if(front == capacity) front = 0;
             count--;
@@ -199,34 +204,47 @@ private:
             return count;
         }
 
-        String at(int i) {
-            String results;
-            results += "{ \"time\": ";
-            results += times[i];
-            results += ", \"temperature\": ";
-            results += sanitize(temps[i], 1);
-            results += ", \"scale\": \"";
-            results += getScale() + "\"";
-            results += ", \"outputs\": { \"brew\": ";
-            results += outputs[BREW][i];
-            results += ", \"steam\": ";
-            results += outputs[STEAM][i];
-            results += "}, \"targets\": { \"brew\": ";
-            results += sanitize(targets[BREW][i]);
-            results += ", \"steam\": ";
-            results += sanitize(targets[STEAM][i]);
-            results += ", \"offset\": ";
-            results += sanitize(targets[OFFSET][i], false, true);
-            results += " }}";
-            return results;
+        String getAll() {
+            DynamicJsonDocument output(24576);
+            for(int i = 0; i<count; i++) {
+                JsonObject results = output.createNestedObject();
+                results["time"] = times[i];
+                results["temperature"] = sanitize(temps[i], 1);
+                results["scale"] = scale == F ? "F" : "C";
+
+                JsonObject json_outputs = results.createNestedObject("outputs");
+                json_outputs["brew"] = outputs[BREW][i];
+                json_outputs["steam"] = outputs[STEAM][i];
+
+                JsonObject json_targets = results.createNestedObject("targets");
+                json_targets["brew"] = sanitize(targets[BREW][i]);
+                json_targets["steam"] = sanitize(targets[STEAM][i]);
+                json_targets["offset"] = sanitize(targets[OFFSET][i], false, true);
+            }
+            String outputString;
+            serializeJson(output, outputString);
+            return outputString;
         }
 
-        void setScale(TempScale s) {
-            current_scale = s;
-        }
+        String getLast(){
+            DynamicJsonDocument output(192);
+            int i = rear;
+            output["time"] = times[i];
+            output["temperature"] = sanitize(temps[i], 1);
+            output["scale"] = scale == F ? "F" : "C";
 
-        String getScale() {
-            return current_scale == F ? "F" : "C";
+            JsonObject json_outputs = output.createNestedObject("outputs");
+            json_outputs["brew"] = outputs[BREW][i];
+            json_outputs["steam"] = outputs[STEAM][i];
+
+            JsonObject json_targets = output.createNestedObject("targets");
+            json_targets["brew"] = sanitize(targets[BREW][i]);
+            json_targets["steam"] = sanitize(targets[STEAM][i]);
+            json_targets["offset"] = sanitize(targets[OFFSET][i], false, true);
+
+            String outputString;
+            serializeJson(output, outputString);
+            return outputString;
         }
     };
     Queue outputQueue;
