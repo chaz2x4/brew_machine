@@ -176,7 +176,11 @@ float GCP::getCurrentTemp() {
 }
 
 String GCP::getOutput(){
-	return outputQueue.toJson();
+	return outputQueue.getAll();
+}
+
+String GCP::getLastOutput(){
+	return outputQueue.getLast();
 }
 
 const char* GCP::getScale(){

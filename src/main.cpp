@@ -41,6 +41,10 @@ void WiFiConnected(WiFiEvent_t event, WiFiEventInfo_t info) {
 		request->send(200, "text/json", brew_machine.getOutput());
 	});
 
+	server.on("/get_recent_temps", HTTP_GET, [](AsyncWebServerRequest *request){
+		request->send(200, "text/json", brew_machine.getLastOutput());
+	});
+
 	server.on("/get_tunings", HTTP_GET, [](AsyncWebServerRequest *request){
 		if(request->hasArg("mode")) { 
 			request->send(200, "text/json", brew_machine.getTunings(request->arg("mode")));
