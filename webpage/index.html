@@ -25,7 +25,6 @@
             let temp_scale = "C";
             let cycle_time = 1000;
             let current_mode = 'brew';
-            let temp_data = [];
             let target_data = {};
             let output_data = {};
             let labels = [];
@@ -307,6 +306,7 @@
                 temp_scale = scale;
                 document.getElementById("offset_target_label").innerHTML = placeholder.outerHTML;
                 refreshTargets();
+                loadTemps();
             }
             
             let steam_switch = document.getElementById("switch_steam");
@@ -372,7 +372,7 @@
                 });
             }
 
-           function refreshTemps() {
+           function loadTemps() {
                 clearTimeout(refresh_temps_id);
                 callServer.get("/get_temps", function(response){
                     let requested_labels = [];
@@ -393,39 +393,69 @@
                     })
 
                     let last_output = sorted_outputs[sorted_outputs.length - 1];
-                    if(!is_target_loaded) {
-                        [
-                            temp_scale, 
-                            brew_target, 
-                            steam_target, 
-                            temp_offset
-                        ] = [
-                            last_output.scale, 
-                            last_output.targets.brew, 
-                            last_output.targets.steam, 
-                            last_output.targets.offset
-                        ];
-                        is_target_loaded = true;
-                    }
+                    [
+                        temp_scale, 
+                        brew_target, 
+                        steam_target, 
+                        temp_offset
+                    ] = [
+                        last_output.scale, 
+                        last_output.targets.brew, 
+                        last_output.targets.steam, 
+                        last_output.targets.offset
+                    ];
 
                     let current_temp = requested_temp_data[requested_temp_data.length - 1].toPrecision(4);
                     brew_temp_element.innerHTML = current_temp + " °" + temp_scale;
                     steam_temp_element.innerHTML = current_temp + " °" + temp_scale;
                     
-                    temp_data = requested_temp_data;
                     target_data.brew = requested_brew_targets;
                     output_data.brew = requested_brew_output;
                     target_data.steam = requested_steam_targets;
                     output_data.steam = requested_steam_output;
 
                     chart.data.labels = requested_labels;
-                    chart.data.datasets[0].data = temp_data;
+                    chart.data.datasets[0].data = requested_temp_data;
                     chart.data.datasets[1].data = target_data[current_mode];
                     chart.data.datasets[2].data = output_data[current_mode];
 
                     updateElements();
+                    refresh_temps_id = setTimeout(refreshTemps, 1000);
                 });
-                refresh_temps_id = setTimeout(refreshTemps, 1000);
+            }
+            loadTemps();
+            
+            function refreshTemps(){
+                clearTimeout(refresh_temps_id);
+                callServer.get("/get_recent_temps", function(response){
+                    let current_temp = response.temperature.toPrecision(4);
+                    let queue_size = chart.data.labels.length;
+
+                    brew_temp_element.innerHTML = current_temp + " °" + temp_scale;
+                    steam_temp_element.innerHTML = current_temp + " °" + temp_scale;
+                    
+                    target_data.brew.push(response.targets.brew);
+                    output_data.brew.push(response.outputs.brew);
+                    target_data.steam.push(response.targets.steam);
+                    output_data.steam.push(response.outputs.steam);
+
+                    if(queue_size > 120) {
+                        chart.data.labels.shift();
+                        chart.data.datasets[0].data.shift();
+                        target_data.brew.shift();
+                        target_data.steam.shift();
+                        output_data.brew.shift();
+                        output_data.steam.shift();
+                    }
+
+                    chart.data.labels.push(moment(response.time * 1000).fromNow());
+                    chart.data.datasets[0].data.push(current_temp);
+                    chart.data.datasets[1].data = target_data[current_mode];
+                    chart.data.datasets[2].data = output_data[current_mode];
+
+                    updateElements();
+                    refresh_temps_id = setTimeout(refreshTemps, 1000);
+                });
             }
             refresh_temps_id = setTimeout(refreshTemps, 1000);
 
@@ -434,7 +464,6 @@
                 clearTimeout(refresh_temps_id);
                 is_target_loaded = false;
                 refresh_targets_id = setTimeout(refreshTargets, 5000);
-                refreshTemps();
             }
             refresh_targets_id = setTimeout(refreshTargets, 5000);
         }   

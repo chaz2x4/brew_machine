@@ -170,7 +170,7 @@ private:
             float steam_target, 
             float offset_target
         ){
-            if(count == capacity) pop();
+            if(count == capacity) shift();
             if(rear == capacity - 1) rear = -1;
             if(count == 0) {
                 times[0] = time;
@@ -194,7 +194,7 @@ private:
             count++;
         }
 
-        void pop() {
+        void shift() {
             front++;
             if(front == capacity) front = 0;
             count--;
@@ -228,7 +228,7 @@ private:
 
         String getLast(){
             DynamicJsonDocument output(192);
-            int i = count-1;
+            int i = rear;
             output["time"] = times[i];
             output["temperature"] = sanitize(temps[i], 1);
             output["scale"] = scale == F ? "F" : "C";
