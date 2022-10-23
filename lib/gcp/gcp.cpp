@@ -169,8 +169,8 @@ float GCP::getActualTemp() {
 	return temp;
 }
 
-float GCP::getCurrentTemp() {
-	float temp = this->getActualTemp();
+double GCP::getCurrentTemp() {
+	double temp = this->getActualTemp();
 	temp += temp_offset;
 	return temp;
 }
