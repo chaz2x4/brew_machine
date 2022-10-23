@@ -335,8 +335,6 @@ void GCP::loadParameters(){
 }
 
 void GCP::refresh(ulong real_time) {
-	float optimum_brew = 0;
-	float optimum_steam = 0;
 	/* 
 		Brew Relay and Steam Relay will always be calculating
 		When power switch is on the heater will heat until it gets to targetBrewtemp
@@ -364,8 +362,8 @@ void GCP::refresh(ulong real_time) {
 		window_start_time += kWindowSize;
 	}
 
-	optimum_brew = PWM(BREW, &brewTempManager, &brewTuner, HEATER_PIN, brew_output, target_brew_temp);
-	optimum_steam = PWM(STEAM, &steamTempManager, &steamTuner, STEAM_PIN, steam_output, target_steam_temp);
+	float optimum_brew = PWM(BREW, &brewTempManager, &brewTuner, HEATER_PIN, brew_output, target_brew_temp);
+	float optimum_steam = PWM(STEAM, &steamTempManager, &steamTuner, STEAM_PIN, steam_output, target_steam_temp);
 
 	//Log information for website display
 	ulong log_time_elapsed = now - log_start_time;
