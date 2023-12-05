@@ -3,32 +3,27 @@
 from pathlib import Path
 import os
 
-folder = Path('webpage').rglob('*.html')
-files = [x for x in folder]
+def process_file(file):
+    content = []
+    with open(file, 'r') as f:
+        name, _ =  os.path.splitext(file.name)
+        content.append(f'const char* {name}Html = ')
+        for line in f:
+            content.append('\"')
+            content.append(
+                line.translate(
+                    str.maketrans(
+                        {'\n' : '\\n\"\n',
+                         '\"' : '\\"',
+                         '\'' : '\\\''
+                         }
+                    )
+                )
+            )
+        content.append('";')
+    return content
 
-content = []
-for file in files:
-    f = open(file, 'r')
-    content.append('const char* ')
-    (name, ext) =  os.path.splitext(file.name)
-    content.append(name + 'Html = ')
-    for line in f.readlines():
-        content.append('\"')
-        for char in line:
-            if char == '\n':
-                content.append('\\n\"')
-            if char == '\"':
-                content.append('\\')
-            if char == '\'':
-                content.append('\\\'')
-            else:
-                content.append(char)
-    content.append('";')
-    f.close()
-
-# print(content)
-output=''.join(content)
-
-f = open('include/websites.h', 'w+')
-f.write(output)
-f.close()
+files_content = process_file(Path('webpage') / 'index.html')
+output_path = Path('include') / 'websites.h'
+with output_path.open('w+') as f:
+    f.write(''.join(files_content))
